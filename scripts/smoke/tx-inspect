@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Live-boundary smoke for the tx-inspect executable (cardano-rdf
+# issue #32 — S1 baseline). Proves the command-line surface FR-016 /
+# SC-005 require: --version prints `tx-inspect <semver>` and exits 0,
+# --help exits 0, TX_INSPECT_NO_UPDATE_CHECK=1 suppresses the
+# upgrade-banner stderr write, and the render-with-empty-rules path
+# (no resolver flag — body inputs render unresolved) round-trips
+# against the captured baseline golden
+# inspect.verbatim.unresolved.txt under
+# test/fixtures/mainnet-txbuild/swap-cancel-issue-8.
+#
+# A separate InspectSpec golden inspect.verbatim.txt drives the
+# resolved render through StaticResolver (test-only). The smoke
+# exercises the production CLI exactly, with no test-only flag added.
+
+if [[ -n "${TX_INSPECT_EXE:-}" ]]; then
+  exe="$TX_INSPECT_EXE"
+else
+  cabal build exe:tx-inspect -O0 >/dev/null
+  exe="$(
+    cabal list-bin exe:tx-inspect -O0
+  )"
+fi
+
+fixture="test/fixtures/mainnet-txbuild/swap-cancel-issue-8"
+body="$fixture/body.cbor.hex"
+golden="$fixture/inspect.verbatim.unresolved.txt"
+collapse_rules="$fixture/collapse-only.yaml"
+collapse_golden="$fixture/inspect.collapse-only.txt"
+rename_rules="$fixture/rename-only.yaml"
+rename_golden="$fixture/inspect.rename-only.unresolved.txt"
+
+amaru_fixture="test/fixtures/amaru-treasury-swap"
+amaru_swap1="$amaru_fixture/swap-1.cbor.hex"
+amaru_swap2="$amaru_fixture/swap-2.cbor.hex"
+amaru_rules="rules/amaru-treasury.yaml"
+amaru_golden="$amaru_fixture/golden/swap-1.both.txt"
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+fail() {
+  printf 'tx-inspect smoke: %s\n' "$*" >&2
+  exit 1
+}
+
+# Assertion 1: --version exits 0 and first stdout line equals
+# `tx-inspect <semver>`.
+version_out="$("$exe" --version)"
+first_line="$(printf '%s\n' "$version_out" | head -n1)"
+case "$first_line" in
+  "tx-inspect "*) ;;
+  *) fail "--version first line not 'tx-inspect <semver>': $first_line" ;;
+esac
+
+# Assertion 2: --help exits 0.
+"$exe" --help >/dev/null
+
+# Assertion 3: TX_INSPECT_NO_UPDATE_CHECK=1 suppresses the banner.
+TX_INSPECT_NO_UPDATE_CHECK=1 "$exe" --version >"$tmp/banner.out" 2>"$tmp/banner.err"
+[[ ! -s "$tmp/banner.err" ]] \
+  || fail "banner not suppressed under TX_INSPECT_NO_UPDATE_CHECK=1: $(cat "$tmp/banner.err")"
+
+# Assertion 4: render with empty rules and no resolver matches the
+# baseline unresolved-render golden.
+empty_rules="$tmp/empty.yaml"
+printf '{}\n' >"$empty_rules"
+
+[[ -e "$body" ]] || fail "missing fixture body: $body"
+
+"$exe" --rules "$empty_rules" "$body" >"$tmp/inspect.out"
+
+[[ -e "$golden" ]] \
+  || fail "golden $golden missing; capture via 'cp $tmp/inspect.out $golden'"
+
+diff -u "$golden" "$tmp/inspect.out" \
+  || fail "render output diverged from $golden"
+
+# Assertion 5: render with collapse-only rules applied to the same body
+# matches the slice-S2 collapse-only golden. Covers
+# specs/032-tx-inspect tasks T013, T014 and T019 (gate.sh smoke
+# assertion).
+[[ -e "$collapse_rules" ]] || fail "missing collapse-only rules: $collapse_rules"
+
+"$exe" --rules "$collapse_rules" "$body" >"$tmp/inspect.collapse.out"
+
+[[ -e "$collapse_golden" ]] \
+  || fail "golden $collapse_golden missing; capture via 'cp $tmp/inspect.collapse.out $collapse_golden'"
+
+diff -u "$collapse_golden" "$tmp/inspect.collapse.out" \
+  || fail "collapse render output diverged from $collapse_golden"
+
+# Assertion 6: render with rename-only rules applied to the same body
+# matches the slice-S3 rename-only golden. Covers
+# specs/032-tx-inspect tasks T021, T022 and T027 (gate.sh smoke
+# assertion).
+[[ -e "$rename_rules" ]] || fail "missing rename-only rules: $rename_rules"
+
+"$exe" --rules "$rename_rules" "$body" >"$tmp/inspect.rename.out"
+
+[[ -e "$rename_golden" ]] \
+  || fail "golden $rename_golden missing; capture via 'cp $tmp/inspect.rename.out $rename_golden'"
+
+diff -u "$rename_golden" "$tmp/inspect.rename.out" \
+  || fail "rename render output diverged from $rename_golden"
+
+# Assertion 7: load-bearing User-Story-1 golden — render the on-chain
+# Amaru treasury swap-1 fixture under the checked-in unified
+# rewriting-rules file rules/amaru-treasury.yaml and assert
+# byte-identical match against the captured golden. Covers
+# specs/032-tx-inspect tasks T029..T033 (S4 — Amaru fixtures + golden).
+[[ -e "$amaru_swap1" ]] || fail "missing Amaru swap-1 fixture: $amaru_swap1"
+[[ -e "$amaru_rules" ]] || fail "missing Amaru rules: $amaru_rules"
+
+"$exe" --rules "$amaru_rules" "$amaru_swap1" >"$tmp/inspect.amaru.out"
+
+[[ -e "$amaru_golden" ]] \
+  || fail "golden $amaru_golden missing; capture via 'cp $tmp/inspect.amaru.out $amaru_golden'"
+
+diff -u "$amaru_golden" "$tmp/inspect.amaru.out" \
+  || fail "Amaru both-stages render diverged from $amaru_golden"
+
+# Assertion 8: positive guard against raw renamed-identifier hashes
+# leaking into the rendered output. Covers FR-009 / FR-010 / SC-001.
+amaru_swap_v2_prefix=fa6a58bbe2d0ff05
+amaru_treasury_prefix=32201dc1e8270836
+if grep -q -F "$amaru_swap_v2_prefix" "$tmp/inspect.amaru.out"; then
+  fail "render leaked the Amaru swap.v2 raw hash prefix $amaru_swap_v2_prefix"
+fi
+# The treasury script hash legitimately appears inside Plutus.Data
+# datum bytes (S3-documented residual: rename does not reach
+# datum-embedded identifiers). The render top-level address /
+# script-hash sites — covered by FR-009 — must NOT carry it. Assert
+# the rendered address slots show the rename name.
+grep -F 'amaru-treasury.network_compliance.account' "$tmp/inspect.amaru.out" >/dev/null \
+  || fail "render missing amaru-treasury.network_compliance.account rename"
+grep -F 'amaru.swap-order' "$tmp/inspect.amaru.out" >/dev/null \
+  || fail "render missing amaru.swap-order rename"
+grep -F 'SwapOrder' "$tmp/inspect.amaru.out" >/dev/null \
+  || fail "render missing SwapOrder collapse view name"
+grep -F 'user.recipient' "$tmp/inspect.amaru.out" >/dev/null \
+  || fail "render missing user.recipient rename"
+
+# Assertion 9: with --links=cardanoscan --network=mainnet, the render
+# of the Amaru swap-1 fixture annotates every Cardanoscan-classifiable
+# leaf with its mainnet URL. Covers specs/088 FR-006, FR-007, FR-008.
+# The S1 classifier covers tx-input references and payment addresses;
+# stake / policy / asset annotations are additive in a follow-up slice
+# and are NOT asserted here.
+"$exe" \
+  --rules "$amaru_rules" \
+  --links=cardanoscan --network=mainnet \
+  "$amaru_swap1" \
+  >"$tmp/inspect.amaru.links.out"
+
+grep -F 'https://cardanoscan.io/transaction/' "$tmp/inspect.amaru.links.out" >/dev/null \
+  || fail "--links=cardanoscan render missing cardanoscan.io /transaction/ URL"
+grep -F 'https://cardanoscan.io/address/' "$tmp/inspect.amaru.links.out" >/dev/null \
+  || fail "--links=cardanoscan render missing cardanoscan.io /address/ URL"
+
+printf 'tx-inspect smoke: OK\n'

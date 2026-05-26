@@ -1,0 +1,5 @@
+entities:
+  - name: operator
+    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz
+  - name: cardano-foundation.ops
+    from-address: addr1qy5yrukx9ysjqqa79jrl6qkql7glhqwcnycjjqmdwk962j89fcz6lc7tj6k5yegw8zdnj7chytcfrr9fwlernl2etg2qdhrzz0

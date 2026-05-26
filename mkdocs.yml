@@ -1,0 +1,73 @@
+site_name: cardano-rdf
+site_url: !ENV [MKDOCS_SITE_URL, "https://lambdasistemi.github.io/cardano-rdf/"]
+repo_url: https://github.com/lambdasistemi/cardano-rdf
+repo_name: lambdasistemi/cardano-rdf
+
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.indexes
+    - navigation.sections
+    - navigation.path
+    - toc.integrate
+    - content.code.copy
+
+plugins:
+  - search
+  - asciinema-player
+
+markdown_extensions:
+  - admonition
+  - tables
+  - footnotes
+  - def_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/gh/paolino/dev-assets@main/mkdocs/docs/js/read-aloud.js
+
+nav:
+  - Home: index.md
+  - tx-diff: tx-diff.md
+  - tx-inspect: tx-inspect.md
+  - rewriting-rules grammar: rewriting-rules.md
+  - tx-sign: tx-sign.md
+  - tx-validate: tx-validate.md
+  - tx-graph: tx-graph.md
+  - tx-fetch: tx-fetch.md
+  - tx-view: tx-view.md
+  - tx-lattice: tx-lattice.md
+  - "May 2026 lattice demo": may-2026-amaru-lattice.md
+  - cardano-tx-generator: cardano-tx-generator.md
+  - "Prior art": prior-art.md
+  - Operations:
+      - "Repository secrets": operations/secrets.md
