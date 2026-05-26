@@ -9,7 +9,8 @@
 - [X] T002 Initialize Spec Kit and write the project constitution.
 - [X] T003 Add AGENTS/README/CHANGELOG/docs bootstrap.
 - [X] T004 Enable GitHub Actions write permission and standard labels.
-- [X] T005 Add operator note for `CACHIX_AUTH_TOKEN` secret setup.
+- [X] T005 Add operator note for `CACHIX_AUTH_TOKEN`, `TAP_TOKEN`, and
+  `RELEASE_BOT_SSH_KEY` secret setup.
 
 ## Phase 2: Additive Migration
 
@@ -30,8 +31,8 @@
 
 ## Phase 4: Stop Point
 
-- [ ] T015 Commit and push the working `cardano-rdf` branch.
-- [ ] T016 Report verification evidence and explicitly stop before deleting old
+- [X] T015 Commit and push the working `cardano-rdf` branch.
+- [X] T016 Report verification evidence and explicitly stop before deleting old
   source.
 
 ## Notes
