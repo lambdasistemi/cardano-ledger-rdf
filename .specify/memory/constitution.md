@@ -1,14 +1,17 @@
 <!--
 Sync Impact Report
-Version change: template -> 1.0.0
-Modified principles: template placeholders -> seven cardano-rdf principles
-Added sections: Operational Constraints; Architecture Boundaries; Development Workflow
+Version change: 1.0.0 -> 1.0.1
+Modified principles:
+- Architecture Boundaries: clarified current Cardano.Tx.* migration namespace
+Added sections: none
 Removed sections: none
 Templates requiring updates:
 - updated: .specify/templates/plan-template.md
 - updated: .specify/templates/spec-template.md
 - updated: .specify/templates/tasks-template.md
-- reviewed: .claude/commands/speckit.*.md
+- reviewed: AGENTS.md
+- reviewed: README.md
+- reviewed: docs/index.md
 Follow-up TODOs: none
 -->
 
@@ -104,7 +107,10 @@ compatibility wrappers is a separate, explicitly reviewed follow-up.
 
 The first package surface is transaction RDF:
 
-- Library modules under `Cardano.Rdf.Tx.*`.
+- Library modules currently live under `Cardano.Tx.Graph.*` and
+  `Cardano.Tx.View.*`; this is deliberate migration debt recorded in the
+  README. A future move to `Cardano.Rdf.*` MUST be planned as a
+  compatibility-preserving release change with migration notes.
 - Executables for generic RDF workflows: graph emission, closure fetch,
   packaged views, and bundle/export commands.
 - RDF fixtures under `test/fixtures/`, SPARQL projections under `views/`,
@@ -144,4 +150,4 @@ Versioning follows semantic governance:
 - MINOR for adding a principle or materially expanding constraints.
 - PATCH for clarifications that do not change obligations.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
+**Version**: 1.0.1 | **Ratified**: 2026-05-26 | **Last Amended**: 2026-05-26
