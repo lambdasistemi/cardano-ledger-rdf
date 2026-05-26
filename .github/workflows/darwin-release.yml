@@ -90,7 +90,13 @@ jobs:
           github.event_name == 'push'
           || (inputs.mode != 'dev-homebrew' && inputs.publish == 'yes')
         }}
-      UPDATE_TAP: ${{ inputs.update_tap || 'yes' }}
+      UPDATE_TAP: >-
+        ${{
+          github.event_name == 'workflow_dispatch'
+          && inputs.mode == 'dev-homebrew'
+          && inputs.update_tap
+          || 'no'
+        }}
     steps:
       - uses: actions/checkout@v6
         with:
