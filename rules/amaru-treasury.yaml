@@ -2,7 +2,22 @@ version: 1
 views:
   raw: hide
 
-# Stage 1 — collapse: name the Amaru treasury swap-order output shape so
+# tx-graph consumes `entities:` as the operator overlay. The collapse
+# and rename sections below are kept as downstream view metadata for
+# cardano-tx-tools consumers; tx-graph ignores them.
+entities:
+  - name: amaru-treasury.network_compliance
+    from-address: addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk
+  - name: amaru.swap-order
+    from-address: addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n
+  - name: amaru.swap.v2
+    script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077
+  - name: user.recipient
+    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz
+  - name: amaru.network-wallet
+    from-address: addr1q802wxt6cg6aw0nl0vdzfxymduzkt66uw9t5kspx5jwjecx80dz4g33htknafhdhkvzd5st4f9xu
+
+# Downstream view metadata — collapse: name the Amaru treasury swap-order output shape so
 # each pair of swap outputs renders as a single "SwapOrder" bucket
 # exposing only its per-output address, coin, and datum-constructor
 # variable slots. Treasury-leftover and user-payment outputs do not
@@ -15,7 +30,7 @@ collapse:
         - coin
         - datum.constructor
 
-# Stage 2 — rename: substitute every Amaru-treasury identifier appearing
+# Downstream view metadata — rename: substitute every Amaru-treasury identifier appearing
 # in the two checked-in swap fixtures with its address-book name.
 #
 # Stake-key default `match: payment` covers every stake variant of the

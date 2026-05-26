@@ -3,9 +3,8 @@ Module      : Main
 Description : tx-graph executable — pure (rules + [cbor]) → ttl transformation.
 License     : Apache-2.0
 
-Companion executable to @tx-diff@ / @tx-inspect@ / @tx-sign@ /
-@tx-validate@. Renders an operator-authored rules overlay and/or
-one Turtle (or JSON-LD) graph per Conway transaction CBOR.
+Renders an operator-authored rules overlay and/or one Turtle (or
+JSON-LD) graph per Conway transaction CBOR.
 
 CLI surface (see issue #114 — operator-led role audit collapse):
 
@@ -27,14 +26,6 @@ spending / reference / collateral input up in that map; when an
 input's parent CBOR isn't in the lattice the resolver returns
 @Nothing@ and the emitter falls back to raw-bytes (the operator's
 bug to fix by widening the lattice, not a silent default).
-
-What this replaces (all dropped in #114):
-
-* @--utxo@ — was a syntax-only stub; the lattice resolves itself.
-* @--closure-dir@ — the closure IS the input set; no disk handshake.
-* @--n2c-socket-path@ / @--network-magic@ — wrong workflow for
-  tx-graph (queries the live UTxO; on-chain inputs are already
-  spent there).
 
 Exit codes:
 
@@ -290,8 +281,7 @@ expandInDir dir = do
         then do
             hPutStrLn
                 stderr
-                ( "tx-graph: --in-dir: not a directory: " <> dir
-                )
+                ("tx-graph: --in-dir: not a directory: " <> dir)
             exitWith (ExitFailure 2)
         else do
             entries <- listDirectory dir
@@ -526,8 +516,7 @@ indexOutputs xs n
     go (_ : rest) k = go rest (k - 1)
 
 {- | Collect every 'TxIn' the body references: spending inputs,
-reference inputs, collateral inputs. Mirrors the same helper in
-@tx-inspect@ and @tx-validate@.
+reference inputs, collateral inputs.
 -}
 collectInputs :: ConwayTx -> Set TxIn
 collectInputs tx =

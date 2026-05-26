@@ -48,12 +48,6 @@ import Cardano.Tx.Graph.Rules.LoadTurtleSpec qualified as GraphRulesLoadTurtleSp
 import Cardano.Tx.Graph.Rules.LoadValidationSpec qualified as GraphRulesLoadValidationSpec
 import Cardano.Tx.Graph.Rules.LoadYamlSpec qualified as GraphRulesLoadYamlSpec
 import Cardano.Tx.Graph.TxGraphExeSpec qualified as GraphTxGraphExeSpec
-import Cardano.Tx.InspectSpec qualified as InspectSpec
-import Cardano.Tx.Rewrite.ApplySpec qualified as RewriteApplySpec
-import Cardano.Tx.Rewrite.LoadSpec qualified as RewriteLoadSpec
-import Cardano.Tx.Rewrite.RewriteRedesignGoldenSpec qualified as RewriteRedesignGoldenSpec
-import Cardano.Tx.Validate.LoadUtxoSpec qualified as LoadUtxoSpec
-import Cardano.Tx.ValidateSpec qualified as ValidateSpec
 import Cardano.Tx.View.AssetFlowSpec qualified as ViewAssetFlowSpec
 import Cardano.Tx.View.CliTreeGoldenSpec qualified as ViewCliTreeGoldenSpec
 import Cardano.Tx.View.EntityOccurrencesSpec qualified as ViewEntityOccurrencesSpec
@@ -107,12 +101,6 @@ main = hspec $ do
     GraphRulesLoadValidationSpec.spec
     GraphRulesLoadYamlSpec.spec
     GraphTxGraphExeSpec.spec
-    InspectSpec.spec
-    LoadUtxoSpec.spec
-    RewriteApplySpec.spec
-    RewriteLoadSpec.spec
-    RewriteRedesignGoldenSpec.spec
-    ValidateSpec.spec
     ViewAssetFlowSpec.spec
     ViewCliTreeGoldenSpec.spec
     ViewEntityOccurrencesSpec.spec

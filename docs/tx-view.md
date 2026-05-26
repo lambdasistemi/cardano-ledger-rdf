@@ -50,17 +50,15 @@ Emit the graph with `tx-graph`, then project with `tx-view`:
 ```bash
 nix build .#tx-graph .#tx-view
 
-# Resolved-input lattice from Blockfrost or N2C makes the input side
-# render with full address+coin attribution; without resolution the
-# input rows show only txOutRefs.
+# A closure fetched by tx-fetch lets tx-graph resolve input-side
+# address+coin attribution from the in-memory lattice; without parent
+# CBORs the input rows show only txOutRefs.
 ./result/bin/tx-graph \
-  --tx 18d57a4f.cbor \
+  18d57a4f.cbor parent.cbor \
   --rules amaru-treasury.yaml \
-  --n2c-socket-path /run/cardano/socket \
-  --network-magic 764824073 \
-  > /tmp/tx.ttl
+  --out-dir /tmp/lattice
 
-./result/bin/tx-view --graph /tmp/tx.ttl --view cli-tree
+./result/bin/tx-view --graph /tmp/lattice/<txid>.ttl --view cli-tree
 ```
 
 ### asset-flow
@@ -75,9 +73,9 @@ ada	205000000000	<unknown>	amaru-treasury.network_compliance
 ada	92141887	<unknown>	amaru.network-wallet
 ```
 
-(`<unknown>` source rows mean the canonical graph doesn't carry
-input UTxO resolution — supply `--utxo` / `--n2c-socket-path` on
-`tx-graph` to fill those in.)
+(`<unknown>` source rows mean the canonical graph does not carry the
+parent transaction needed to resolve the input. Include the parent CBORs
+in the same `tx-graph` lattice to fill those in.)
 
 > **Note** — for swap-order outputs, asset-flow's destination
 > column reports the *script* the funds are locked into
@@ -162,10 +160,7 @@ same graph (modulo trivial whitespace differences in the renderers).
 
 - [tx-graph](tx-graph.md) — emits the canonical Turtle graph that
   `tx-view` consumes.
-- [rewriting-rules grammar](rewriting-rules.md) — operator
+- [rules.yaml](rewriting-rules.md) — operator
   rules.yaml language; controls the entity overlay that affects
   cli-tree's address resolution and asset-flow's source / destination
   columns.
-- [tx-inspect](tx-inspect.md) — the parallel non-SPARQL render
-  pipeline (verbatim → collapse → rename) for the same Conway
-  transactions.

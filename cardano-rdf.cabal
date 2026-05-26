@@ -1,13 +1,12 @@
 cabal-version:   3.4
 name:            cardano-rdf
 version:         0.2.2.0
-synopsis:        Cardano transaction tooling (builder, structural diff)
+synopsis:        Cardano transaction RDF graph tooling
 description:
-  Library and executables for working with Cardano (Conway) transactions:
-  building, balancing, structural diffing, and Plutus blueprint decoding.
-  The main library has no node-client dependency; an opt-in
-  'n2c-resolver' sub-library bridges the resolver chain to
-  cardano-node-clients's 'Provider' for the tx-diff executable.
+  Library and executables for emitting Cardano Conway transactions as RDF,
+  fetching transaction CBOR closure lattices, and projecting generated graphs
+  through packaged views. Generic transaction inspection, signing, validation,
+  diffing, and load-generation remain downstream cardano-tx-tools concerns.
 
 license:         Apache-2.0
 license-file:    LICENSE
@@ -59,30 +58,14 @@ library
     Cardano.Tx.Blueprint
     Cardano.Tx.Build
     Cardano.Tx.Diff
-    Cardano.Tx.Diff.Cli
     Cardano.Tx.Diff.Resolver
     Cardano.Tx.Diff.Resolver.Web2
-    Cardano.Tx.Diff.Scan
     Cardano.Tx.Evaluate
     Cardano.Tx.Graph.Emit
     Cardano.Tx.Graph.Emit.Blueprint
     Cardano.Tx.Graph.Emit.Project
     Cardano.Tx.Graph.Rules.Load
     Cardano.Tx.Ledger
-    Cardano.Tx.Rewrite
-    Cardano.Tx.Sign.AttachWitness
-    Cardano.Tx.Sign.Cli
-    Cardano.Tx.Sign.Cli.Common
-    Cardano.Tx.Sign.Cli.Passphrase
-    Cardano.Tx.Sign.Cli.Vault
-    Cardano.Tx.Sign.Cli.Witness
-    Cardano.Tx.Sign.Envelope
-    Cardano.Tx.Sign.Hex
-    Cardano.Tx.Sign.Vault
-    Cardano.Tx.Sign.Vault.Age
-    Cardano.Tx.Sign.Witness
-    Cardano.Tx.Validate
-    Cardano.Tx.Validate.Cli
     Cardano.Tx.View
 
   other-modules:
@@ -113,165 +96,49 @@ library
     Cardano.Tx.Witnesses
 
   build-depends:
-    , aeson                          >=2.2  && <2.3
-    , aeson-pretty                   >=0.8  && <0.9
-    , age                            >=0.0  && <1
-    , base                           <5
-    , base16-bytestring              >=1.0  && <1.1
-    , bech32                         >=1.1  && <1.2
-    , bytestring                     >=0.12 && <0.13
-    , cardano-binary                 >=1.8  && <3
-    , cardano-crypto                 >=1.3  && <3
-    , cardano-crypto-class           >=2.3  && <4
-    , cardano-data                   >=1.3  && <3
-    , cardano-ledger-allegra         >=1.9  && <3
-    , cardano-ledger-alonzo          >=1.15 && <3
-    , cardano-ledger-api             >=1.13 && <3
-    , cardano-ledger-binary          >=1.8  && <3
-    , cardano-ledger-conway          >=1.21 && <3
-    , cardano-ledger-core            >=1.19 && <3
-    , cardano-ledger-mary            >=1.10 && <3
-    , cardano-ledger-shelley         >=1.18 && <3
-    , cardano-slotting               >=0.2  && <0.4
-    , cardano-strict-containers      >=0.1  && <0.3
-    , containers                     >=0.7  && <0.8
-    , crypton                        >=1.0  && <1.1
-    , data-default                   >=0.8  && <0.9
-    , directory                      >=1.3  && <1.4
-    , exceptions                     >=0.10 && <0.11
-    , filepath                       >=1.5  && <1.6
-    , github-release-check           >=0.1  && <0.3
-    , github-release-check:optparse
-    , haskeline                      >=0.8  && <0.9
-    , http-client                    >=0.7  && <0.8
-    , http-client-tls                >=0.3  && <0.4
-    , http-types                     >=0.12 && <0.13
-    , libyaml                        >=0.1  && <0.2
-    , memory                         >=0.18 && <0.19
-    , microlens                      >=0.4  && <0.5
-    , operational                    >=0.2  && <0.3
-    , optparse-applicative           >=0.19 && <0.20
-    , plutus-core                    >=1.60 && <3
-    , plutus-tx                      >=1.60 && <3
-    , scientific                     >=0.3  && <0.4
-    , serialise                      >=0.2  && <0.3
-    , text                           >=2.1  && <2.2
-    , time                           >=1.12 && <1.13
-    , transformers                   >=0.6  && <0.7
-    , tree-view                      >=0.5  && <0.6
-    , unix                           >=2.8  && <2.9
-    , yaml                           >=0.11 && <0.12
-
-library n2c-resolver
-  import:           warnings
-  visibility:       public
-  hs-source-dirs:   lib-n2c-resolver
-  default-language: GHC2021
-  exposed-modules:  Cardano.Tx.Diff.Resolver.N2C
-  build-depends:
-    , base                  <5
-    , cardano-node-clients  >=0.1 && <0.3
-    , cardano-rdf
-
-library tx-generator-lib
-  import:           warnings
-  visibility:       public
-  hs-source-dirs:   lib-tx-generator
-  default-language: GHC2021
-  exposed-modules:
-    Cardano.Tx.Generator.Build
-    Cardano.Tx.Generator.Daemon
-    Cardano.Tx.Generator.Fanout
-    Cardano.Tx.Generator.Persist
-    Cardano.Tx.Generator.Population
-    Cardano.Tx.Generator.Selection
-    Cardano.Tx.Generator.Server
-    Cardano.Tx.Generator.Snapshot
-    Cardano.Tx.Generator.Types
-
-  build-depends:
-    , aeson                                  >=2.2  && <2.3
-    , async                                  >=2.2  && <2.3
-    , base
-    , base16-bytestring                      >=1.0  && <1.1
-    , bytestring                             >=0.12 && <0.13
-    , cardano-binary                         >=1.8  && <3
-    , cardano-crypto-class                   >=2.3  && <4
-    , cardano-ledger-allegra                 >=1.9  && <3
-    , cardano-ledger-api                     >=1.13 && <3
-    , cardano-ledger-binary                  >=1.8  && <3
-    , cardano-ledger-byron                   >=1.3  && <3
-    , cardano-ledger-conway                  >=1.21 && <3
-    , cardano-ledger-core                    >=1.19 && <3
-    , cardano-ledger-mary                    >=1.10 && <3
-    , cardano-node-clients                   >=0.1  && <0.3
-    , cardano-node-clients:utxo-indexer-lib
-    , cardano-rdf
-    , cardano-slotting                       >=0.2  && <0.4
-    , cardano-strict-containers              >=0.1  && <0.3
-    , chain-follower                         >=0.1  && <0.3
-    , containers                             >=0.7  && <0.8
-    , contra-tracer                          >=0.1  && <0.3
-    , directory                              >=1.3  && <1.4
-    , exceptions                             >=0.10 && <0.11
-    , filepath                               >=1.5  && <1.6
-    , microlens                              >=0.4  && <0.5
-    , network                                >=3.2  && <3.3
-    , operational                            >=0.2  && <0.3
-    , ouroboros-consensus                    >=1.0  && <3
-    , ouroboros-consensus:cardano
-    , ouroboros-consensus:protocol
-    , ouroboros-network                      >=1.1  && <3
-    , ouroboros-network:api
-    , ouroboros-network:framework
-    , random                                 >=1.3  && <1.4
-    , retry                                  >=0.9  && <0.10
-    , stm                                    >=2.5  && <2.6
-    , text                                   >=2.1  && <2.2
-    , time                                   >=1.12 && <1.13
-    , unix                                   >=2.8  && <2.9
-
-executable cardano-tx-generator
-  import:           warnings
-  hs-source-dirs:   app/cardano-tx-generator
-  main-is:          Main.hs
-  default-language: GHC2021
-  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
-  autogen-modules:  Paths_cardano_rdf
-  other-modules:    Paths_cardano_rdf
-  build-depends:
-    , base
-    , cardano-node-clients          >=0.1 && <0.3
-    , cardano-rdf:tx-generator-lib
-    , github-release-check          >=0.1 && <0.3
-
-executable tx-diff
-  import:           warnings
-  hs-source-dirs:   app/tx-diff
-  main-is:          Main.hs
-  default-language: GHC2021
-  autogen-modules:  Paths_cardano_rdf
-  other-modules:    Paths_cardano_rdf
-  build-depends:
-    , async                          >=2.2  && <2.3
-    , base
-    , base16-bytestring              >=1.0  && <1.1
-    , bytestring                     >=0.12 && <0.13
-    , cardano-crypto-class           >=2.3  && <4
-    , cardano-ledger-api             >=1.13 && <3
-    , cardano-ledger-core            >=1.19 && <3
-    , cardano-node-clients           >=0.1  && <0.3
-    , cardano-rdf
-    , cardano-rdf:n2c-resolver
-    , containers                     >=0.7  && <0.8
-    , github-release-check           >=0.1  && <0.3
-    , github-release-check:optparse
-    , http-client                    >=0.7  && <0.8
-    , http-client-tls                >=0.3  && <0.4
-    , microlens                      >=0.4  && <0.5
-    , ouroboros-network              >=1.1  && <3
-    , ouroboros-network:api
-    , text                           >=2.1  && <2.2
+    , aeson                      >=2.2  && <2.3
+    , aeson-pretty               >=0.8  && <0.9
+    , base                       <5
+    , base16-bytestring          >=1.0  && <1.1
+    , bech32                     >=1.1  && <1.2
+    , bytestring                 >=0.12 && <0.13
+    , cardano-binary             >=1.8  && <3
+    , cardano-crypto             >=1.3  && <3
+    , cardano-crypto-class       >=2.3  && <4
+    , cardano-data               >=1.3  && <3
+    , cardano-ledger-allegra     >=1.9  && <3
+    , cardano-ledger-alonzo      >=1.15 && <3
+    , cardano-ledger-api         >=1.13 && <3
+    , cardano-ledger-binary      >=1.8  && <3
+    , cardano-ledger-conway      >=1.21 && <3
+    , cardano-ledger-core        >=1.19 && <3
+    , cardano-ledger-mary        >=1.10 && <3
+    , cardano-ledger-shelley     >=1.18 && <3
+    , cardano-slotting           >=0.2  && <0.4
+    , cardano-strict-containers  >=0.1  && <0.3
+    , containers                 >=0.7  && <0.8
+    , crypton                    >=1.0  && <1.1
+    , data-default               >=0.8  && <0.9
+    , directory                  >=1.3  && <1.4
+    , exceptions                 >=0.10 && <0.11
+    , filepath                   >=1.5  && <1.6
+    , http-client                >=0.7  && <0.8
+    , http-client-tls            >=0.3  && <0.4
+    , http-types                 >=0.12 && <0.13
+    , libyaml                    >=0.1  && <0.2
+    , memory                     >=0.18 && <0.19
+    , microlens                  >=0.4  && <0.5
+    , operational                >=0.2  && <0.3
+    , optparse-applicative       >=0.19 && <0.20
+    , plutus-core                >=1.60 && <3
+    , plutus-tx                  >=1.60 && <3
+    , scientific                 >=0.3  && <0.4
+    , serialise                  >=0.2  && <0.3
+    , text                       >=2.1  && <2.2
+    , time                       >=1.12 && <1.13
+    , transformers               >=0.6  && <0.7
+    , tree-view                  >=0.5  && <0.6
+    , yaml                       >=0.11 && <0.12
 
 executable tx-graph
   import:           warnings
@@ -320,73 +187,6 @@ executable tx-fetch
     , optparse-applicative  >=0.19 && <0.20
     , text                  >=2.1  && <2.2
 
-executable tx-inspect
-  import:           warnings
-  hs-source-dirs:   app/tx-inspect
-  main-is:          Main.hs
-  default-language: GHC2021
-  autogen-modules:  Paths_cardano_rdf
-  other-modules:    Paths_cardano_rdf
-  build-depends:
-    , async                          >=2.2  && <2.3
-    , base
-    , base16-bytestring              >=1.0  && <1.1
-    , bytestring                     >=0.12 && <0.13
-    , cardano-crypto-class           >=2.3  && <4
-    , cardano-ledger-api             >=1.13 && <3
-    , cardano-ledger-core            >=1.19 && <3
-    , cardano-node-clients           >=0.1  && <0.3
-    , cardano-rdf
-    , cardano-rdf:n2c-resolver
-    , containers                     >=0.7  && <0.8
-    , github-release-check           >=0.1  && <0.3
-    , github-release-check:optparse
-    , http-client                    >=0.7  && <0.8
-    , http-client-tls                >=0.3  && <0.4
-    , microlens                      >=0.4  && <0.5
-    , optparse-applicative           >=0.19 && <0.20
-    , ouroboros-network              >=1.1  && <3
-    , ouroboros-network:api
-    , text                           >=2.1  && <2.2
-
-executable tx-sign
-  import:           warnings
-  hs-source-dirs:   app/tx-sign
-  main-is:          Main.hs
-  default-language: GHC2021
-  autogen-modules:  Paths_cardano_rdf
-  other-modules:    Paths_cardano_rdf
-  build-depends:
-    , base
-    , cardano-rdf
-    , github-release-check           >=0.1 && <0.3
-    , github-release-check:optparse
-
-executable tx-validate
-  import:           warnings
-  hs-source-dirs:   app/tx-validate
-  main-is:          Main.hs
-  default-language: GHC2021
-  autogen-modules:  Paths_cardano_rdf
-  other-modules:    Paths_cardano_rdf
-  build-depends:
-    , aeson                     >=2.2  && <2.3
-    , aeson-pretty              >=0.8  && <0.9
-    , async                     >=2.2  && <2.3
-    , base
-    , bytestring                >=0.12 && <0.13
-    , cardano-ledger-binary     >=1.8  && <3
-    , cardano-ledger-conway     >=1.21 && <3
-    , cardano-ledger-core       >=1.19 && <3
-    , cardano-node-clients      >=0.1  && <0.3
-    , cardano-rdf
-    , cardano-rdf:n2c-resolver
-    , containers                >=0.7  && <0.8
-    , github-release-check      >=0.1  && <0.3
-    , ouroboros-network         >=1.1  && <3
-    , ouroboros-network:api
-    , text                      >=2.1  && <2.2
-
 executable tx-view
   import:           warnings
   hs-source-dirs:   app/tx-view
@@ -411,11 +211,9 @@ test-suite unit-tests
     Cardano.Tx.BlueprintSpec
     Cardano.Tx.Build.MinUtxoSpec
     Cardano.Tx.BuildSpec
-    Cardano.Tx.Diff.CliSpec
     Cardano.Tx.Diff.ConwaySpec
     Cardano.Tx.Diff.CoreSpec
     Cardano.Tx.Diff.ResolverSpec
-    Cardano.Tx.Diff.ScanSpec
     Cardano.Tx.Diff.Web2Spec
     Cardano.Tx.DiffSpec
     Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec
@@ -461,13 +259,6 @@ test-suite unit-tests
     Cardano.Tx.Graph.Rules.LoadValidationSpec
     Cardano.Tx.Graph.Rules.LoadYamlSpec
     Cardano.Tx.Graph.TxGraphExeSpec
-    Cardano.Tx.InspectSpec
-    Cardano.Tx.Rewrite.ApplySpec
-    Cardano.Tx.Rewrite.LoadSpec
-    Cardano.Tx.Rewrite.RewriteRedesignGoldenSpec
-    Cardano.Tx.Validate.LoadUtxo
-    Cardano.Tx.Validate.LoadUtxoSpec
-    Cardano.Tx.ValidateSpec
     Cardano.Tx.View.AssetFlowSpec
     Cardano.Tx.View.CliTreeGoldenSpec
     Cardano.Tx.View.EntityOccurrencesSpec
@@ -490,7 +281,6 @@ test-suite unit-tests
     Fixtures.RewriteRedesign.S15_AmaruDisburseNetworkCompliance
     Fixtures.RewriteRedesign.S17_AmaruDisburseContingency
     Fixtures.RewriteRedesign.TurtleShim
-    StaticResolver
 
   build-depends:
     , aeson                      >=2.2  && <2.3
@@ -509,9 +299,7 @@ test-suite unit-tests
     , cardano-ledger-core        >=1.19 && <3
     , cardano-ledger-mary        >=1.10 && <3
     , cardano-ledger-shelley     >=1.18 && <3
-    , cardano-node-clients       >=0.1  && <0.3
     , cardano-rdf
-    , cardano-rdf:n2c-resolver
     , cardano-slotting           >=0.2  && <0.4
     , cardano-strict-containers  >=0.1  && <0.3
     , containers                 >=0.7  && <0.8
@@ -533,133 +321,6 @@ test-suite unit-tests
   -- nix flake check path wires the same store path through
   -- TX_VIEW_EXE (see flake.nix's unit-check override).
   build-tool-depends: cardano-rdf:tx-view
-
-test-suite e2e-tests
-  import:           warnings
-  type:             exitcode-stdio-1.0
-  hs-source-dirs:   test
-  main-is:          e2e-main.hs
-  default-language: GHC2021
-  other-modules:
-    Cardano.Node.Client.E2E.BalanceSpec
-    Cardano.Node.Client.E2E.ChainPopulatorSpec
-    Cardano.Node.Client.E2E.GovernanceSmokeSpec
-    Cardano.Node.Client.E2E.MultiAssetChangeSpec
-    Cardano.Node.Client.E2E.TxBuildSpec
-    Cardano.Node.Client.E2E.UTxOIndexerSpec
-
-  build-depends:
-    , aeson                        >=2.2  && <2.3
-    , async                        >=2.2  && <2.3
-    , base
-    , base16-bytestring            >=1.0  && <1.1
-    , bytestring                   >=0.12 && <0.13
-    , cardano-crypto-class         >=2.3  && <4
-    , cardano-ledger-allegra       >=1.9  && <3
-    , cardano-ledger-alonzo        >=1.15 && <3
-    , cardano-ledger-api           >=1.13 && <3
-    , cardano-ledger-conway        >=1.21 && <3
-    , cardano-ledger-core          >=1.19 && <3
-    , cardano-ledger-mary          >=1.10 && <3
-    , cardano-ledger-read          >=0.1  && <0.3
-    , cardano-node-clients         >=0.1  && <0.3
-    , cardano-node-clients:devnet
-    , cardano-rdf
-    , cardano-slotting             >=0.2  && <0.4
-    , cardano-strict-containers    >=0.1  && <0.3
-    , containers                   >=0.7  && <0.8
-    , directory                    >=1.3  && <1.4
-    , filepath                     >=1.5  && <1.6
-    , hspec                        >=2.11 && <2.12
-    , microlens                    >=0.4  && <0.5
-    , network                      >=3.2  && <3.3
-    , temporary                    >=1.3  && <1.4
-    , text                         >=2.1  && <2.2
-
-test-suite tx-generator-tests
-  import:           warnings
-  type:             exitcode-stdio-1.0
-  hs-source-dirs:   test
-  main-is:          tx-generator-main.hs
-  default-language: GHC2021
-  other-modules:
-    Cardano.Tx.Generator.FanoutSpec
-    Cardano.Tx.Generator.PersistSpec
-    Cardano.Tx.Generator.PopulationSpec
-    Cardano.Tx.Generator.SelectionSpec
-    Cardano.Tx.Generator.ServerSpec
-    Cardano.Tx.Generator.SnapshotSpec
-
-  build-depends:
-    , aeson                         >=2.2  && <2.3
-    , async                         >=2.2  && <2.3
-    , base
-    , base16-bytestring             >=1.0  && <1.1
-    , bytestring                    >=0.12 && <0.13
-    , cardano-crypto-class          >=2.3  && <4
-    , cardano-ledger-allegra        >=1.9  && <3
-    , cardano-ledger-alonzo         >=1.15 && <3
-    , cardano-ledger-api            >=1.13 && <3
-    , cardano-ledger-binary         >=1.8  && <3
-    , cardano-ledger-conway         >=1.21 && <3
-    , cardano-ledger-core           >=1.19 && <3
-    , cardano-ledger-mary           >=1.10 && <3
-    , cardano-node-clients          >=0.1  && <0.3
-    , cardano-rdf
-    , cardano-rdf:tx-generator-lib
-    , cardano-slotting              >=0.2  && <0.4
-    , cardano-strict-containers     >=0.1  && <0.3
-    , containers                    >=0.7  && <0.8
-    , directory                     >=1.3  && <1.4
-    , filepath                      >=1.5  && <1.6
-    , hspec                         >=2.11 && <2.12
-    , microlens                     >=0.4  && <0.5
-    , network                       >=3.2  && <3.3
-    , plutus-core                   >=1.60 && <3
-    , QuickCheck                    >=2.15 && <2.16
-    , random                        >=1.3  && <1.4
-    , sop-extras                    >=0.4  && <0.6
-    , temporary                     >=1.3  && <1.4
-    , text                          >=2.1  && <2.2
-    , time                          >=1.12 && <1.13
-
-test-suite tx-validate-tests
-  import:           warnings
-  type:             exitcode-stdio-1.0
-  hs-source-dirs:   test
-  main-is:          tx-validate-main.hs
-  default-language: GHC2021
-  other-modules:
-    Cardano.Tx.BuildSpec
-    Cardano.Tx.Validate.CliSpec
-    Cardano.Tx.Validate.LoadUtxo
-
-  build-depends:
-    , aeson                      >=2.2  && <2.3
-    , base
-    , base16-bytestring          >=1.0  && <1.1
-    , bytestring                 >=0.12 && <0.13
-    , cardano-binary             >=1.8  && <3
-    , cardano-crypto-class       >=2.3  && <4
-    , cardano-ledger-allegra     >=1.9  && <3
-    , cardano-ledger-alonzo      >=1.15 && <3
-    , cardano-ledger-api         >=1.13 && <3
-    , cardano-ledger-binary      >=1.8  && <3
-    , cardano-ledger-conway      >=1.21 && <3
-    , cardano-ledger-core        >=1.19 && <3
-    , cardano-ledger-mary        >=1.10 && <3
-    , cardano-node-clients       >=0.1  && <0.3
-    , cardano-rdf
-    , cardano-rdf:n2c-resolver
-    , cardano-slotting           >=0.2  && <0.4
-    , cardano-strict-containers  >=0.1  && <0.3
-    , containers                 >=0.7  && <0.8
-    , filepath                   >=1.5  && <1.6
-    , github-release-check       >=0.1  && <0.3
-    , hspec                      >=2.11 && <2.12
-    , microlens                  >=0.4  && <0.5
-    , plutus-core                >=1.60 && <3
-    , text                       >=2.1  && <2.2
 
 source-repository head
   type:     git

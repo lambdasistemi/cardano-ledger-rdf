@@ -57,17 +57,12 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - tx-diff: tx-diff.md
-  - tx-inspect: tx-inspect.md
-  - rewriting-rules grammar: rewriting-rules.md
-  - tx-sign: tx-sign.md
-  - tx-validate: tx-validate.md
+  - rules.yaml: rewriting-rules.md
   - tx-graph: tx-graph.md
   - tx-fetch: tx-fetch.md
   - tx-view: tx-view.md
   - tx-lattice: tx-lattice.md
   - "May 2026 lattice demo": may-2026-amaru-lattice.md
-  - cardano-tx-generator: cardano-tx-generator.md
   - "Prior art": prior-art.md
   - Operations:
       - "Repository secrets": operations/secrets.md

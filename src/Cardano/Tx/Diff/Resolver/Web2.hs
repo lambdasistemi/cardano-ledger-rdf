@@ -2,7 +2,7 @@
 
 {- |
 Module      : Cardano.Tx.Diff.Resolver.Web2
-Description : tx-diff resolver backed by a Blockfrost-style web2 endpoint
+Description : Blockfrost-style CBOR resolver
 License     : Apache-2.0
 
 A 'Resolver' that fetches each distinct referenced transaction's CBOR
@@ -84,7 +84,7 @@ type Web2FetchTx =
 data Web2Config = Web2Config
     { web2ResolverName :: Text
     -- ^ Diagnostic name; defaults to @"web2"@ for callers that do not
-    -- have a reason to override.
+    --     have a reason to override.
     , web2Fetch :: Web2FetchTx
     }
 
@@ -137,7 +137,7 @@ decodeFetched bytes =
     first (Web2FetchDecodeError . Text.pack . show) $
         decodeFullAnnotatorFromHexText
             (natVersion @11)
-            "tx-diff web2 resolved transaction"
+            "web2 resolved transaction"
             (decCBOR :: forall s. Decoder s (Annotator ConwayTx))
             (Text.decodeUtf8 (hexEncode bytes))
 

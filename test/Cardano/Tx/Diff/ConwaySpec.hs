@@ -278,8 +278,7 @@ spec =
                                 ( DiffNode
                                     (DiffPath ["body", "outputs"])
                                     ( DiffArray
-                                        ( indexedOutputSummaries otherOutputs
-                                        )
+                                        (indexedOutputSummaries otherOutputs)
                                         [
                                             ( 0
                                             , DiffNode
@@ -544,8 +543,7 @@ spec =
                                 ( DiffNode
                                     (DiffPath ["body", "outputs"])
                                     ( DiffArray
-                                        ( indexedOutputSummaries otherOutputs
-                                        )
+                                        (indexedOutputSummaries otherOutputs)
                                         [
                                             ( 0
                                             , DiffNode
@@ -616,8 +614,7 @@ spec =
                                 ( DiffNode
                                     (DiffPath ["body", "outputs"])
                                     ( DiffArray
-                                        ( indexedOutputSummaries otherOutputs
-                                        )
+                                        (indexedOutputSummaries otherOutputs)
                                         [
                                             ( 0
                                             , DiffNode
@@ -1610,7 +1607,7 @@ loadFixture hash = do
     hex <- loadFixtureHex hash
     case decodeFullAnnotatorFromHexText
         (natVersion @11)
-        "tx-diff fixture"
+        "transaction projection fixture"
         (decCBOR :: forall s. Decoder s (Annotator ConwayTx))
         hex of
         Right tx ->

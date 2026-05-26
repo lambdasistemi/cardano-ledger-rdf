@@ -3,10 +3,9 @@ Module      : Main
 Description : tx-view executable — packaged-view dispatcher over canonical Turtle graphs.
 License     : Apache-2.0
 
-Companion executable to @tx-graph@ / @tx-diff@ / @tx-inspect@ /
-@tx-sign@ / @tx-validate@. Loads a canonical Turtle graph file and
-projects it through a named packaged view, writing the rendered byte
-stream to stdout or to a file.
+Companion executable to @tx-graph@. Loads a canonical Turtle graph
+file and projects it through a named packaged view, writing the
+rendered byte stream to stdout or to a file.
 
 CLI surface (#51, locked by spec FR-002):
 

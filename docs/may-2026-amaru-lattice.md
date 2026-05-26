@@ -520,13 +520,11 @@ side once gap #4 lands.
 cause was that
 `Cardano.Tx.Graph.Emit.Witness.resolveRedeemerPurposeHash` for
 `ConwaySpending` derives the spending script hash by reading the
-consumed input's `TxOut` from a `ResolvedUTxO` map; the lattice
-ran `tx-graph` without `--utxo` (the JSON decoder was a
-syntax-only stub) and without `--n2c-socket-path` (no live
-node), so the map was empty and dispatch silently fell back to
-`NoBlueprintRegistered`.
+consumed input's `TxOut` from a `ResolvedUTxO` map. The earlier
+lattice path never populated that map, so dispatch silently fell back
+to `NoBlueprintRegistered`.
 
-The fix introduces **a lattice-aware in-memory resolver**:
+The fix introduced **a lattice-aware in-memory resolver**:
 
 * `tx-graph --in-dir DIR` indexes every CBOR in DIR by its
   computed `TxId` (`hashAnnotated . bodyTxL`) and resolves each

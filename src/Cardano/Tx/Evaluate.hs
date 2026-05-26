@@ -14,9 +14,8 @@ This is the standard workflow for submitting
 transactions with Plutus scripts:
 
 1. Build a tx with 'placeholderExUnits'
-2. Call 'evaluateAndBalance', passing an evaluator
-   function (typically @evaluateTx provider@ from
-   cardano-node-clients's 'Provider')
+2. Call 'evaluateAndBalance', passing an evaluator function from the
+   caller's node or ledger client.
 3. Sign and submit
 
 @
@@ -79,9 +78,8 @@ import Cardano.Tx.Balance (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-{- | Per-script evaluation result, matching the shape returned by
-'Cardano.Node.Client.Provider.evaluateTx' (and any equivalent evaluator).
-Kept here so this module does not import from cardano-node-clients.
+{- | Per-script evaluation result, matching the shape returned by a
+node-client evaluator.
 -}
 type EvaluateTxResult era =
     Map
@@ -97,8 +95,8 @@ The workflow:
 1. Merge all input 'TxIn's into the body so the
    evaluator sees the complete input set (spending
    indices must match the redeemers).
-2. Call 'evaluateTx' via the 'Provider' to get
-   actual 'ExUnits' for each redeemer.
+2. Call the supplied evaluator to get actual 'ExUnits' for each
+   redeemer.
 3. Patch each redeemer's 'ExUnits' from the
    evaluation result.
 4. Recompute 'scriptIntegrityHash' with the patched
@@ -112,10 +110,8 @@ Throws an error if script evaluation fails or
 balancing fails (insufficient funds).
 -}
 evaluateAndBalance ::
-    -- | Evaluator for one transaction, typically
-    --     @'Cardano.Node.Client.Provider.evaluateTx' provider@. Passed
-    --     in as a plain function so this module stays decoupled from
-    --     cardano-node-clients.
+    -- | Evaluator for one transaction. Passed in as a plain function
+    --     so this module stays decoupled from node-client packages.
     (ConwayTx -> IO (EvaluateTxResult ConwayEra)) ->
     PParams ConwayEra ->
     -- | All input UTxOs (fee-paying and script).

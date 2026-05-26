@@ -60,12 +60,12 @@ overlay).
 
 ## Hash verification
 
-Every fetched CBOR is parsed via the same polymorphic decoder
-[`tx-graph`](tx-graph.md) and [`tx-diff`](tx-diff.md) use, its `TxId`
-is recomputed as `hashAnnotated . bodyTxL`, and the result is rejected
-with exit code 1 if the computed id does not match the id used in the
-request. Chain-source forgery or on-disk corruption surfaces
-immediately instead of polluting the lattice.
+Every fetched CBOR is parsed via the same Conway decoder that
+[`tx-graph`](tx-graph.md) uses, its `TxId` is recomputed as
+`hashAnnotated . bodyTxL`, and the result is rejected with exit code 1
+if the computed id does not match the id used in the request.
+Chain-source forgery or on-disk corruption surfaces immediately instead
+of polluting the lattice.
 
 ## Resumability
 

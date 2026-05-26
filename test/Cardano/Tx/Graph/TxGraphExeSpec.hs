@@ -8,8 +8,7 @@ the post-#114 dispatcher modes:
 
 * overlay-only (@--rules@ alone) — the existing #48 contract.
 * body-only (single positional @CBOR@) — single-input invocation
-  emits one Turtle graph to stdout (back-compat with the pre-#114
-  @--tx FOO@ flow; semantics are byte-equivalent).
+  emits one Turtle graph to stdout.
 * joint (@--rules@ + positional @CBOR@) — overlay merged into the
   body graph.
 * @--in-dir@ multi-input mode — one @\<txid-hex\>.ttl@ per input

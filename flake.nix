@@ -1,6 +1,6 @@
 {
-  description =
-    "Cardano transaction tooling (builder, structural diff, blueprint)";
+  description = "Cardano transaction RDF graph tooling";
+
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
@@ -11,6 +11,7 @@
       "paolino.cachix.org-1:ecmgO3CXdgSWA2cHlm4srknd/cLFMLmK3i3NrzeDFaE="
     ];
   };
+
   inputs = {
     haskellNix = {
       url =
@@ -41,28 +42,13 @@
       flake = false;
     };
     mkdocs.url = "github:paolino/dev-assets?dir=mkdocs";
-    cardano-node = {
-      url = "github:IntersectMBO/cardano-node/10.7.0";
-    };
-    cardano-node-clients = {
-      url =
-        "github:lambdasistemi/cardano-node-clients/ca86f11d27b34e37d3814e4d3c3d66e256400403";
-      flake = false;
-    };
   };
 
-  outputs = inputs@{ self, nixpkgs, lintNixpkgs, flake-parts, haskellNix
-    , hackageNix, iohkNix, CHaP, mkdocs, cardano-node, cardano-node-clients
-    , ... }:
-    let
-      imageTag =
-        self.shortRev or (self.dirtyShortRev or "dirty");
-    in
+  outputs =
+    inputs@{ self, nixpkgs, lintNixpkgs, flake-parts, haskellNix, iohkNix
+    , CHaP, mkdocs, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" "aarch64-darwin" ];
-      flake = {
-        inherit imageTag;
-      };
       perSystem = { system, ... }:
         let
           pkgs = import nixpkgs {
@@ -84,8 +70,6 @@
             packages.cardano-crypto-class.components.library.pkgconfig =
               lib.mkForce
                 [ [ pkgs.libsodium-vrf pkgs.secp256k1 pkgs.libblst ] ];
-            packages.cardano-lmdb.components.library.pkgconfig =
-              lib.mkForce [ [ pkgs.lmdb ] ];
             packages.cardano-ledger-binary.components.library.doHaddock =
               lib.mkForce false;
             packages.plutus-core.components.library.doHaddock =
@@ -94,9 +78,6 @@
               lib.mkForce false;
             packages.plutus-tx.components.library.doHaddock =
               lib.mkForce false;
-          } // lib.optionalAttrs (system == "x86_64-linux") {
-            packages.blockio-uring.components.library.pkgconfig =
-              lib.mkForce [ [ pkgs.liburing ] ];
           };
           project = pkgs.haskell-nix.cabalProject' {
             name = "cardano-rdf";
@@ -132,65 +113,6 @@
             };
           };
           components = project.hsPkgs.cardano-rdf.components;
-          # tx-diff's web2 resolver uses http-client-tls and needs a CA
-          # bundle at runtime. Wrap the raw executable so SSL_CERT_FILE
-          # defaults to the bundled cacert; users can still override.
-          # AppImage / DEB / RPM bundlers carry the wrapper's full nix
-          # closure (including nss-cacert), so HTTPS works post-install.
-          txDiff = pkgs.symlinkJoin {
-            name = "tx-diff";
-            paths = [ components.exes.tx-diff ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              wrapProgram $out/bin/tx-diff \
-                --set-default SSL_CERT_FILE \
-                  ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-            '';
-          };
-          # tx-validate is N2C-only in v1 but the CA-bundle wrapper is
-          # kept for forward-compat with the future Blockfrost path
-          # (lambdasistemi/cardano-rdf#21). HTTPS works
-          # out-of-the-box if a future invocation needs it.
-          txValidate = pkgs.symlinkJoin {
-            name = "tx-validate";
-            paths = [ components.exes.tx-validate ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              wrapProgram $out/bin/tx-validate \
-                --set-default SSL_CERT_FILE \
-                  ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-            '';
-          };
-          # tx-fetch hits Blockfrost over HTTPS for every CBOR fetch,
-          # so the AppImage / DEB / RPM closures must carry a CA bundle.
-          # Same wrapper shape as txDiff.
-          txFetch = pkgs.symlinkJoin {
-            name = "tx-fetch";
-            paths = [ components.exes.tx-fetch ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              wrapProgram $out/bin/tx-fetch \
-                --set-default SSL_CERT_FILE \
-                  ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-            '';
-          };
-          # tx-inspect performs HTTPS via github-release-check's
-          # withCli banner on every run (unless TX_INSPECT_NO_UPDATE_CHECK
-          # is set). Per the constitution Operational Constraint, the
-          # AppImage / DEB / RPM closures must carry a CA bundle so the
-          # banner doesn't crash on a fresh user host. Future
-          # --resolve-web2 work for tx-inspect (parallel to tx-diff)
-          # would benefit from the same wrapper.
-          txInspect = pkgs.symlinkJoin {
-            name = "tx-inspect";
-            paths = [ components.exes.tx-inspect ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              wrapProgram $out/bin/tx-inspect \
-                --set-default SSL_CERT_FILE \
-                  ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-            '';
-          };
           packageVersion =
             let
               versionLines =
@@ -206,70 +128,19 @@
           sourceRevision =
             self.shortRev or (self.dirtyShortRev or "dirty");
           devArtifactVersion = "${packageVersion}-${sourceRevision}";
-          mkDarwinHomebrewBundle =
-            inputs.dev-assets.lib.mkDarwinHomebrewBundle { inherit pkgs; };
-          # Single source of truth for every release-shipped exe.
-          # Adding a new exe is one row here; the Linux + Darwin
-          # outputs and both workflow matrices read from this list.
+          txFetch = pkgs.symlinkJoin {
+            name = "tx-fetch";
+            paths = [ components.exes.tx-fetch ];
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+            postBuild = ''
+              wrapProgram $out/bin/tx-fetch \
+                --set-default SSL_CERT_FILE \
+                  ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+            '';
+            meta.mainProgram = "tx-fetch";
+          };
           exeSpecs = [
             {
-              name = "tx-diff";
-              package = txDiff;
-              darwinPackage = components.exes.tx-diff;
-              desc =
-                "Compare Conway transactions with blueprint-aware data diffs";
-              formulaClass = "TxDiff";
-              formulaTest = ''
-                output = shell_output("#{bin}/tx-diff 2>&1", 1)
-                assert_match "Usage:", output
-              '';
-              usageGreps = [ "Usage:" "[--blueprint FILE ...]" ];
-            }
-            {
-              name = "tx-validate";
-              package = txValidate;
-              darwinPackage = components.exes.tx-validate;
-              desc =
-                "Conway Phase-1 pre-flight against a local cardano-node";
-              formulaClass = "TxValidate";
-              formulaTest = ''
-                output = shell_output("#{bin}/tx-validate 2>&1", 1)
-                assert_match "tx-validate", output
-              '';
-              usageGreps = [ "tx-validate" "--n2c-socket-path PATH" ];
-            }
-            {
-              name = "tx-inspect";
-              package = txInspect;
-              darwinPackage = components.exes.tx-inspect;
-              desc =
-                "Render Conway transactions as structured, human-readable reports";
-              formulaClass = "TxInspect";
-              formulaTest = ''
-                output = shell_output("#{bin}/tx-inspect 2>&1", 1)
-                assert_match "Usage:", output
-              '';
-              usageGreps = [ "Usage:" "[--rules FILE]" ];
-            }
-            {
-              name = "tx-sign";
-              package = components.exes.tx-sign;
-              desc =
-                "Encrypted signing-key vault and detached witness emitter for Cardano";
-              formulaClass = "TxSign";
-              formulaTest = ''
-                output = shell_output("#{bin}/tx-sign 2>&1", 1)
-                assert_match "Usage:", output
-              '';
-              usageGreps = [ "Usage:" "Create or use an encrypted Cardano" ];
-            }
-            {
-              # tx-graph does no HTTPS today (no github-release-check
-              # banner, no --resolve-web2-style remote calls), so it
-              # ships without the CA-bundle wrapper that txInspect /
-              # txDiff need. Uses components.exes.tx-graph directly.
-              # If tx-graph ever grows an HTTPS call, wrap it like
-              # txInspect / txValidate.
               name = "tx-graph";
               package = components.exes.tx-graph;
               desc =
@@ -301,10 +172,6 @@
               ];
             }
             {
-              # tx-view is the offline packaged-view runner. Like
-              # tx-graph it does no HTTPS today, so no CA-bundle
-              # wrapper is needed; if a future view ever calls out
-              # over the network, wrap it like txInspect.
               name = "tx-view";
               package = components.exes.tx-view;
               desc =
@@ -312,31 +179,15 @@
               formulaClass = "TxView";
               formulaTest = ''
                 output = shell_output("#{bin}/tx-view 2>&1", 1)
-                assert_match "packaged-view dispatcher", output
+                assert_match "canonical Turtle graph file", output
               '';
               usageGreps = [
                 "Usage:"
-                "packaged-view dispatcher"
+                "canonical Turtle graph file"
               ];
-            }
-            {
-              name = "cardano-tx-generator";
-              package = components.exes.cardano-tx-generator;
-              desc =
-                "Synthetic Cardano transaction load generator";
-              formulaClass = "CardanoTxGenerator";
-              formulaTest = ''
-                output = shell_output("#{bin}/cardano-tx-generator 2>&1", 1)
-                assert_match "--relay-socket PATH", output
-              '';
-              usageGreps = [ "Usage:" "--relay-socket PATH" ];
             }
           ];
           mkExeSmokeCommand = spec:
-            # `grep -F --` is required on macOS: BSD grep parses any
-            # argument starting with `--` as a long option, so without
-            # the `--` terminator patterns like `--n2c-socket-path PATH`
-            # or `--relay-socket PATH` trip the option parser.
             ''
               set +e
               ${spec.name} >/tmp/${spec.name}.out 2>&1
@@ -347,17 +198,9 @@
             + lib.concatMapStringsSep "\n"
               (g: "  grep -F -- ${lib.escapeShellArg g} /tmp/${spec.name}.out >/dev/null")
               spec.usageGreps;
-          # Resolve the Darwin-side package: prefer `darwinPackage` if the
-          # spec declares one, else fall back to `package`. The wrapped
-          # Linux variants (txDiff, txValidate, txInspect) bundle a
-          # cacert via `wrapProgram`, which leaves the wrapper script
-          # referencing a nix-store path not present in the Darwin
-          # tarball's closure on a consumer machine. macOS has system
-          # certs, so Darwin uses the raw `components.exes.<name>`
-          # output and skips the wrapper entirely.
+          mkDarwinHomebrewBundle =
+            inputs.dev-assets.lib.mkDarwinHomebrewBundle { inherit pkgs; };
           darwinPackageOf = spec: spec.darwinPackage or spec.package;
-          # Parametric Darwin Homebrew bundle. Drop-in replacement for
-          # the per-exe helpers; takes an exeSpec and override args.
           mkExeDarwinHomebrewBundle = spec: args:
             mkDarwinHomebrewBundle ({
               pname = spec.name;
@@ -378,10 +221,6 @@
               package = spec.package;
               bundlers = inputs.bundlers;
             } // extraArgs);
-          txDiffSpec =
-            lib.findFirst (s: s.name == "tx-diff")
-              (throw "exeSpecs is missing tx-diff")
-              exeSpecs;
           darwinReleasePackages = lib.optionalAttrs
             pkgs.stdenv.isDarwin
             (lib.listToAttrs
@@ -400,25 +239,7 @@
                     formulaVersion = devArtifactVersion;
                   };
                 }
-              ]) exeSpecs)
-            // {
-              # Backward-compat aliases. The unprefixed names were
-              # the tx-diff outputs before the Phase-6 refactor; keep
-              # them so any external CI referencing them continues to
-              # build until callers migrate to the prefixed form.
-              # Use the same releaseTag (`dev-homebrew`) the original
-              # dev-Homebrew workflow uses.
-              darwin-release-artifacts =
-                mkExeDarwinHomebrewBundle txDiffSpec { };
-              darwin-dev-homebrew-artifacts =
-                mkExeDarwinHomebrewBundle txDiffSpec {
-                  artifactVersion = devArtifactVersion;
-                  releaseTag = "dev-homebrew";
-                  formulaName = "tx-diff-dev";
-                  formulaClass = "TxDiffDev";
-                  formulaVersion = devArtifactVersion;
-                };
-            });
+              ]) exeSpecs));
           linuxReleasePackages = lib.optionalAttrs
             pkgs.stdenv.isLinux
             (lib.listToAttrs
@@ -435,68 +256,39 @@
                 }
               ]) exeSpecs)
             // {
-              # Backward-compat aliases (tx-diff was unprefixed
-              # pre-Phase-6); preserve so external callers don't
-              # break on rename.
-              linux-release-artifacts =
-                mkExeLinuxRelease txDiffSpec { };
-              linux-dev-release-artifacts =
-                mkExeLinuxRelease txDiffSpec {
-                  artifactVersion = devArtifactVersion;
-                };
               linux-artifact-smoke =
                 import ./nix/linux-artifact-smoke.nix {
                   inherit pkgs system;
                 };
             });
-          cardanoTxGeneratorImage =
-            import ./nix/docker-image.nix {
-              inherit pkgs components imageTag;
-            };
-          txValidateImage =
-            import ./nix/tx-validate-docker-image.nix {
-              inherit pkgs components imageTag;
-            };
           checkSuite = import ./nix/checks.nix {
             inherit pkgs components lintPkgs;
             src = ./.;
-            cardanoNode =
-              cardano-node.packages.${system}.cardano-node;
-            cardanoNodeClientsSrc = cardano-node-clients;
           };
           checkApps = import ./nix/apps.nix {
             inherit pkgs;
             inherit (checkSuite) scripts;
           };
+          unitWithTxView = pkgs.writeShellApplication {
+            name = "unit-with-tx-view";
+            runtimeInputs = [ checkSuite.scripts.unit ];
+            text = ''
+              export TX_VIEW_EXE=${components.exes.tx-view}/bin/tx-view
+              exec ${lib.getExe checkSuite.scripts.unit} "$@"
+            '';
+          };
         in {
           packages = {
-            default = txDiff;
-            tx-diff = txDiff;
-            tx-inspect = txInspect;
-            tx-sign = components.exes.tx-sign;
-            tx-validate = txValidate;
+            default = components.exes.tx-graph;
             tx-graph = components.exes.tx-graph;
             tx-fetch = txFetch;
             tx-view = components.exes.tx-view;
-            cardano-tx-generator =
-              components.exes.cardano-tx-generator;
-          } // darwinReleasePackages // linuxReleasePackages
-            // lib.optionalAttrs pkgs.stdenv.isLinux {
-              cardano-tx-generator-image = cardanoTxGeneratorImage;
-              tx-validate-image = txValidateImage;
-            };
-          # The cli-tree slice of #51 needs the tx-view binary on the
-          # unit check's PATH so Cardano.Tx.View.CliTreeGoldenSpec can
-          # spawn it. The nix-check sandbox has no cabal on PATH, so
-          # the check is replaced with a tx-view-aware wrapper. The
-          # base unit script (built by nix/checks.nix) still runs
-          # underneath; this wrapper just adds TX_VIEW_EXE to the
-          # environment first.
+          } // darwinReleasePackages // linuxReleasePackages;
           checks = checkSuite.checks // {
             unit = pkgs.runCommand "unit-check"
               {
                 nativeBuildInputs =
-                  pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux
+                  lib.optionals pkgs.stdenv.hostPlatform.isLinux
                     [ pkgs.glibcLocales ];
                 LANG = "C.UTF-8";
                 LC_ALL = "C.UTF-8";
@@ -504,42 +296,14 @@
                 set -euo pipefail
                 cd ${./.}
                 export TX_VIEW_EXE=${components.exes.tx-view}/bin/tx-view
-                ${pkgs.lib.getExe checkSuite.scripts.unit}
+                ${lib.getExe checkSuite.scripts.unit}
                 touch "$out"
               '';
           };
           apps = checkApps // {
-            # Override apps.unit so `nix run .#unit` (what CI calls)
-            # exports TX_VIEW_EXE before invoking the script — same
-            # treatment the checks.unit derivation above gets. Without
-            # this the unit-tests fail in CI on the four Cardano.Tx.View
-            # spec families that spawn tx-view as a subprocess.
             unit = {
               type = "app";
-              program = "${pkgs.writeShellApplication {
-                name = "unit-with-tx-view";
-                runtimeInputs = [ checkSuite.scripts.unit ];
-                text = ''
-                  export TX_VIEW_EXE=${components.exes.tx-view}/bin/tx-view
-                  exec ${pkgs.lib.getExe checkSuite.scripts.unit} "$@"
-                '';
-              }}/bin/unit-with-tx-view";
-            };
-            tx-diff = {
-              type = "app";
-              program = "${txDiff}/bin/tx-diff";
-            };
-            tx-sign = {
-              type = "app";
-              program = "${components.exes.tx-sign}/bin/tx-sign";
-            };
-            tx-validate = {
-              type = "app";
-              program = "${txValidate}/bin/tx-validate";
-            };
-            tx-inspect = {
-              type = "app";
-              program = "${txInspect}/bin/tx-inspect";
+              program = "${unitWithTxView}/bin/unit-with-tx-view";
             };
             tx-graph = {
               type = "app";
@@ -552,12 +316,6 @@
             tx-view = {
               type = "app";
               program = "${components.exes.tx-view}/bin/tx-view";
-            };
-            cardano-tx-generator = {
-              type = "app";
-              program = "${
-                  components.exes.cardano-tx-generator
-                }/bin/cardano-tx-generator";
             };
           } // lib.optionalAttrs pkgs.stdenv.isLinux {
             linux-artifact-smoke = {

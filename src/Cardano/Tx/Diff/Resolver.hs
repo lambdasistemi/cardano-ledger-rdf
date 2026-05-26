@@ -1,6 +1,6 @@
 {- |
 Module      : Cardano.Tx.Diff.Resolver
-Description : Pluggable input-resolver chain for tx-diff
+Description : Pluggable input-resolver chain for transaction graphs
 License     : Apache-2.0
 
 A 'Resolver' turns a set of 'TxIn's into a partial map of resolved Conway
@@ -9,10 +9,9 @@ seeing the inputs that the previous resolvers could not resolve, and
 returns the union of resolved entries plus the list of resolver names that
 failed to find each still-unresolved input.
 
-The diff core consumes only the resolved map via
-'Cardano.Tx.Diff.TxDiffOptions.txDiffResolvedInputs'. The CLI is
-responsible for invoking 'resolveChain' before computing the diff and for
-turning unresolved entries into stderr diagnostics.
+Consumers use the resolved map to enrich transaction projections with
+input-side outputs. CLI layers are responsible for invoking
+'resolveChain' and deciding how to report still-unresolved inputs.
 -}
 module Cardano.Tx.Diff.Resolver (
     Resolver (..),

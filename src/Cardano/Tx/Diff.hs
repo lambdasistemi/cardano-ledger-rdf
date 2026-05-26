@@ -4,9 +4,10 @@
 Module      : Cardano.Tx.Diff
 Description : Structural transaction diff primitives.
 
-This module contains the render-independent diff core used by the transaction
-diff feature. The central rule is equality first: paired values are compared
-before any child projection is requested.
+This module contains the Conway transaction projection substrate that
+the graph emitter and downstream transaction applications share. The
+central rule for diff rendering is equality first: paired values are
+compared before any child projection is requested.
 -}
 module Cardano.Tx.Diff (
     AddressMatch (..),
@@ -233,10 +234,10 @@ data TxDiffOptions = TxDiffOptions
     , txDiffDecodeData :: Maybe TxDiffDataDecoder
     , txDiffResolvedInputs :: Maybe (Map TxIn (TxOut ConwayEra))
     -- ^ When 'Nothing' (default), every 'TxIn' renders as today: an atomic
-    -- @{txId, index}@ leaf. When 'Just', resolution is treated as enabled;
-    -- each 'TxIn' renders as an object with a @txIn@ child and, only if
-    -- present in the map, a @resolved@ child reusing the body-output
-    -- projection.
+    --     @{txId, index}@ leaf. When 'Just', resolution is treated as enabled;
+    --     each 'TxIn' renders as an object with a @txIn@ child and, only if
+    --     present in the map, a @resolved@ child reusing the body-output
+    --     projection.
     }
 
 instance Show TxDiffOptions where
@@ -294,27 +295,25 @@ data HumanRenderOptions = HumanRenderOptions
     , humanCollapseRules :: Maybe CollapseRules
     , humanRenameRules :: Maybe RenameRules
     -- ^ Stage 2 rename rules to apply to leaf identifiers (payment
-    -- addresses, script hashes) before rendering. 'Nothing' (the
-    -- default) leaves every leaf verbatim. Wired by S3 of
-    -- @specs\/032-tx-inspect@; the S1 renderer reads the field but
-    -- does not apply it.
+    --     addresses, script hashes) before rendering. 'Nothing' (the
+    --     default) leaves every leaf verbatim.
     , humanHideEmpty :: Bool
     -- ^ When 'True', suppress the @datum@ leaf for
-    -- 'Cardano.Ledger.Api.Scripts.Data.NoDatum' and the
-    -- @referenceScript@ leaf for
-    -- 'Cardano.Ledger.BaseTypes.SNothing' at every body-output site.
-    -- Default 'False' — the diff renderer keeps showing empty
-    -- markers so a diff can surface "datum disappeared".
-    -- @tx-inspect@ flips this to 'True' so single-tx renders are
-    -- not visually swamped by @cbor: (0 bytes)@ and @null@ leaves.
+    --     'Cardano.Ledger.Api.Scripts.Data.NoDatum' and the
+    --     @referenceScript@ leaf for
+    --     'Cardano.Ledger.BaseTypes.SNothing' at every body-output site.
+    --     Default 'False' — the diff renderer keeps showing empty
+    --     markers so a diff can surface "datum disappeared".
+    --     Single-transaction renderers can set this to 'True' so their
+    --     output is not visually swamped by @cbor: (0 bytes)@ and @null@
+    --     leaves.
     , humanLeafLinker :: Maybe LeafLinker
     -- ^ Optional render-time URL emitter (issue #88). When 'Just',
-    -- the trie walker consults it at every atomic-leaf insertion
-    -- site (both the renamed-leaf branch and the verbatim-leaf
-    -- branch) and appends @ [url]@ to the node label on a 'Just'
-    -- result. Default 'Nothing' — the renderer is byte-stable
-    -- against pre-#88 output when the field is left unset. Wired
-    -- by @tx-inspect@'s @--links=cardanoscan@ flag.
+    --     the trie walker consults it at every atomic-leaf insertion
+    --     site (both the renamed-leaf branch and the verbatim-leaf
+    --     branch) and appends @ [url]@ to the node label on a 'Just'
+    --     result. Default 'Nothing' — the renderer is byte-stable
+    --     against pre-#88 output when the field is left unset.
     }
 
 -- 'humanLeafLinker' carries a function, so 'HumanRenderOptions' no
@@ -385,23 +384,20 @@ newtype CollapseRuleMatch = CollapseRuleMatch [DiffPath]
 newtype CollapseViews = CollapseViews CollapseRawView
 
 {- | Top-level rewriting wrapper carrying both stages of the
-@tx-inspect@ pipeline.
+human-render pipeline.
 
-The on-disk YAML grammar that maps to this type is documented in
-@specs\/032-tx-inspect\/contracts\/rules-yaml-grammar.md@; the parser
-('Cardano.Tx.Rewrite.parseRewriteRulesYaml') and the FromJSON
-instances for the rename half live in 'Cardano.Tx.Rewrite' to keep the
-new module addressable independently of the diff core. The types live
-here so 'HumanRenderOptions' can refer to them without an import cycle.
+The parser and the 'FromJSON' instances live in this module so
+'HumanRenderOptions' can refer to the rewriting types without an import
+cycle.
 
 Stage order is engine-enforced (collapse first, rename second) and is
 independent of the document's key order.
 -}
 data RewriteRules = RewriteRules
     { rewriteCollapse :: CollapseRules
-    -- ^ Stage 1 rules — reuses 'CollapseRules' unchanged.
+    -- ^ Stage 1 rules - reuses 'CollapseRules' unchanged.
     , rewriteRename :: RenameRules
-    -- ^ Stage 2 rules — payment-address and script-hash substitutions.
+    -- ^ Stage 2 rules - payment-address and script-hash substitutions.
     }
     deriving stock (Eq, Show)
 
@@ -440,11 +436,11 @@ data RenameRule
     = RenameAddress
         { renameAddressKey :: Text
         -- ^ The bech32 string as it appeared in the YAML, preserved
-        -- verbatim for round-trip + error messages.
+        --         verbatim for round-trip + error messages.
         , renameAddressMatch :: AddressMatch
         , renameAddressTarget :: AddressTarget
         -- ^ Pre-computed lookup key set by the YAML loader so the apply
-        -- path is a constant-time lookup per site.
+        --         path is a constant-time lookup per site.
         , renameName :: Text
         }
     | RenameScript
@@ -485,8 +481,7 @@ parseCollapseRulesYaml input =
 
 {- | Parse a unified rewriting-rules YAML document.
 
-The accepted grammar is documented in
-@specs\/032-tx-inspect\/contracts\/rules-yaml-grammar.md@. Briefly:
+The accepted grammar is:
 
 @
 version: 1                          # optional, defaults to 1
@@ -501,11 +496,9 @@ rename:                             # optional, defaults to []
 Backwards-compatible: every YAML document that 'parseCollapseRulesYaml'
 accepts today parses to a 'RewriteRules' whose 'rewriteCollapse' equals
 the legacy parser's result and whose 'rewriteRename' is
-'emptyRenameRules'. The user-facing API for this parser is
-'Cardano.Tx.Rewrite.parseRewriteRulesYaml', which re-exports this
-binding; defining it here keeps the rewriting-rules 'FromJSON'
-instances co-located with their types and avoids the orphan-instance
-warning.
+'emptyRenameRules'. Defining it here keeps the rewriting-rules
+'FromJSON' instances co-located with their types and avoids the
+orphan-instance warning.
 
 Returns @Left@ on YAML decode failure, an unsupported @version:@, a
 malformed rename entry (unknown @kind:@, invalid @match:@, invalid
@@ -1003,8 +996,8 @@ renderDiffNodeHumanWith options diff =
             renderDiffNodeTree options diff
 
 {- | Render a single Conway transaction as a human-readable structural
-tree. This is the @tx-inspect@ entry point: it walks the same
-'conwayDiffProjection' the diff renderer walks and feeds the resulting
+tree. It walks the same 'conwayDiffProjection' the diff renderer walks
+and feeds the resulting
 leaves through the same 'renderJsonValue' / 'renderForest' primitives,
 so a single transaction renders identically here and on one side of
 'renderDiffNodeHumanWith' against itself.
@@ -1028,13 +1021,11 @@ The 'humanRenameRules' field, when 'Just', substitutes every
 payment-address ('ConwayAddressValue') and script leaf
 ('ConwayScriptValue', 'ConwayReferenceScriptValue') in the projection
 that matches a rule under the rule's @name:@ string. Substitution is
-best-effort: an unknown identifier renders verbatim. The site list is
-defined by FR-009 of @specs\/032-tx-inspect@: payment addresses in
-body inputs (after resolution), body outputs, and the leaves of the
-witness / reference-script projections. Rename does NOT descend into
-datum subtrees ('ConwayDatumValue' / 'ConwayDataValue' /
-'ConwayOpenValue') in this slice — those follow-ups are tracked in
-follow-up tickets per the spec's site-list note.
+best-effort: an unknown identifier renders verbatim. Rename applies to
+payment addresses in body inputs (after resolution), body outputs, and
+the leaves of the witness / reference-script projections. Rename does
+NOT descend into datum subtrees ('ConwayDatumValue' /
+'ConwayDataValue' / 'ConwayOpenValue') in this slice.
 
 For the 'RenderPaths' shape collapse and rename are both ignored; the
 path-shape output is a flat verbatim listing.

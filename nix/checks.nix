@@ -1,5 +1,4 @@
-{ pkgs, src, components, lintPkgs ? pkgs
-, cardanoNode ? null, cardanoNodeClientsSrc ? null }:
+{ pkgs, src, components, lintPkgs ? pkgs }:
 let
   lib = pkgs.lib;
 
@@ -45,16 +44,10 @@ let
       name = "build";
       text = ''
         test -e ${components.library}
-        test -e ${components.sublibs."n2c-resolver"}
-        test -e ${components.sublibs."tx-generator-lib"}
-        test -e ${components.exes.tx-diff}
         test -e ${components.exes.tx-fetch}
         test -e ${components.exes.tx-graph}
-        test -e ${components.exes."cardano-tx-generator"}
+        test -e ${components.exes.tx-view}
         test -e ${components.tests."unit-tests"}
-        test -e ${components.tests."tx-generator-tests"}
-        test -e ${components.tests."tx-validate-tests"}
-        test -e ${components.tests."e2e-tests"}
         echo "build outputs realized"
       '';
     };
@@ -71,36 +64,6 @@ let
       text = ''
         export TX_GRAPH_EXE=${components.exes.tx-graph}/bin/tx-graph
         unit-tests
-      '';
-    };
-
-    tx-generator-unit = {
-      name = "tx-generator-unit";
-      runtimeInputs =
-        [ components.tests."tx-generator-tests" ];
-      text = ''
-        tx-generator-tests
-      '';
-    };
-
-    tx-validate-unit = {
-      name = "tx-validate-unit";
-      runtimeInputs =
-        [ components.tests."tx-validate-tests" ];
-      text = ''
-        tx-validate-tests
-      '';
-    };
-
-    e2e = {
-      name = "e2e";
-      runtimeInputs = [
-        cardanoNode
-        components.tests."e2e-tests"
-      ];
-      text = ''
-        export E2E_GENESIS_DIR=${cardanoNodeClientsSrc}/e2e-test/genesis
-        e2e-tests
       '';
     };
 

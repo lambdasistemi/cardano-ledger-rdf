@@ -15,7 +15,9 @@ unit match="":
     #!/usr/bin/env bash
     set -euo pipefail
     cabal build exe:tx-graph -O0 >/dev/null
+    cabal build exe:tx-view -O0 >/dev/null
     export TX_GRAPH_EXE="$(cabal list-bin exe:tx-graph -O0)"
+    export TX_VIEW_EXE="$(cabal list-bin exe:tx-view -O0)"
     if [[ '{{ match }}' == "" ]]; then
         cabal test cardano-rdf:unit-tests -O0 --test-show-details=direct
     else
@@ -25,30 +27,23 @@ unit match="":
             --test-option="{{ match }}"
     fi
 
-smoke-sign:
+smoke-graph:
     #!/usr/bin/env bash
     set -euo pipefail
-    cabal build exe:tx-sign -O0 >/dev/null
-    TX_SIGN_EXE="$(cabal list-bin exe:tx-sign -O0)" scripts/smoke/tx-sign
+    cabal build exe:tx-graph -O0 >/dev/null
+    "$(cabal list-bin exe:tx-graph -O0)" --help >/dev/null
 
-smoke-inspect:
+smoke-view:
     #!/usr/bin/env bash
     set -euo pipefail
-    cabal build exe:tx-inspect -O0 >/dev/null
-    TX_INSPECT_EXE="$(cabal list-bin exe:tx-inspect -O0)" scripts/smoke/tx-inspect
-
-smoke-diff:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    cabal build cardano-rdf:exe:tx-diff -O0 >/dev/null
-    TX_DIFF_EXE="$(cabal list-bin cardano-rdf:exe:tx-diff -O0)" scripts/smoke/tx-diff
+    cabal build exe:tx-view -O0 >/dev/null
+    "$(cabal list-bin exe:tx-view -O0)" --help >/dev/null
 
 ci:
     just build
     just unit
-    just smoke-sign
-    just smoke-inspect
-    just smoke-diff
+    just smoke-graph
+    just smoke-view
     cabal-fmt -c cardano-rdf.cabal
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec fourmolu -m check {} +
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec hlint {} +

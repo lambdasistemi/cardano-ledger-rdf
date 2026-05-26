@@ -52,26 +52,6 @@ jobs:
       fail-fast: false
       matrix:
         executable:
-          - name: tx-diff
-            release-output: tx-diff-linux-release-artifacts
-            dev-output: tx-diff-linux-dev-release-artifacts
-            usage-grep: "[--blueprint FILE ...]"
-            dev-tag: dev-linux-tx-diff
-          - name: tx-validate
-            release-output: tx-validate-linux-release-artifacts
-            dev-output: tx-validate-linux-dev-release-artifacts
-            usage-grep: "--n2c-socket-path PATH"
-            dev-tag: dev-linux-tx-validate
-          - name: tx-inspect
-            release-output: tx-inspect-linux-release-artifacts
-            dev-output: tx-inspect-linux-dev-release-artifacts
-            usage-grep: "[--rules FILE]"
-            dev-tag: dev-linux-tx-inspect
-          - name: tx-sign
-            release-output: tx-sign-linux-release-artifacts
-            dev-output: tx-sign-linux-dev-release-artifacts
-            usage-grep: "Create or use an encrypted Cardano"
-            dev-tag: dev-linux-tx-sign
           - name: tx-graph
             release-output: tx-graph-linux-release-artifacts
             dev-output: tx-graph-linux-dev-release-artifacts
@@ -82,11 +62,11 @@ jobs:
             dev-output: tx-fetch-linux-dev-release-artifacts
             usage-grep: "closure-walking Conway CBOR fetcher"
             dev-tag: dev-linux-tx-fetch
-          - name: cardano-tx-generator
-            release-output: cardano-tx-generator-linux-release-artifacts
-            dev-output: cardano-tx-generator-linux-dev-release-artifacts
-            usage-grep: "--relay-socket PATH"
-            dev-tag: dev-linux-cardano-tx-generator
+          - name: tx-view
+            release-output: tx-view-linux-release-artifacts
+            dev-output: tx-view-linux-dev-release-artifacts
+            usage-grep: "canonical Turtle graph file"
+            dev-tag: dev-linux-tx-view
     steps:
       - uses: actions/checkout@v6
         with:

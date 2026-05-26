@@ -497,7 +497,7 @@ swapOrderTxOut sh =
 
 {- | Build a deterministic 28-byte 'ScriptHash' from a small integer
 seed — mirrors the @mkScriptHash@ helper in
-'Cardano.Tx.Rewrite.ApplySpec' so the two suites read consistently.
+the graph golden suites so the examples read consistently.
 -}
 mkScriptHash :: Int -> ScriptHash
 mkScriptHash n =

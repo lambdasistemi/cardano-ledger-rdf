@@ -88,7 +88,7 @@ Honest one-liners:
 - [tx-lattice](tx-lattice.md) — the recursive parent-CBOR
   closure builder + its [known limitations](tx-lattice.md#known-limitations).
 - [tx-view](tx-view.md) — the packaged-view library.
-- [rewriting-rules grammar](rewriting-rules.md) — the
+- [rules.yaml](rewriting-rules.md) — the
   operator-entity overlay format.
 - [May 2026 lattice demo](may-2026-amaru-lattice.md) — eleven
   SPARQL queries against a 30-tx mainnet closure.

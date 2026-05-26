@@ -24,7 +24,7 @@ This slice (S2) ships the minimum reviewable surface:
   consume; @assertShape@ counts body fields and does not inspect leaf
   contents,
 * 'assertShape', the structural-shape contract that the active Hspec item
-  in @Cardano.Tx.Rewrite.RewriteRedesignGoldenSpec@ exercises per fixture
+  in the graph golden suites exercises per fixture
   — see @specs/033-rewrite-redesign-harness/contracts/goldens-suite.md@,
   section /Active item/.
 
@@ -190,7 +190,7 @@ data FixturePaths = FixturePaths
     -- ^ Story id; also the leaf directory name.
     , fpDirectory :: FilePath
     -- ^ Fixture directory, e.g.
-    -- @test\/fixtures\/rewrite-redesign\/02-alice-bob-ada@.
+    --     @test\/fixtures\/rewrite-redesign\/02-alice-bob-ada@.
     , fpRulesYaml :: FilePath
     -- ^ @<dir>\/rules.yaml@.
     , fpExpectedTxt :: FilePath
@@ -199,7 +199,7 @@ data FixturePaths = FixturePaths
     -- ^ @<dir>\/expected.ttl@ (may be absent pre-B-side; see contract).
     , fpBlueprint :: Maybe FilePath
     -- ^ @blueprints\/<file>@ if the fixture references one, else
-    -- 'Nothing'.
+    --     'Nothing'.
     }
     deriving stock (Show)
 
