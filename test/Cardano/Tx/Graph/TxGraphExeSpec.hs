@@ -31,7 +31,7 @@ fixture is needed.
 -}
 module Cardano.Tx.Graph.TxGraphExeSpec (spec) where
 
-import Control.Monad (unless)
+import Control.Monad (unless, when)
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BS8
@@ -40,7 +40,7 @@ import Data.List (isInfixOf, isSuffixOf)
 import System.Directory (createDirectoryIfMissing, listDirectory)
 import System.Environment (lookupEnv)
 import System.Exit (ExitCode (..))
-import System.FilePath ((</>))
+import System.FilePath (takeBaseName, (</>))
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempDirectory)
 import System.Process (
@@ -66,6 +66,7 @@ import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Core (eraProtVerLow)
 
 import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
 import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
 
 ----------------------------------------------------------------------
@@ -252,8 +253,8 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                     BS8.unpack err `shouldSatisfy` (needle `isInfixOf`)
 
             it
-                ( "(9) --in-dir mode — exit 0, writes one"
-                    <> " <txid-hex>.ttl per input cbor into --out-dir"
+                ( "(9) --in-dir + --out-dir mode — exit 0, writes one"
+                    <> " SPARQL-composable <txid-hex>.ttl per input cbor"
                 )
                 $ withSystemTempDirectory "tx-graph-in-dir"
                 $ \tmp -> do
@@ -269,6 +270,51 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                     ttls <- listDirectory outDir
                     let ttlNames = filter (".ttl" `isSuffixOf`) ttls
                     length ttlNames `shouldBe` 1
+                    case ttlNames of
+                        [ttlName] -> do
+                            let txTag = take 8 (takeBaseName ttlName)
+                            ttlBytes <- BS.readFile (outDir </> ttlName)
+                            BS8.unpack ttlBytes
+                                `shouldSatisfy` ( ( "_:"
+                                                        <> txTag
+                                                        <> "_tx"
+                                                  )
+                                                    `isInfixOf`
+                                                )
+                            BS8.unpack ttlBytes
+                                `shouldSatisfy` not . ("_:tx " `isInfixOf`)
+                        _ ->
+                            expectationFailure "expected exactly one TTL file"
+
+            it
+                ( "(10) --in-dir + --out mode — exit 0, writes one"
+                    <> " merged Turtle lattice with tx-scoped bnodes"
+                )
+                $ withSystemTempDirectory "tx-graph-in-dir-out"
+                $ \tmp -> do
+                    let fixtureDir =
+                            "test/fixtures/tx-graph"
+                                </> "16-lattice-merged"
+                        cborDir = fixtureDir </> "cbor"
+                        outPath = tmp </> "lattice.ttl"
+                        expectedPath = fixtureDir </> "expected.lattice.ttl"
+                    regen <- lookupEnv "TX_GRAPH_LATTICE_GOLDEN_REGEN"
+                    when (regen == Just "1") $ do
+                        createDirectoryIfMissing True cborDir
+                        BS.writeFile (cborDir </> "s02.cbor") s02CborBytes
+                        BS.writeFile (cborDir </> "s03.cbor") s03CborBytes
+                    (code, out, _err) <-
+                        runExe
+                            txGraphPath
+                            ["--in-dir", cborDir, "--out", outPath]
+                    code `shouldBe` ExitSuccess
+                    out `shouldBe` BS.empty
+                    actual <- BS.readFile outPath
+                    if regen == Just "1"
+                        then BS.writeFile expectedPath actual
+                        else do
+                            expected <- BS.readFile expectedPath
+                            actual `shouldBe` expected
 
 ----------------------------------------------------------------------
 -- Tx fixture bytes
@@ -282,6 +328,13 @@ can read them via a positional argument without a new on-disk fixture.
 s02CborBytes :: ByteString
 s02CborBytes =
     BSL.toStrict (serialize (eraProtVerLow @ConwayEra) S02.tx)
+
+{- | Serialized ConwayEra CBOR of fixture 03. Used with fixture 02
+to exercise lattice merge renaming across two independent tx graphs.
+-}
+s03CborBytes :: ByteString
+s03CborBytes =
+    BSL.toStrict (serialize (eraProtVerLow @ConwayEra) S03.tx)
 
 {- | Serialized ConwayEra CBOR of the fixture-14 @S14.tx@ builder
 (T105 / S5). Same datum body as fixtures 12 + 13; the behaviour
