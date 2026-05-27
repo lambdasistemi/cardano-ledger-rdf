@@ -1,7 +1,7 @@
-site_name: cardano-rdf
-site_url: !ENV [MKDOCS_SITE_URL, "https://lambdasistemi.github.io/cardano-rdf/"]
-repo_url: https://github.com/lambdasistemi/cardano-rdf
-repo_name: lambdasistemi/cardano-rdf
+site_name: cardano-ledger-rdf
+site_url: !ENV [MKDOCS_SITE_URL, "https://lambdasistemi.github.io/cardano-ledger-rdf/"]
+repo_url: https://github.com/lambdasistemi/cardano-ledger-rdf
+repo_name: lambdasistemi/cardano-ledger-rdf
 
 docs_dir: docs
 

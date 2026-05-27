@@ -1,6 +1,6 @@
-# cardano-rdf
+# cardano-ledger-rdf
 
-`cardano-rdf` is the graph/RDF backend for Cardano transaction data.
+`cardano-ledger-rdf` is the graph/RDF backend for Cardano transaction data.
 It owns the reusable Haskell library plus the tools that build and
 consume transaction graphs:
 
@@ -15,7 +15,7 @@ validating, and load generation belong in `cardano-tx-tools`. That
 suite can depend on this repository when those applications are backed
 by `tx-graph` output.
 
-Documentation: <https://lambdasistemi.github.io/cardano-rdf/>.
+Documentation: <https://lambdasistemi.github.io/cardano-ledger-rdf/>.
 
 ## Workflow
 

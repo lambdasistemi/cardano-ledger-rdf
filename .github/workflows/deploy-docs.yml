@@ -47,7 +47,7 @@ jobs:
                     github.repository,
                     github.event.pull_request.number
                   )
-                || 'https://lambdasistemi.github.io/cardano-rdf/'
+                || 'https://lambdasistemi.github.io/cardano-ledger-rdf/'
             }}
         run: >-
           nix develop github:paolino/dev-assets?dir=mkdocs --quiet

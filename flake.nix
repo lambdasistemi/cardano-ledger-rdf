@@ -80,7 +80,7 @@
               lib.mkForce false;
           };
           project = pkgs.haskell-nix.cabalProject' {
-            name = "cardano-rdf";
+            name = "cardano-ledger-rdf";
             src = ./.;
             compiler-nix-name = "ghc9123";
             shell = {
@@ -106,19 +106,19 @@
             };
             modules = [
               fix-libs
-              { packages.cardano-rdf.flags.werror = true; }
+              { packages.cardano-ledger-rdf.flags.werror = true; }
             ];
             inputMap = {
               "https://chap.intersectmbo.org/" = CHaP;
             };
           };
-          components = project.hsPkgs.cardano-rdf.components;
+          components = project.hsPkgs.cardano-ledger-rdf.components;
           packageVersion =
             let
               versionLines =
                 builtins.filter (lib.hasPrefix "version:")
                   (lib.splitString "\n"
-                    (builtins.readFile ./cardano-rdf.cabal));
+                    (builtins.readFile ./cardano-ledger-rdf.cabal));
             in
             builtins.elemAt
               (builtins.match
@@ -206,7 +206,7 @@
               pname = spec.name;
               version = packageVersion;
               owner = "lambdasistemi";
-              repo = "cardano-rdf";
+              repo = "cardano-ledger-rdf";
               desc = spec.desc;
               formulaClass = spec.formulaClass;
               executables = { ${spec.name} = darwinPackageOf spec; };

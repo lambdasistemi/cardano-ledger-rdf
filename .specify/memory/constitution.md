@@ -15,7 +15,7 @@ Templates requiring updates:
 Follow-up TODOs: none
 -->
 
-# cardano-rdf Constitution
+# cardano-ledger-rdf Constitution
 
 ## Core Principles
 

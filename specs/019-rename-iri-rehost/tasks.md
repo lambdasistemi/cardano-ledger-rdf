@@ -4,15 +4,15 @@ Issue: [#19](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/19)
 
 ## Slice A — internal rename sweep (no IRI change)
 
-- [ ] T019-S1 — rename `cardano-rdf.cabal` → `cardano-ledger-rdf.cabal`; update `name:` field; align `cabal.project` if it pins the package name
-- [ ] T019-S1 — sweep `flake.nix` package outputs and any `cardano-rdf` literal in `nix/checks.nix`
-- [ ] T019-S1 — sweep `README.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `mkdocs.yml` for repo-name references
-- [ ] T019-S1 — sweep `.github/workflows/{release,deploy-docs}.yml`
-- [ ] T019-S1 — sweep `specs/README.md`, `specs/001-extract-tx-rdf/{spec,plan}.md`, `.specify/memory/constitution.md`
-- [ ] T019-S1 — sweep `docs/prior-art.md`, `docs/operations/secrets.md`
-- [ ] T019-S1 — sweep source files for repo-name string literals (not vocab IRI): `Overlay.hs`, `Bech32.hs`, `VocabExport.hs`, `Turtle.hs`
-- [ ] T019-S1 — verify `nix build .#checks.x86_64-linux.unit` and `cabal build all -O0` green
-- [ ] T019-S1 — commit: `chore(rename): cardano-rdf → cardano-ledger-rdf (internal sweep, IRI unchanged)` with `Tasks: T019-S1`
+- [X] T019-S1 — rename `cardano-rdf.cabal` → `cardano-ledger-rdf.cabal`; update `name:` field; align `cabal.project` if it pins the package name
+- [X] T019-S1 — sweep `flake.nix` package outputs and any `cardano-rdf` literal in `nix/checks.nix`
+- [X] T019-S1 — sweep `README.md`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, `mkdocs.yml` for repo-name references
+- [X] T019-S1 — sweep `.github/workflows/{release,deploy-docs}.yml`
+- [X] T019-S1 — sweep `specs/README.md`, `specs/001-extract-tx-rdf/{spec,plan}.md`, `.specify/memory/constitution.md`
+- [X] T019-S1 — sweep `docs/prior-art.md`, `docs/operations/secrets.md`
+- [X] T019-S1 — sweep source files for repo-name string literals (not vocab IRI): `Overlay.hs`, `Bech32.hs`, `VocabExport.hs`, `Turtle.hs`
+- [X] T019-S1 — verify `nix build .#checks.x86_64-linux.unit` and `cabal build all -O0` green
+- [X] T019-S1 — commit: `chore(rename): cardano-rdf → cardano-ledger-rdf (internal sweep, IRI unchanged)` with `Tasks: T019-S1`
 
 ## Slice B — import transactions.ttl + serve at /vocab/cardano
 

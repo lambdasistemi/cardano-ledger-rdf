@@ -4,12 +4,12 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
-owner_repo="${GITHUB_REPOSITORY:-lambdasistemi/cardano-rdf}"
+owner_repo="${GITHUB_REPOSITORY:-lambdasistemi/cardano-ledger-rdf}"
 base_branch="${BASE_BRANCH:-main}"
 release_branch="${RELEASE_BRANCH:-release/cabal-release}"
 dry_run="${RELEASE_PLAN_DRY_RUN:-0}"
-cabal_file="cardano-rdf.cabal"
-package_name="cardano-rdf"
+cabal_file="cardano-ledger-rdf.cabal"
+package_name="cardano-ledger-rdf"
 
 if [[ -n "${GITHUB_ACTIONS:-}" && "${RELEASE_BOT_SSH_KEY_SET:-true}" != "true" ]]; then
   echo "::error::Configure RELEASE_BOT_SSH_KEY so release PR and tag pushes are made by the deploy key."
@@ -45,7 +45,7 @@ if ! git rev-parse -q --verify "refs/tags/$current_tag" >/dev/null \
     exit 0
   fi
 
-  git config user.name "cardano-rdf-release-bot"
+  git config user.name "cardano-ledger-rdf-release-bot"
   git config user.email "actions@github.com"
   git tag -a "$current_tag" -m "$package_name $current_tag"
   git push origin "$current_tag"
@@ -234,7 +234,7 @@ if [[ "$dry_run" == "1" ]]; then
   exit 0
 fi
 
-git config user.name "cardano-rdf-release-bot"
+git config user.name "cardano-ledger-rdf-release-bot"
 git config user.email "actions@github.com"
 git fetch origin "$base_branch"
 git fetch origin \

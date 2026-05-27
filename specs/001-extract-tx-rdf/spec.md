@@ -3,14 +3,14 @@
 **Feature Branch**: `001-extract-tx-rdf`  
 **Created**: 2026-05-26  
 **Status**: Draft  
-**Input**: Extract transaction RDF graph, fetch, view, rules, fixtures, and docs from `cardano-tx-tools` into `cardano-rdf` without deleting the old source.
+**Input**: Extract transaction RDF graph, fetch, view, rules, fixtures, and docs from `cardano-tx-tools` into `cardano-ledger-rdf` without deleting the old source.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Build Tx RDF In New Repo (Priority: P1)
 
 As a Cardano RDF maintainer, I can build and run the existing transaction RDF
-pipeline from `cardano-rdf` so this repository becomes the owner of the graph
+pipeline from `cardano-ledger-rdf` so this repository becomes the owner of the graph
 engine before any old source is removed.
 
 **Why this priority**: The new repo must prove it can own the working code
@@ -31,19 +31,19 @@ fixture, and compare the emitted Turtle with the migrated golden.
 
 ### User Story 2 - Move Docs With The Surface (Priority: P1)
 
-As an operator, I can read `cardano-rdf` documentation for `tx-graph`,
+As an operator, I can read `cardano-ledger-rdf` documentation for `tx-graph`,
 `tx-fetch`, `tx-view`, lattice workflows, rules, prior art, and RDF fixtures
 without opening `cardano-tx-tools`.
 
 **Why this priority**: Documentation is part of the migration contract; moving
 code alone leaves operators on the wrong source of truth.
 
-**Independent Test**: Build MkDocs strictly in `cardano-rdf`.
+**Independent Test**: Build MkDocs strictly in `cardano-ledger-rdf`.
 
 **Acceptance Scenarios**:
 
 1. **Given** migrated docs, **When** the docs site builds, **Then** links to
-   migrated RDF pages resolve inside `cardano-rdf`.
+   migrated RDF pages resolve inside `cardano-ledger-rdf`.
 2. **Given** a secrets/setup page, **When** an operator reads it, **Then** it
    shows the exact `gh secret set CACHIX_AUTH_TOKEN` command and states agents
    do not populate secrets.
@@ -71,7 +71,7 @@ verify no tracked source deletion is present.
 ### Edge Cases
 
 - Existing docs reference `cardano-tx-tools` URLs; migrated docs must either
-  update URLs to `cardano-rdf` or explicitly mark historical links.
+  update URLs to `cardano-ledger-rdf` or explicitly mark historical links.
 - Existing package/module names may need a compatibility phase; any retained
   `Cardano.Tx.*` public module names must be documented as migration debt.
 - Networked `tx-fetch` requires `BLOCKFROST_PROJECT_ID`; tests must not require
@@ -94,7 +94,7 @@ verify no tracked source deletion is present.
 - **FR-005**: The migration MUST leave `/code/cardano-tx-tools` source files in
   place and unstaged for deletion.
 - **FR-006**: The repository MUST include an operator note with the exact
-  `gh secret set CACHIX_AUTH_TOKEN --repo lambdasistemi/cardano-rdf` command.
+  `gh secret set CACHIX_AUTH_TOKEN --repo lambdasistemi/cardano-ledger-rdf` command.
 - **FR-007**: The spec/plan/tasks MUST record retained compatibility debt if the
   first working copy preserves old package or module names.
 
@@ -114,7 +114,7 @@ verify no tracked source deletion is present.
 
 ### Measurable Outcomes
 
-- **SC-001**: `tx-graph`, `tx-view`, and `tx-fetch` build in `cardano-rdf`.
+- **SC-001**: `tx-graph`, `tx-view`, and `tx-fetch` build in `cardano-ledger-rdf`.
 - **SC-002**: Migrated unit/golden tests for graph and view behavior pass.
 - **SC-003**: `mkdocs build --strict` passes.
 - **SC-004**: `git -C /code/cardano-tx-tools status --short` shows no source

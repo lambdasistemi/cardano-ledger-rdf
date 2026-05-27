@@ -5,7 +5,7 @@ License     : Apache-2.0
 
 Internal helper for the @entities: from-address: \<bech32\>@ shape.
 Reuses 'Cardano.Tx.Decode.decodeBech32Address' (already in the
-@cardano-rdf@ library's dep tree) to decode a bech32 string into a
+@cardano-ledger-rdf@ library's dep tree) to decode a bech32 string into a
 'Cardano.Ledger.Address.Addr', then case-matches on the payment and
 stake credentials to produce 1–2 'EntityIdentifier' values.
 

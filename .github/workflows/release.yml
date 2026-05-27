@@ -101,6 +101,6 @@ jobs:
           release-version-command: scripts/release/get-cabal-version
           release-check-command: 'scripts/release/check-version-consistency "$TAG"'
           release-notes-command: 'scripts/release/extract-notes "$TAG"'
-          release-title: cardano-rdf ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+          release-title: cardano-ledger-rdf ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
           dev-release-title: ${{ matrix.executable.name }} dev Linux bundles
           github-token: ${{ github.token }}
