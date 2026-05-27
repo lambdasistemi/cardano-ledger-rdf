@@ -23,7 +23,7 @@
 
 ## Finalization
 
-- [ ] T004-F — PR body audit
-- [ ] T004-F — drop `gate.sh` in `chore: drop gate.sh (ready for review)`
+- [X] T004-F — PR body audit
+- [X] T004-F — drop `gate.sh` in `chore: drop gate.sh (ready for review)`
 - [ ] T004-F — `gh pr ready` (orchestrator uses REST API per #21 lesson)
 - [ ] T004-F — post-merge cleanup: worktree + branch
