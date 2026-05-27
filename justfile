@@ -39,11 +39,19 @@ smoke-view:
     cabal build exe:tx-view -O0 >/dev/null
     "$(cabal list-bin exe:tx-view -O0)" --help >/dev/null
 
+vocab-validate:
+    python3 scripts/validate-ttl.py
+
+vocab-owl-smoke:
+    python3 scripts/owl-smoke.py
+
 ci:
     just build
     just unit
     just smoke-graph
     just smoke-view
+    just vocab-validate
+    just vocab-owl-smoke
     cabal-fmt -c cardano-ledger-rdf.cabal
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec fourmolu -m check {} +
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec hlint {} +

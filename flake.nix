@@ -62,6 +62,8 @@
           };
           lib = pkgs.lib;
           lintPkgs = import lintNixpkgs { inherit system; };
+          pythonEnv = pkgs.python3.withPackages (ps: [ ps.rdflib ]);
+          eye = pkgs.callPackage ./nix/eye.nix { };
           fix-libs = { lib, pkgs, ... }: {
             packages.cardano-crypto-praos.components.library.pkgconfig =
               lib.mkForce [ [ pkgs.libsodium-vrf ] ];
@@ -95,6 +97,8 @@
                 pkgs.cacert
                 pkgs.lmdb
                 pkgs.liburing
+                pythonEnv
+                eye
                 mkdocs.packages.${system}.from-nixpkgs
                 mkdocs.packages.${system}.asciinema-plugin
               ];
@@ -260,7 +264,7 @@
                 };
             });
           checkSuite = import ./nix/checks.nix {
-            inherit pkgs components lintPkgs;
+            inherit pkgs components lintPkgs pythonEnv eye;
             src = ./.;
           };
           checkApps = import ./nix/apps.nix {

@@ -127,67 +127,88 @@ Drafted the presentation and six query pages under
 Committed as `82e3324` with subject
 `docs(case-study): DRep vote correlation across governance actions`.
 
-## 2026-05-27T17:24:04+01:00 — brief received
+# Issue #31 restore tx-view docs WIP
 
-Read `.worker-brief.md`, `.specify/memory/constitution.md`, and
-`gh issue view 30 --repo lambdasistemi/cardano-ledger-rdf`.
+## 2026-05-27T17:21:31+01:00 - brief received
 
-Investigation findings before code changes:
+Loaded `.worker-brief.md`, the repository constitution, and GitHub issue #31.
 
-- `LeafType` already has internal body-walker constructors `LtTxId` and
-  `LtGovActionId`, rendered as `cardano:leafType "TxId"` and
-  `"GovActionId"` by the graph emitter.
-- YAML `parseLeafType` only accepts the older operator-facing labels, so
-  `keys: [TxId]` and `keys: [GovActionId]` fail today.
-- `parseCompoundKey` validates all `bytes:` payloads as 28-byte hex, so it
-  also rejects 32-byte transaction hashes and cannot accept the
-  `<txid_hex>:<index>` GovActionId authoring shape.
-- Emitted transaction IDs already flow through `LtTxId`; emitted voting
-  action IDs currently use `LtGovActionId` for the action transaction hash
-  only, so the rules lookup needs a text-keyed path for the selected
-  `txid:index` identity shape.
+## 2026-05-27T17:23:58+01:00 - tool probed
 
-## 2026-05-27T17:25:43+01:00 — RED TxId parser coverage
+Built `tx-view` with `nix develop --quiet -c cabal build tx-view -O0` and
+captured `--help`. Flags are `--graph FILE`, `--view NAME` defaulting to
+`cli-tree`, `--out FILE`, and `-h,--help`. The help text still says the
+packaged view name is "currently: cli-tree"; source dispatcher names are
+`cli-tree`, `asset-flow`, `entity-occurrences`, and `json-ld`.
 
-Added focused parser and vote-emitter regression tests. Ran
-`nix develop --quiet -c just unit "TxId compound-key"` and observed the
-expected failure: `keys: unknown leafType label: TxId`.
+## 2026-05-27T17:23:58+01:00 - packaged views enumerated
 
-## 2026-05-27T17:30:06+01:00 — leaf-type extension applied
+Found 5 files under `views/`: `asset-flow`, `cli-tree`,
+`entity-occurrences`, `json-ld`, and `no-stub-triples`. The tx-view
+dispatcher accepts the first four; `no-stub-triples` is a shipped SPARQL
+gate/query contract rather than a current `tx-view --view` name.
 
-Extended YAML and Turtle leaf-type parsing to accept `TxId` and
-`GovActionId`, mapping them to the existing `LtTxId` and
-`LtGovActionId` constructors. Added byte-keyed lookup support for `TxId`
-and text-keyed lookup support for `GovActionId`, then updated vote emission
-so a matching `txid:index` rule uses the operator entity bnode.
+## 2026-05-27T17:24:53+01:00 - page drafted
 
-## 2026-05-27T17:30:06+01:00 — GovActionId bytes parsing decision
+Drafted `docs/tx-view.md` at 107 lines, including the quick example,
+input expectations, executable view sections, the `no-stub-triples`
+SPARQL-only note, and a direct `arq` alternative.
 
-Implemented the brief's option (a): `bytes: <txid_hex>:<index>`.
-`TxId` validates as 32-byte hex. `GovActionId` validates the 32-byte tx id
-and a decimal action index, stores the canonical text token, and maps that
-token onto `_:hash_govactionid_<txid>_<index>` when no operator entity owns
-the identity.
+## 2026-05-27T17:24:53+01:00 - mkdocs registered
 
-## 2026-05-27T17:32:37+01:00 — fixture/golden added
+Registered `tx-view: tx-view.md` under the `Tools` nav group between
+`tx-fetch` and `rules.yaml`.
 
-Added `test/fixtures/tx-graph/18-rules-txid-govactionid/` with
-`rules.yaml` and `expected.entities.ttl` covering `keys: [TxId]` and
-`keys: [GovActionId]`. Registered it in the rules-loader golden spec and
-verified it with `nix develop --quiet -c just unit "18-rules-txid-govactionid"`.
+## 2026-05-27T17:25:24+01:00 - mkdocs build green
 
-## 2026-05-27T17:32:37+01:00 — docs/rules-yaml.md updated
+`nix develop github:paolino/dev-assets?dir=mkdocs --quiet -c mkdocs build
+--strict --site-dir /tmp/site-test` exited 0.
 
-Updated `docs/rules-yaml.md` to list `TxId` and `GovActionId` among
-supported `keys:` labels and to document the `GovActionId`
-`<txid_hex>:<index>` bytes format.
+# Issue #40 ontology validation gate WIP
 
-## 2026-05-27T17:38:43+01:00 — gate green
+## 2026-05-27T19:47:46+01:00 - brief received
 
-Verification passed:
+Loaded `.worker-brief.md`, the repository constitution, upstream validation
+scripts, smoke fixtures, current flake checks, CI workflow, justfile, and
+gate.sh.
 
-- `nix develop --quiet -c just unit` — 522 examples, 0 failures.
-- `./gate.sh origin/main..HEAD` — exit 0.
-- `nix build --quiet -L .#checks.x86_64-linux.{build,unit,lint}` —
-  exit 0 after staging the new fixture files so Nix included them in the
-  source snapshot.
+## 2026-05-27T19:49:56+01:00 - scripts ported
+
+Added `scripts/validate-ttl.py` for `vocab/**/*.ttl` rdflib parsing and
+`scripts/owl-smoke.py` for EYE OWL 2 RL smoke fixtures over the vocab glob.
+
+## 2026-05-27T19:49:56+01:00 - fixtures copied
+
+Added baseline and sameAs key smoke fixtures under `test/fixtures/vocab/smoke/`,
+rebasing the `cardano:` prefix to this repository's published namespace.
+
+## 2026-05-27T19:49:56+01:00 - just recipes added
+
+Added `vocab-validate` and `vocab-owl-smoke` just recipes and included them in
+`just ci`.
+
+## 2026-05-27T19:49:56+01:00 - flake checks wired
+
+Added local EYE packaging, rdflib Python environment wiring, and
+`vocab-validate` / `vocab-owl-smoke` flake checks and apps.
+
+## 2026-05-27T19:49:56+01:00 - CI workflow extended
+
+Extended the Build Gate workflow to build the two new vocab checks and allowed
+`Tasks: T040-S1` in `gate.sh`.
+
+## 2026-05-27T20:21:06+01:00 - validation checks green
+
+`nix develop --quiet -c just vocab-validate` parsed 1 vocab Turtle file with
+510 triples. `nix develop --quiet -c just vocab-owl-smoke` passed 2 fixtures
+and 4 ASK expectations. `nix build .#checks.x86_64-linux.vocab-validate` and
+`nix build .#checks.x86_64-linux.vocab-owl-smoke` both succeeded.
+
+## 2026-05-27T20:21:51+01:00 - gate green
+
+`./gate.sh origin/main..HEAD` exited 0 on the T040 slice commit.
+
+## 2026-05-27T20:21:51+01:00 - committed SHA
+
+Final SHA is reported in the worker handoff; embedding a commit's own final
+hash in this file would change the commit hash.
