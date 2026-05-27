@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   plan:
-    runs-on: nixos
+    runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
