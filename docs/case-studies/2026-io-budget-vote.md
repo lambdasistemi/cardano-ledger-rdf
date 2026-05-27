@@ -9,8 +9,8 @@ one submission transaction and 1,687 vote transactions.
 
 The report is SPARQL-driven. The typed `cardano:Proposal`,
 `cardano:TreasuryWithdrawals`, and `cardano:GovActionId` predicates added
-in the proposal and vote work make these questions graph traversals
-instead of CBOR-specific Python decoding or string matching.
+in the proposal and vote work make the workflow one emitter command plus
+SPARQL, instead of CBOR-specific Python decoding or string matching.
 
 Proposal labels below use the public IO/Momentum proposal names and the
 governance action index order for the shared submission transaction.[^labels]
@@ -356,15 +356,24 @@ WHERE {
 }
 ```
 
-> ⚠ **Workflow note**: This case study currently requires a Python preprocessing step to merge the 1,688 per-tx Turtle files into a single SPARQL-queryable file. That step will collapse to `tx-graph --in-dir cbor/ --out lattice.ttl` (one command) when [#26](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/26) lands. Update this page when that PR merges.
-
 ## How to reproduce
 
 ```sh
-tx-graph --in-dir cbor/ --out-dir ttl/      # cbor/ assembled as per Dataset selection above
-<merge step - to be replaced when #26 lands>
-arq --data lattice.ttl --query Q.rq
+# 1. Assemble cbor/ - see Dataset selection above for the Koios calls.
+# 2. One emitter invocation produces the SPARQL-queryable lattice:
+tx-graph --in-dir cbor/ --out lattice.ttl
+
+# 3. Run any of the 7 documented queries:
+arq --data lattice.ttl --query queries/q1_asks.rq
 ```
+
+In `lattice.ttl`, every per-transaction-position blank node is namespaced
+by its short transaction id, so positional bnodes such as `_:input1`,
+`_:vote1`, and `_:proposal1` do not collide across the 1,688
+transactions. Content-addressed identifier bnodes such as `_:hash_*` and
+`_:cred_*` keep their canonical names, so cross-transaction joins still
+work. The reader does not need to apply this renaming rule; `tx-graph`
+handles it.
 
 Use the submission transaction id
 `73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762`
