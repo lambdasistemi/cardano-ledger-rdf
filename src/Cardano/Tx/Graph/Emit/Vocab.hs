@@ -78,6 +78,7 @@ data VocabTerm
     | TermPool
     | TermDRep
     | TermDatum
+    | TermGovActionId
     | -- Body predicates
       TermHasInput
     | TermHasOutput
@@ -218,6 +219,7 @@ vocabIri = \case
     TermPool -> cardanoPrefix <> "Pool"
     TermDRep -> cardanoPrefix <> "DRep"
     TermDatum -> cardanoPrefix <> "Datum"
+    TermGovActionId -> cardanoPrefix <> "GovActionId"
     TermHasInput -> cardanoPrefix <> "hasInput"
     TermHasOutput -> cardanoPrefix <> "hasOutput"
     TermHasFee -> cardanoPrefix <> "hasFee"
@@ -319,6 +321,7 @@ vocabCurie = \case
     TermPool -> "cardano:Pool"
     TermDRep -> "cardano:DRep"
     TermDatum -> "cardano:Datum"
+    TermGovActionId -> "cardano:GovActionId"
     TermHasInput -> "cardano:hasInput"
     TermHasOutput -> "cardano:hasOutput"
     TermHasFee -> "cardano:hasFee"

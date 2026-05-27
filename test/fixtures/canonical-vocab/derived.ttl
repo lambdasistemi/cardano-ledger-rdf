@@ -28,6 +28,9 @@ cardano:Datum a rdfs:Class ;
 cardano:ExUnits a rdfs:Class ;
   rdfs:label "ExUnits" .
 
+cardano:GovActionId a rdfs:Class ;
+  rdfs:label "GovActionId" .
+
 cardano:Identifier a rdfs:Class ;
   rdfs:label "Identifier" .
 

@@ -12,8 +12,9 @@ carries:
   one of three classes (@cardano:VoterDRep@,
   @cardano:VoterStakePool@, @cardano:VoterCommitteeCold@) with
   a 28-byte @cardano:hasIdentifier@ key/script-hash literal.
-* @cardano:hasVotingAction "\<txid\>#\<ix\>"@ — the governance
-  action id the vote targets.
+* @cardano:hasVotingAction _:govActionIdK@ — a typed
+  @cardano:GovActionId@ sub-block carrying @cardano:hasTxId@
+  and @cardano:hasIndex@.
 * @cardano:hasVerdict "Yes" | "No" | "Abstain"@.
 * @cardano:hasAnchor _:voteAnchorK@ — when the vote carries an
   off-chain anchor (URL + hash sub-block).
@@ -87,6 +88,28 @@ drepSpec = describe "DRep voter" $
             bytes = emitBytes (txWithSingleVote voter VoteYes SNothing)
         bytes `shouldSatisfy` BS8.isInfixOf "_:vote1 a cardano:Vote"
         bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasVoter _:voter1"
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                "cardano:hasVotingAction _:govActionId1"
+        bytes `shouldSatisfy` BS8.isInfixOf "_:govActionId1 a cardano:GovActionId"
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ("cardano:hasTxId _:hash_govactionid_" <> govActionHashHex)
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasIndex 0"
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ( "_:hash_govactionid_"
+                    <> govActionHashHex
+                    <> " a cardano:Identifier"
+                )
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                "cardano:leafType \"GovActionId\""
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ("cardano:bytesHex \"" <> govActionHashHex <> "\"")
+        bytes
+            `shouldSatisfy` (not . BS8.isInfixOf (govActionHashHex <> "#0"))
         bytes `shouldSatisfy` BS8.isInfixOf "_:voter1 a cardano:VoterDRep"
         bytes
             `shouldSatisfy` BS8.isInfixOf
@@ -184,6 +207,9 @@ stubGovActionId n =
   where
     hexByte b = [d (b `div` 16), d (b `mod` 16)]
     d k = "0123456789abcdef" !! k
+
+govActionHashHex :: ByteString
+govActionHashHex = BS8.replicate 64 'd'
 
 drepKeyHash :: Int -> KeyHash DRepRole
 drepKeyHash = mkKeyHash

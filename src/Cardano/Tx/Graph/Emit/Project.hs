@@ -650,6 +650,7 @@ leafTypeText = \case
     DRepKey -> "DRepKey"
     DRepScript -> "DRepScript"
     LtTxId -> "TxId"
+    LtGovActionId -> "GovActionId"
     LtDatumHash -> "DatumHash"
     LtScriptHash -> "ScriptHash"
     LtScriptDataHash -> "ScriptDataHash"
@@ -751,6 +752,10 @@ idVoteBnode k = BnodeName ("vote" <> Text.pack (show k))
 -- | Bnode name a vote's voter sub-block at position @k@ gets.
 idVoterBnode :: Int -> BnodeName
 idVoterBnode k = BnodeName ("voter" <> Text.pack (show k))
+
+-- | Bnode name a vote's governance-action-id sub-block at position @k@ gets.
+idGovActionIdBnode :: Int -> BnodeName
+idGovActionIdBnode k = BnodeName ("govActionId" <> Text.pack (show k))
 
 -- | Bnode name a vote's anchor sub-block at position @k@ gets.
 idVoteAnchorBnode :: Int -> BnodeName
@@ -1412,6 +1417,7 @@ rolePrefixText = \case
     DRepKey -> "drepkey"
     DRepScript -> "drepscript"
     LtTxId -> "txid"
+    LtGovActionId -> "govactionid"
     LtDatumHash -> "datum"
     LtScriptHash -> "script"
     LtScriptDataHash -> "scriptdata"
@@ -2799,9 +2805,13 @@ flattenVotingProcedures =
 @
 _:voteK a cardano:Vote ;
         cardano:hasVoter _:voterK ;
-        cardano:hasVotingAction "\<txid\>#\<ix\>" ;
+        cardano:hasVotingAction _:govActionIdK ;
         cardano:hasVerdict "Yes" | "No" | "Abstain" ;
         cardano:hasAnchor _:voteAnchorK .  -- when SJust
+
+_:govActionIdK a cardano:GovActionId ;
+        cardano:hasTxId _:hash_govactionid_\<txid\> ;
+        cardano:hasIndex \<ix\> .
 @
 
 @_:voterK@ carries one of three discriminating @rdf:type@
@@ -2834,8 +2844,9 @@ buildVoteCluster k voter actionId procedure = do
         ( Triple
             voteSubj
             (PIri (vocabCurie TermHasVotingAction))
-            (OStringLit (formatGovActionId actionId))
+            (OBnode (idGovActionIdBnode k))
         )
+    emitGovActionIdBlock k actionId
     tellTriple
         ( Triple
             voteSubj
@@ -2854,12 +2865,37 @@ verdictText = \case
     VoteNo -> "No"
     Abstain -> "Abstain"
 
--- | Render a 'GovActionId' as @"\<txid_hex\>#\<index\>"@.
-formatGovActionId :: GovActionId -> Text
-formatGovActionId (GovActionId (TxId safeHash) (GovActionIx ix)) =
-    hexText (hashToBytes (extractHash safeHash))
-        <> "#"
-        <> Text.pack (show ix)
+{- | Emit a vote target as a typed @cardano:GovActionId@ sub-block.
+
+The per-vote @_:govActionIdK@ subject remains position-scoped,
+while the TxId Identifier leaf is deterministic from the proposing
+transaction hash and therefore merges across votes targeting the
+same action.
+-}
+emitGovActionIdBlock :: Int -> GovActionId -> Emit ()
+emitGovActionIdBlock k (GovActionId (TxId safeHash) (GovActionIx ix)) = do
+    let govActionSubj = SBnode (idGovActionIdBnode k)
+        txIdBytes = hashToBytes (extractHash safeHash)
+    tellTriple
+        ( Triple
+            govActionSubj
+            PRdfType
+            (OIri (vocabCurie TermGovActionId))
+        )
+    txIdBnode <-
+        resolveCredentialAndIntroduceIdent Map.empty LtGovActionId txIdBytes
+    tellTriple
+        ( Triple
+            govActionSubj
+            (PIri (vocabCurie TermHasTxId))
+            (OBnode txIdBnode)
+        )
+    tellTriple
+        ( Triple
+            govActionSubj
+            (PIri (vocabCurie TermHasIndex))
+            (OIntLit (fromIntegral ix))
+        )
 
 {- | Emit the @_:voterK a cardano:VoterX ; cardano:hasIdentifier
 "\<hex\>"@ sub-block. The discriminating class

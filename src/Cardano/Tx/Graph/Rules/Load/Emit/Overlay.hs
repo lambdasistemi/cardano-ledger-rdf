@@ -286,6 +286,7 @@ renderLeafType = \case
     -- match here stays total so a future overlay extension can
     -- consume them without an exhaustivity warning.
     LtTxId -> "TxId"
+    LtGovActionId -> "GovActionId"
     LtDatumHash -> "DatumHash"
     LtScriptHash -> "ScriptHash"
     LtScriptDataHash -> "ScriptDataHash"
