@@ -15,7 +15,7 @@
 
 ## Finalization
 
-- [ ] T026-F — PR body audit
-- [ ] T026-F — drop `gate.sh`
+- [X] T026-F — PR body audit
+- [X] T026-F — drop `gate.sh`
 - [ ] T026-F — `gh pr ready` (orchestrator)
 - [ ] T026-F — post-merge cleanup
