@@ -22,6 +22,8 @@ extend the projection walker for new leaves.
 -}
 module Cardano.Tx.Graph.Emit.Serialize.Turtle (
     renderTurtle,
+    renderLatticeTurtle,
+    scopeBodyBnodes,
 ) where
 
 import Data.ByteString (ByteString)
@@ -62,27 +64,27 @@ The structure (research R4):
 
 <overlay bytes verbatim>
 
-#
-# Transaction body.
-#
+ #
+ # Transaction body.
+ #
 
 \<_:tx block\>
 
-#
-# Input N
-#
+ #
+ # Input N
+ #
 
 \<_:input_K block + optional _:resolvedInput_K block\>
 
-#
-# Output N
-#
+ #
+ # Output N
+ #
 
 \<_:output_K block\>
 
-#
-# Address decompositions — payment + stake credential per leaf.
-#
+ #
+ # Address decompositions — payment + stake credential per leaf.
+ #
 
 \<address blocks…\>
 @
@@ -105,6 +107,95 @@ renderTurtle slug _explicitPrefixes overlayBytes body =
                 ]
   where
     bsBuilder = Builder.byteString
+
+{- | Render a canonical merged Turtle lattice.
+
+The merged form keeps one prefix block and one overlay block at the
+top, then emits each transaction body under a stable comment header.
+Before rendering a transaction, its body IR is scoped so positional
+blank nodes become @_:<txid-short>_<name>@ while content-addressed
+identifier bnodes stay unchanged.
+-}
+renderLatticeTurtle ::
+    Text ->
+    ByteString ->
+    [(Text, [BodySection])] ->
+    ByteString
+renderLatticeTurtle slug overlayBytes txBodies =
+    BSL.toStrict $
+        Builder.toLazyByteString $
+            mconcat
+                [ renderPrefixes slug
+                , bsBuilder (stripOverlayPrefixBlock overlayBytes)
+                , mconcat
+                    (intersperse newline (map renderTxBody txBodies))
+                ]
+  where
+    bsBuilder = Builder.byteString
+
+renderTxBody :: (Text, [BodySection]) -> Builder
+renderTxBody (txid, body) =
+    mconcat
+        [ text "# === tx "
+        , text txid
+        , text " ===\n"
+        , mconcat
+            ( intersperse
+                newline
+                (map renderSection (scopeBodyBnodes txid body))
+            )
+        ]
+
+{- | Scope positional bnodes in a transaction body by tx id.
+
+The tx id is the full lowercase hex id; the emitted bnode prefix uses
+its first eight characters. Content-addressed identifier families
+(@hash_@ and @cred_@) are left unchanged so separately-emitted files
+can still join on them when loaded together.
+-}
+scopeBodyBnodes :: Text -> [BodySection] -> [BodySection]
+scopeBodyBnodes txid =
+    map renameSection
+  where
+    txTag = Text.take 8 txid
+
+    renameSection section@BodySection{sectionBlocks} =
+        section{sectionBlocks = map renameBlock sectionBlocks}
+
+    renameBlock block@SubjectBlock{subjectBlockSubject, subjectBlockPredicates} =
+        block
+            { subjectBlockSubject = renameSubject subjectBlockSubject
+            , subjectBlockPredicates =
+                map renamePredicateObject subjectBlockPredicates
+            }
+
+    renamePredicateObject (p, o) = (p, renameObject o)
+
+    renameSubject = \case
+        SBnode name -> SBnode (renameBnode txTag name)
+        SIri iri -> SIri iri
+
+    renameObject = \case
+        OBnode name -> OBnode (renameBnode txTag name)
+        OIri iri -> OIri iri
+        OStringLit lit -> OStringLit lit
+        OIntLit i -> OIntLit i
+
+renameBnode :: Text -> BnodeName -> BnodeName
+renameBnode txTag bn@(BnodeName name)
+    | isContentAddressedBnodeName name = bn
+    | otherwise = BnodeName (txTag <> "_" <> name)
+
+{- TECH-DEBT(#26 follow-up): the current IR stores bnode family as
+@BnodeName Text@ rather than constructors such as @PositionalBnode@
+and @ContentAddressedBnode@. This is still an IR-level transform,
+not a serialized Turtle regex, but it must identify the stable
+identifier families by their minted name prefixes until the IR grows
+an explicit family tag.
+-}
+isContentAddressedBnodeName :: Text -> Bool
+isContentAddressedBnodeName name =
+    "hash_" `Text.isPrefixOf` name || "cred_" `Text.isPrefixOf` name
 
 {- | Strip the leading @\@prefix …@ block (plus the trailing
 blank line) from an overlay byte stream. The loader's overlay

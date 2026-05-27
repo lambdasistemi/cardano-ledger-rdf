@@ -16,8 +16,11 @@ CLI surface (see issue #114 — operator-led role audit consolidation):
 * Positional @CBOR …@ — one or more Conway transaction CBOR files.
 * @-@ in the positional slot — read a single Conway tx from stdin.
 * @--out-dir DIR@ — write one @\<txid-hex\>.ttl@ per input. If
-  exactly one input is given and @--out-dir@ is absent, the graph
-  goes to stdout (back-compat with the pre-#114 single-tx invocation).
+  exactly one input is given and @--out-dir@ / @--out@ is absent,
+  the graph goes to stdout (back-compat with the pre-#114 single-tx
+  invocation).
+* @--out FILE@ — write one graph to @FILE@. With @--in-dir DIR@,
+  writes one merged Turtle lattice file for every @*.cbor@ in @DIR@.
 * @--format turtle|json-ld@ — output format (default @turtle@).
 
 Inside, every input CBOR is parsed and indexed by its computed
@@ -33,26 +36,12 @@ Exit codes:
 * 1 — structured 'Cardano.Tx.Graph.Rules.Load.RulesLoadError' or
   'Cardano.Tx.Graph.Emit.EmitError'.
 * >=2 — @optparse-applicative@ usage error or invalid flag
-  combination (e.g. multiple inputs without @--out-dir@).
+  combination (e.g. multiple inputs without @--out-dir@ / @--out@).
 -}
 module Main (main) where
 
 import Cardano.Tx.Blueprint (Blueprint)
-import Cardano.Tx.Graph.Emit (
-    BnodeName (..),
-    BodySection (..),
-    EmitError (..),
-    EmitFormat (..),
-    EmittedGraph (..),
-    Object (..),
-    Predicate (..),
-    ResolvedUTxO,
-    Subject (..),
-    SubjectBlock (..),
-    emit,
-    renderEmitError,
-    serialize,
- )
+import Cardano.Tx.Graph.Emit
 import Cardano.Tx.Graph.Rules.Load (
     EntityDecl,
     RulesLoadResult (..),
@@ -126,13 +115,14 @@ import Cardano.Tx.Graph.Resolve (Resolver (..), resolveChain)
 import Cardano.Tx.Ledger (ConwayTx)
 
 {- | Command-line options. Post-#114 consolidation: @--rules@ + one of
-@--in-dir@ / positional / stdin + @--out-dir@ + @--format@.
+@--in-dir@ / positional / stdin + @--out-dir@ / @--out@ + @--format@.
 -}
 data Options = Options
     { optRulesFile :: !(Maybe FilePath)
     , optInDir :: !(Maybe FilePath)
     , optPositional :: ![InputSource]
     , optOutDir :: !(Maybe FilePath)
+    , optOut :: !(Maybe FilePath)
     , optFormat :: !String
     }
 
@@ -193,6 +183,16 @@ optionsParser =
                             <> "into DIR. If absent and exactly "
                             <> "one input is given, emits to "
                             <> "stdout."
+                        )
+                )
+            )
+        <*> optional
+            ( strOption
+                ( long "out"
+                    <> metavar "FILE"
+                    <> help
+                        ( "Write one graph to FILE. With --in-dir, "
+                            <> "write one merged Turtle lattice file."
                         )
                 )
             )
@@ -320,8 +320,9 @@ overlayOnly rulesPath = do
 
 {- | Body-emitting mode for an N-tx lattice. Parses every input,
 indexes them by computed 'TxId', and emits one Turtle (or JSON-LD)
-graph per input. Single-input + no @--out-dir@ goes to stdout;
-multi-input requires @--out-dir@.
+graph per input, or one merged Turtle lattice for @--in-dir@ +
+@--out@. Single-input + no @--out-dir@ / @--out@ goes to stdout;
+multi-input requires @--out-dir@ or @--in-dir@ + @--out@.
 -}
 latticeEmit :: Options -> [InputSource] -> IO ()
 latticeEmit opts sources = do
@@ -331,19 +332,48 @@ latticeEmit opts sources = do
         Just p -> loadOverlayAndEntitiesOrExit p
     txs <- traverse loadOne sources
     let lattice = Map.fromList [(txIdOf tx, tx) | (_, tx) <- txs]
-    case (optOutDir opts, txs) of
-        (Nothing, [entry]) -> do
+    case (optOutDir opts, optOut opts, optInDir opts, txs) of
+        (Just _, Just _, _, _) -> do
+            usageError "--out-dir and --out are mutually exclusive."
+        (Nothing, Just outPath, Just _, _) -> do
+            unlessTurtle fmtChecked
+            bytes <-
+                renderLatticeMerged
+                    entities
+                    blueprints
+                    overlay
+                    lattice
+                    txs
+            BS.writeFile outPath bytes
+        (Nothing, Just outPath, Nothing, [entry]) -> do
+            bytes <- renderOne fmtChecked entities blueprints overlay lattice entry
+            BS.writeFile outPath bytes
+        (Nothing, Just _, Nothing, _) -> do
+            usageError
+                ( "multiple positional inputs ("
+                    <> show (length txs)
+                    <> ") require --out-dir DIR; --out FILE is reserved "
+                    <> "for single-input mode and --in-dir lattices."
+                )
+        (Nothing, Nothing, _, [entry]) -> do
             bytes <- renderOne fmtChecked entities blueprints overlay lattice entry
             BS.hPut stdout bytes
-        (Nothing, _) -> do
+        (Nothing, Nothing, _, _) -> do
             usageError
                 ( "multiple inputs ("
                     <> show (length txs)
-                    <> ") require --out-dir DIR."
+                    <> ") require --out-dir DIR or --in-dir DIR "
+                    <> "--out FILE."
                 )
-        (Just dir, _) -> do
+        (Just dir, Nothing, _, _) -> do
             createDirectoryIfMissing True dir
             mapM_ (emitToDir fmtChecked entities blueprints overlay lattice dir) txs
+
+unlessTurtle :: EmitFormat -> IO ()
+unlessTurtle = \case
+    Turtle -> pure ()
+    JsonLd ->
+        usageError "--in-dir DIR --out FILE emits merged Turtle only."
 
 {- | Decode one input source into @(label, ConwayTx)@. The label
 is the file path (or @\<stdin\>@) and is used in error messages
@@ -415,6 +445,27 @@ renderOne fmt entities blueprints overlay lattice (label, tx) = do
     let joint = g{graphOverlayTurtle = overlay}
     pure (serialize fmt defaultSlug joint)
 
+{- | Emit every tx in the lattice into one merged Turtle document.
+The input order is the same sorted order produced by 'expandInDir'.
+-}
+renderLatticeMerged ::
+    [EntityDecl] ->
+    [(ScriptHash, Blueprint, Text)] ->
+    BS.ByteString ->
+    Map TxId ConwayTx ->
+    [(String, ConwayTx)] ->
+    IO BS.ByteString
+renderLatticeMerged entities blueprints overlay lattice entries = do
+    graphs <- traverse renderOneGraph entries
+    pure (serializeLatticeTurtle defaultSlug overlay graphs)
+  where
+    renderOneGraph (label, tx) = do
+        utxo <- resolveAgainstLattice lattice tx
+        warnOnMissingParents label tx lattice
+        g <- exitOnEmitError (emit tx utxo entities blueprints)
+        mapM_ (hPutStrLn stderr) (decodeErrorWarnings g)
+        pure (Text.pack (txIdHex (txIdOf tx)), g)
+
 -- | Emit one tx into @\<out-dir\>/\<txid-hex\>.ttl@.
 emitToDir ::
     EmitFormat ->
@@ -428,8 +479,29 @@ emitToDir ::
 emitToDir fmt entities blueprints overlay lattice dir entry@(_, tx) = do
     let hex = txIdHex (txIdOf tx)
         outPath = dir </> (hex <> ".ttl")
-    bytes <- renderOne fmt entities blueprints overlay lattice entry
+    bytes <- renderOneScoped fmt entities blueprints overlay lattice entry
     BS.writeFile outPath bytes
+
+{- | Render one graph for per-file lattice output. Unlike standalone
+single-input output, these files are intended to compose under SPARQL
+when loaded together, so positional bnodes are tx-scoped.
+-}
+renderOneScoped ::
+    EmitFormat ->
+    [EntityDecl] ->
+    [(ScriptHash, Blueprint, Text)] ->
+    BS.ByteString ->
+    Map TxId ConwayTx ->
+    (String, ConwayTx) ->
+    IO BS.ByteString
+renderOneScoped fmt entities blueprints overlay lattice (label, tx) = do
+    utxo <- resolveAgainstLattice lattice tx
+    warnOnMissingParents label tx lattice
+    g <- exitOnEmitError (emit tx utxo entities blueprints)
+    mapM_ (hPutStrLn stderr) (decodeErrorWarnings g)
+    let txid = Text.pack (txIdHex (txIdOf tx))
+        joint = g{graphOverlayTurtle = overlay}
+    pure (serializeScoped fmt defaultSlug txid joint)
 
 {- | Warn on stderr for every spending / reference / collateral
 input whose parent tx isn't in the lattice. Per the role-audit

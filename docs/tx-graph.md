@@ -8,7 +8,7 @@ Turtle or JSON-LD.
 ```text
 tx-graph — pure (rules + [cbor]) -> ttl transformation
 
-Usage: tx-graph [--rules FILE] [--in-dir DIR] [--out-dir DIR]
+Usage: tx-graph [--rules FILE] [--in-dir DIR] [--out-dir DIR] [--out FILE]
                 [--format FORMAT] [CBOR...]
 
 Available options:
@@ -18,6 +18,8 @@ Available options:
                      positional CBOR arguments.
   CBOR...            Conway tx CBOR file paths. '-' reads one tx from stdin.
   --out-dir DIR      Write one <txid-hex>.ttl per input into DIR.
+  --out FILE         Write one graph to FILE. With --in-dir, write one
+                     merged Turtle lattice file.
   --format FORMAT    Output format: 'turtle' or 'json-ld'. Default: turtle.
 ```
 
@@ -27,9 +29,17 @@ Available options:
 |--|--|
 | `--rules FILE` only | Overlay-only Turtle from the rules file. |
 | One CBOR, no `--out-dir` | One graph on stdout. |
-| Multiple CBORs or `--in-dir` | One graph per transaction in `--out-dir`. |
+| One CBOR with `--out FILE` | One graph in `FILE`. |
+| Multiple CBORs or `--in-dir` | One SPARQL-composable graph per transaction in `--out-dir`. |
+| `--in-dir DIR --out FILE` | One merged Turtle lattice in `FILE`. |
 
-Multiple inputs require `--out-dir`. The input lattice resolves itself:
+Multiple positional inputs require `--out-dir`. Both lattice output modes
+are SPARQL-composable: `--out-dir DIR` scopes positional blank nodes inside
+each per-transaction file, and `--in-dir DIR --out FILE` emits the same
+scoped graph bodies as one Turtle document. The scheme prefixes positional
+blank nodes with the first eight hex characters of the source transaction
+id, while content-addressed `hash_` and `cred_` identifier blank nodes are
+preserved for cross-transaction joins. The input lattice resolves itself:
 each CBOR is indexed by computed `TxId`, and spending/reference/collateral
 inputs are resolved when the parent transaction is present in the same
 batch. There is no node socket or UTxO JSON flag in this repo.
@@ -53,6 +63,12 @@ Emit a fetched closure as one Turtle file per transaction:
 ```bash
 tx-fetch --out-dir lattice --depth 1 013329ee... 107e439f...
 tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out-dir lattice
+```
+
+Emit a fetched closure as one merged Turtle lattice for SPARQL:
+
+```bash
+tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out lattice.ttl
 ```
 
 Emit JSON-LD:

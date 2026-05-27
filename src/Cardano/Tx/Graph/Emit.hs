@@ -27,6 +27,9 @@ module Cardano.Tx.Graph.Emit (
     -- * Entry point
     emit,
     serialize,
+    serializeScoped,
+    serializeLatticeTurtle,
+    scopeEmittedGraphBnodes,
 
     -- * Result
     EmittedGraph (..),
@@ -112,7 +115,11 @@ import Cardano.Tx.Graph.Emit.Project (
     projectBody,
  )
 import Cardano.Tx.Graph.Emit.Serialize.JsonLd (renderJsonLd)
-import Cardano.Tx.Graph.Emit.Serialize.Turtle (renderTurtle)
+import Cardano.Tx.Graph.Emit.Serialize.Turtle (
+    renderLatticeTurtle,
+    renderTurtle,
+    scopeBodyBnodes,
+ )
 import Cardano.Tx.Graph.Emit.Triple (
     BodySection (..),
     Object (..),
@@ -353,3 +360,44 @@ serialize fmt slug EmittedGraph{graphPrefixes, graphOverlayTurtle, graphBody} =
                 graphPrefixes
                 graphOverlayTurtle
                 graphBody
+
+{- | Scope positional bnodes in an emitted graph by tx id before
+serializing.
+
+Use this for lattice outputs whose files may be loaded together.
+-}
+serializeScoped ::
+    EmitFormat ->
+    FilePath ->
+    Text ->
+    EmittedGraph ->
+    ByteString
+serializeScoped fmt slug txid =
+    serialize fmt slug . scopeEmittedGraphBnodes txid
+
+{- | Apply the lattice bnode policy to an emitted graph: positional
+bnodes are prefixed with the tx-id short tag, and content-addressed
+@hash_@ / @cred_@ bnodes are preserved.
+-}
+scopeEmittedGraphBnodes :: Text -> EmittedGraph -> EmittedGraph
+scopeEmittedGraphBnodes txid g@EmittedGraph{graphBody} =
+    g{graphBody = scopeBodyBnodes txid graphBody}
+
+{- | Serialize multiple emitted transaction bodies as one canonical
+Turtle lattice document.
+
+Each input pair carries the full tx id text and its emitted graph.
+The Turtle serializer uses the first eight tx-id hex characters to
+scope positional blank nodes while preserving content-addressed
+identifier bnodes for cross-transaction joins.
+-}
+serializeLatticeTurtle ::
+    FilePath ->
+    ByteString ->
+    [(Text, EmittedGraph)] ->
+    ByteString
+serializeLatticeTurtle slug overlay graphs =
+    renderLatticeTurtle
+        (Text.pack slug)
+        overlay
+        [(txid, graphBody g) | (txid, g) <- graphs]

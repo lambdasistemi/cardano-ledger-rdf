@@ -10,7 +10,7 @@ commit_gate() {
       echo "✗ $sha subject not conventional-commit: $subject" >&2; fail=1
     fi
     if [ "$(git log -1 --format=%P "$sha" | wc -w)" -eq 1 ]; then
-      if ! echo "$body" | grep -qE '^Tasks: T026-(S1|F)(, T026-(S1|F))*$'; then
+      if ! echo "$body" | grep -qE '^Tasks: (T022-S1|T026-(S1|F))(, (T022-S1|T026-(S1|F)))*$'; then
         if echo "$subject" | grep -qE '^(chore|docs)\(spec[s]?\): '; then
           :
         else
