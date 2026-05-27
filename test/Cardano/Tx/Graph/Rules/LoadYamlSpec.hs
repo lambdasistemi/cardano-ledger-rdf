@@ -170,6 +170,52 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
                         }
                     ]
 
+        it "parses a TxId compound-key entity with a 32-byte hash" $ do
+            let yaml =
+                    "entities:\n\
+                    \  - name: io.submission-tx\n\
+                    \    keys: [TxId]\n\
+                    \    bytes: 73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762\n"
+            parseRulesYamlText yaml
+                `shouldBe` Right
+                    [ EntityDecl
+                        { entityName = "io.submission-tx"
+                        , entitySlug = "io_submission_tx"
+                        , entityIdentifiers =
+                            [ EntityIdentifier
+                                LtTxId
+                                "73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762"
+                            ]
+                        , entityBech32 = Nothing
+                        , entityRole = Nothing
+                        , entityPaidVia = Nothing
+                        , entitySourceFile = inMemoryFile
+                        }
+                    ]
+
+        it "parses a GovActionId compound-key entity as txid:index" $ do
+            let yaml =
+                    "entities:\n\
+                    \  - name: io.proposal.developer-experience\n\
+                    \    keys: [GovActionId]\n\
+                    \    bytes: 73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0\n"
+            parseRulesYamlText yaml
+                `shouldBe` Right
+                    [ EntityDecl
+                        { entityName = "io.proposal.developer-experience"
+                        , entitySlug = "io_proposal_developer_experience"
+                        , entityIdentifiers =
+                            [ EntityIdentifier
+                                LtGovActionId
+                                "73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0"
+                            ]
+                        , entityBech32 = Nothing
+                        , entityRole = Nothing
+                        , entityPaidVia = Nothing
+                        , entitySourceFile = inMemoryFile
+                        }
+                    ]
+
         it "parses multiple entities in source order" $ do
             let yaml =
                     "entities:\n\

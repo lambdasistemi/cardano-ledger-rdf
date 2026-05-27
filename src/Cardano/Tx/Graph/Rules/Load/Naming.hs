@@ -39,11 +39,9 @@ import Cardano.Tx.Graph.Rules.Load.Types (
     LeafType (..),
  )
 
-import Data.Char (isAsciiUpper)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Text (Text)
-import Data.Text qualified as Text
 
 -- | The blank-node local name attached to a @(leafType, bytesHex)@ pair.
 type BnodeName = Text
@@ -82,9 +80,7 @@ lookupBnodeName table EntityIdentifier{entityIdLeafType, entityIdBytesHex} =
     Map.lookup (entityIdLeafType, entityIdBytesHex) table
 
 {- | Map a 'LeafType' to the role-suffix segment used in the bnode
-name. The transform is: only the first character is lowercased; all
-other characters are preserved verbatim. The result for each leafType
-is pinned by spec FR-013:
+name. The result for each leafType is pinned by spec FR-013:
 
 * 'PaymentKey'    → @paymentKey@
 * 'PaymentScript' → @paymentScript@
@@ -95,14 +91,23 @@ is pinned by spec FR-013:
 * 'PoolId'        → @poolId@
 * 'DRepKey'       → @dRepKey@
 * 'DRepScript'    → @dRepScript@
+* 'LtTxId'        → @txId@
+* 'LtGovActionId' → @govActionId@
 -}
 roleSuffix :: LeafType -> Text
-roleSuffix = lowerFirst . Text.pack . show
-  where
-    lowerFirst t = case Text.uncons t of
-        Nothing -> t
-        Just (c, rest) -> Text.cons (toLowerAscii c) rest
-    toLowerAscii c
-        | isAsciiUpper c =
-            toEnum (fromEnum c + (fromEnum 'a' - fromEnum 'A'))
-        | otherwise = c
+roleSuffix = \case
+    PaymentKey -> "paymentKey"
+    PaymentScript -> "paymentScript"
+    StakeKey -> "stakeKey"
+    StakeScript -> "stakeScript"
+    AssetClass -> "assetClass"
+    Policy -> "policy"
+    PoolId -> "poolId"
+    DRepKey -> "dRepKey"
+    DRepScript -> "dRepScript"
+    LtTxId -> "txId"
+    LtGovActionId -> "govActionId"
+    LtDatumHash -> "datumHash"
+    LtScriptHash -> "scriptHash"
+    LtScriptDataHash -> "scriptDataHash"
+    LtAuxiliaryDataHash -> "auxiliaryDataHash"

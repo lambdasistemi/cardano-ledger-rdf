@@ -73,12 +73,30 @@ entities:
   - name: usdm-control
     keys: [PaymentScript, Policy]
     bytes: c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad
+
+  - name: io.submission-tx
+    keys: [TxId]
+    bytes: 73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762
+
+  - name: io.proposal.developer-experience
+    keys: [GovActionId]
+    bytes: 73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0
 ```
 
 `from-address` decomposes Conway addresses into payment and stake
 credentials. `script` creates a `PaymentScript` identifier. `asset`
 stores `policy ++ hex(assetName)`. `keys` plus `bytes` lets one byte
 string be declared under multiple Cardano leaf types.
+
+Supported `keys:` labels are `PaymentKey`, `PaymentScript`, `StakeKey`,
+`StakeScript`, `DRepKey`, `DRepScript`, `PoolId`, `Policy`,
+`AssetClass`, `TxId`, and `GovActionId`.
+
+Most key labels use 28-byte hex in `bytes:`. `TxId` uses a 32-byte
+transaction hash. `GovActionId` uses `<txid_hex>:<index>`, where
+`txid_hex` is the 32-byte transaction hash of the governance action's
+submission transaction and `index` is the decimal action index in that
+transaction.
 
 An off-chain entity may omit on-chain identifiers when it references a
 paying entity:

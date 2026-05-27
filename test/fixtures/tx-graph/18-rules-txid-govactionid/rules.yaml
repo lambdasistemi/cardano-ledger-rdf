@@ -1,0 +1,7 @@
+entities:
+  - name: io.submission-tx
+    keys: [TxId]
+    bytes: 73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762
+  - name: io.proposal.developer-experience
+    keys: [GovActionId]
+    bytes: 73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0

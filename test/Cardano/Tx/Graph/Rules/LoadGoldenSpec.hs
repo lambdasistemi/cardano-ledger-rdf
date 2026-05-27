@@ -3,7 +3,7 @@ Module      : Cardano.Tx.Graph.Rules.LoadGoldenSpec
 Description : Byte-diff goldens for the entity overlay (T003 + T004 + T005).
 License     : Apache-2.0
 
-Drives the rules-loader against each of the 11 @tx-graph@
+Drives the rules-loader against active @tx-graph@
 fixtures' @rules.yaml@ files and byte-compares the produced overlay
 bytes against the corresponding @expected.entities.ttl@ carve-out.
 
@@ -34,8 +34,8 @@ import Test.Hspec (Spec, describe, expectationFailure, it, pending, runIO)
 -- Fixture registry
 ----------------------------------------------------------------------
 
-{- | All 11 tx-graph fixtures with the slice that activates
-each fixture's byte-diff. T003 activates 02, 03, 05, 06, 07, 08, 10;
+{- | All active tx-graph fixtures with the slice that activates each
+fixture's byte-diff. T003 activates 02, 03, 05, 06, 07, 08, 10;
 T004 activates 04; T005 activates 01, 09, 11.
 -}
 data FixtureStatus = Active | Pending !String
@@ -54,6 +54,7 @@ fixtures =
     , ("09-mpfs-facts-request", Active)
     , ("10-governance-treasury-withdrawal", Active)
     , ("11-amaru-treasury-swap-real", Active)
+    , ("18-rules-txid-govactionid", Active)
     ]
 
 fixturesRoot :: FilePath

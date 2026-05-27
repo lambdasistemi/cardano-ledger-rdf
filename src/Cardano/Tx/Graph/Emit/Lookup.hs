@@ -30,11 +30,14 @@ module Cardano.Tx.Graph.Emit.Lookup (
     -- * Table
     LookupTable,
     buildLookup,
+    lookupByteIdentifier,
+    lookupTextIdentifier,
     resolveCredential,
 
     -- * Per-pair bnode constructors
     entityBnodeName,
     rawBytesBnodeName,
+    rawTextBnodeName,
 
     -- * Constants
     rawBytesPrefixLength,
@@ -67,16 +70,20 @@ through the emitter.
 newtype BnodeName = BnodeName {unBnodeName :: Text}
     deriving stock (Eq, Ord, Show)
 
-{- | The credential resolution table. Built once at the start of
+{- | The identifier resolution table. Built once at the start of
 'Cardano.Tx.Graph.Emit.emit' from the operator-declared
 @['EntityDecl']@; consulted on every leaf the projection walker
 visits.
 
-Keyed on @(LeafType, raw bytes)@ — bytes are the decoded ledger
-form, not the hex text the loader stores. Misses fall through to
-'rawBytesBnodeName' via 'resolveCredential'.
+Hex-shaped identifiers are keyed on @(LeafType, raw bytes)@. Text-shaped
+identifiers such as @GovActionId@'s @txid:index@ token are keyed on
+@(LeafType, Text)@.
 -}
-type LookupTable = Map (LeafType, ByteString) BnodeName
+data LookupTable = LookupTable
+    { lookupBytes :: !(Map (LeafType, ByteString) BnodeName)
+    , lookupTexts :: !(Map (LeafType, Text) BnodeName)
+    }
+    deriving stock (Eq, Show)
 
 {- | Hex-prefix length used in raw-bytes bnode names — 16
 hex chars (8 bytes) per research R3.
@@ -110,14 +117,25 @@ with a clear message.
 -}
 buildLookup :: [EntityDecl] -> LookupTable
 buildLookup entities =
-    Map.fromListWith
-        (\_new old -> old)
-        [ ( (entityIdLeafType i, decodeHexOrInvariant (entityIdBytesHex i))
-          , entityBnodeName e i
-          )
-        | e <- entities
-        , i <- entityIdentifiers e
-        ]
+    LookupTable
+        { lookupBytes =
+            Map.fromListWith
+                (\_new old -> old)
+                [ ((entityIdLeafType i, bs), entityBnodeName e i)
+                | e <- entities
+                , i <- entityIdentifiers e
+                , Just bs <- [decodeHexForLookup i]
+                ]
+        , lookupTexts =
+            Map.fromListWith
+                (\_new old -> old)
+                [ ( (entityIdLeafType i, entityIdBytesHex i)
+                  , entityBnodeName e i
+                  )
+                | e <- entities
+                , i <- entityIdentifiers e
+                ]
+        }
 
 {- | Look up a @(LeafType, raw bytes)@ pair against the entity
 table; fall through to the raw-bytes bnode if no entity declared
@@ -129,9 +147,19 @@ resolveCredential ::
     ByteString ->
     BnodeName
 resolveCredential tbl lt bytes =
-    case Map.lookup (lt, bytes) tbl of
+    case Map.lookup (lt, bytes) (lookupBytes tbl) of
         Just bn -> bn
         Nothing -> rawBytesBnodeName lt bytes
+
+-- | Look up a hex-shaped identifier by its decoded bytes.
+lookupByteIdentifier :: LookupTable -> LeafType -> ByteString -> Maybe BnodeName
+lookupByteIdentifier tbl lt bytes =
+    Map.lookup (lt, bytes) (lookupBytes tbl)
+
+-- | Look up a text-shaped identifier token such as @txid:index@.
+lookupTextIdentifier :: LookupTable -> LeafType -> Text -> Maybe BnodeName
+lookupTextIdentifier tbl lt token =
+    Map.lookup (lt, token) (lookupTexts tbl)
 
 {- | The bnode name an 'EntityDecl' contributes for one of its
 'EntityIdentifier' values — @\<entitySlug\>_\<roleSuffix
@@ -165,6 +193,19 @@ rawBytesBnodeName lt bytes =
   where
     hex =
         TextEncoding.decodeLatin1 (Base16.encode bytes)
+
+{- | The fallback bnode name for text-shaped identifiers whose
+canonical token is not pure hex. This is currently used for
+@GovActionId@'s @txid:index@ operator shape.
+-}
+rawTextBnodeName :: LeafType -> Text -> BnodeName
+rawTextBnodeName lt token =
+    BnodeName $
+        familyPrefix lt
+            <> "_"
+            <> rolePrefix lt
+            <> "_"
+            <> Text.replace ":" "_" token
 
 {- | The bnode-name family prefix: @"cred"@ for the
 operator-declarable credential leaves (PaymentKey, PoolId, etc.)
@@ -225,6 +266,14 @@ malformed inputs at load time, per spec FR-013). Reaching the
 'Left' branch here is an invariant violation, not a runtime
 condition.
 -}
+decodeHexForLookup :: EntityIdentifier -> Maybe ByteString
+decodeHexForLookup EntityIdentifier{entityIdLeafType, entityIdBytesHex}
+    | entityIdLeafType == LtGovActionId
+        && Text.any (== ':') entityIdBytesHex =
+        Nothing
+    | otherwise =
+        Just (decodeHexOrInvariant entityIdBytesHex)
+
 decodeHexOrInvariant :: Text -> ByteString
 decodeHexOrInvariant t =
     case Base16.decode (TextEncoding.encodeUtf8 t) of
