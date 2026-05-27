@@ -42,8 +42,8 @@ Issue: [#19](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/19)
 
 ## Finalization
 
-- [ ] T019-F — PR body audit: matches delivered behaviour (rename + import + IRI swap)
-- [ ] T019-F — drop `gate.sh` in `chore: drop gate.sh (ready for review)` commit
-- [ ] T019-F — `gh pr ready` on this repo's PR
+- [X] T019-F — PR body audit: matches delivered behaviour (rename + import + IRI swap)
+- [X] T019-F — drop `gate.sh` in `chore: drop gate.sh (ready for review)` commit
+- [X] T019-F — `gh pr ready` on this repo's PR
 - [ ] T019-F — once #19 PR merged: flip the cardano-knowledge-maps companion PR to ready
 - [ ] T019-F — post-merge cleanup: `git worktree remove`, delete remote branches, prune
