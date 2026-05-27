@@ -1,6 +1,6 @@
 # Prior art
 
-`cardano-rdf` is a Cardano-native canonical-RDF stack:
+`cardano-ledger-rdf` is a Cardano-native canonical-RDF stack:
 Conway transactions emitted as byte-stable Turtle / JSON-LD with a
 `cardano:` predicate vocabulary, CIP-57 blueprint-aware
 datum / redeemer typed-decode, an operator-overlay entity
@@ -21,7 +21,7 @@ the prior work themselves.
 | [**AllegroGraph Bitcoin RDF Model**](https://allegrograph.com/bitcoin-rdf-model-in-allegrograph/) — vendor demo from Franz Inc. | Bitcoin block-and-transaction RDF view served through AllegroGraph with example SPARQL queries. | Vendor proof-of-concept; Bitcoin only; no public dataset. |
 | [**DLT Ontology**](https://arxiv.org/abs/2303.16528) — Building a Knowledge Graph of DLTs (arXiv 2303.16528, 2023). | A *meta*-ontology *about* DLT systems (DLT-as-subject), not a per-transaction RDF emitter. | Position paper; no public SPARQL surface. |
 
-What none of the above provide that `cardano-rdf` does:
+What none of the above provide that `cardano-ledger-rdf` does:
 
 - **eUTxO-shaped triples** with `cardano:fromTxOutRef` /
   `cardano:hasOutput` predicates that JOIN naturally across

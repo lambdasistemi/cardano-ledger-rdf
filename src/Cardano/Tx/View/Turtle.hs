@@ -112,7 +112,7 @@ findAllObjects s p g = [o | (p', o) <- lookupPreds s g, p == p']
 -- Top-level parser
 ----------------------------------------------------------------------
 
-{- | Parse the canonical Turtle subset emitted by the cardano-rdf
+{- | Parse the canonical Turtle subset emitted by the cardano-ledger-rdf
 graph emitter into a subject-keyed graph index.
 -}
 parseTurtle :: ByteString -> Either Text Graph
