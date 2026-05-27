@@ -146,7 +146,7 @@ emptyGraphCase exe =
                 ( BS8.pack
                     ( "@prefix cardano: "
                         <> "<https://lambdasistemi.github.io/"
-                        <> "cardano-knowledge-maps/vocab/cardano#> .\n"
+                        <> "cardano-ledger-rdf/vocab/cardano#> .\n"
                     )
                 )
             (code, out, err) <-

@@ -69,7 +69,7 @@ renderDocument fixtureSlug entities attestations =
 
 renderHeader :: Text -> Text
 renderHeader fixtureSlug =
-    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n"
+    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n"
         <> "@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n"
         <> "@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/"
         <> fixtureSlug

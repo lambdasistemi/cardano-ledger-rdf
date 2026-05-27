@@ -5,7 +5,7 @@
 # skos:, xsd:) are already at the top of that file. Descriptions
 # are left blank — kmaps maintainers author them.
 #
-# Base prefix: https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#
+# Base prefix: https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#
 
 cardano:Address a rdfs:Class ;
   rdfs:label "Address" .
