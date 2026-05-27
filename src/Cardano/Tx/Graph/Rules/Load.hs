@@ -9,8 +9,8 @@ views #51) compose against. Two input formats are accepted:
 
 * Canonical Turtle (@.ttl@) using the kmaps Phase A @cardano:@ namespace.
 * YAML sugar (@.yaml@/@.yml@) extending the 044 grammar with
-  @entities:@, @blueprints:@, @collapse:@ at the top level and a new
-  @imports:@ key for composition.
+  @entities:@, @blueprints:@, @attestations:@, and @imports:@ keys
+  for graph-overlay composition.
 
 Both formats compose via @owl:imports@ / @imports:@; cycles are detected.
 

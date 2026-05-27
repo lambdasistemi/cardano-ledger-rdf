@@ -20,7 +20,7 @@ datum, datum-witness, and per-purpose redeemer emission paths.
 
 This spec asserts three load-bearing invariants:
 
-* __byte-stability on @[]@__ — for every existing rewrite-redesign
+* __byte-stability on @[]@__ — for every existing tx-graph
   fixture, @emit tx utxo entities []@ must produce a Turtle byte
   stream byte-identical to the committed @expected.ttl@. This pins
   the contract that callers passing the empty blueprint index see
@@ -103,23 +103,23 @@ import Cardano.Tx.Graph.Rules.Load (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.Helpers (
+import Fixtures.TxGraph.Helpers (
     TxBuilder (..),
     mkTx,
     stubTxIn,
     stubTxOutMA,
  )
-import Fixtures.RewriteRedesign.S01_AmaruTreasurySwap qualified as S01
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
-import Fixtures.RewriteRedesign.S03_MultiAssetTransfer qualified as S03
-import Fixtures.RewriteRedesign.S04_MintSpendScriptOverlap qualified as S04
-import Fixtures.RewriteRedesign.S05_WithdrawalScriptStake qualified as S05
-import Fixtures.RewriteRedesign.S06_StakePoolDelegation qualified as S06
-import Fixtures.RewriteRedesign.S07_VoteDelegation qualified as S07
-import Fixtures.RewriteRedesign.S08_ContingencyDisburse qualified as S08
-import Fixtures.RewriteRedesign.S09_MpfsFactsRequest qualified as S09
-import Fixtures.RewriteRedesign.S10_GovernanceTreasuryWithdrawal qualified as S10
-import Fixtures.RewriteRedesign.S11_AmaruTreasurySwapReal qualified as S11
+import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
+import Fixtures.TxGraph.S04_MintSpendScriptOverlap qualified as S04
+import Fixtures.TxGraph.S05_WithdrawalScriptStake qualified as S05
+import Fixtures.TxGraph.S06_StakePoolDelegation qualified as S06
+import Fixtures.TxGraph.S07_VoteDelegation qualified as S07
+import Fixtures.TxGraph.S08_ContingencyDisburse qualified as S08
+import Fixtures.TxGraph.S09_MpfsFactsRequest qualified as S09
+import Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal qualified as S10
+import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
 
 import Test.Hspec (
     Spec,
@@ -145,7 +145,7 @@ spec =
 -- Invariant 1: byte-stability on @[]@
 -- ---------------------------------------------------------------------------
 
-{- | For every existing rewrite-redesign fixture,
+{- | For every existing tx-graph fixture,
 @emit tx utxo entities []@ must produce a Turtle byte stream
 byte-identical to the committed @expected.ttl@. The fourth
 parameter is the new blueprint-index slot landed by T102; passing
@@ -160,7 +160,7 @@ byteStabilityOnEmptyIndex =
     describe "emit tx utxo entities [] is byte-stable on the 11 existing fixtures" $
         mapM_ goldenStability allFixtures
 
-{- | The 11 rewrite-redesign fixtures in slug order. Kept in sync
+{- | The 11 tx-graph fixtures in slug order. Kept in sync
 with 'Cardano.Tx.Graph.EmitGoldenSpec.allFixtures' — that spec
 re-asserts the same byte-diff invariant for the wider emitter
 coverage; this re-enumeration scopes the assertion to the new
@@ -183,7 +183,7 @@ allFixtures =
 
 goldenStability :: (String, ConwayTx) -> Spec
 goldenStability (slug, tx) = do
-    let dir = "test/fixtures/rewrite-redesign" </> slug
+    let dir = "test/fixtures/tx-graph" </> slug
         rulesPath = dir </> "rules.yaml"
         expectedPath = dir </> "expected.ttl"
     (entities, overlay) <-

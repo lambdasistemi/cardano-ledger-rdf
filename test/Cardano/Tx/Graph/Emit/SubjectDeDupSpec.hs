@@ -50,9 +50,9 @@ import Cardano.Tx.Graph.Rules.Load (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.S01_AmaruTreasurySwap qualified as S01
-import Fixtures.RewriteRedesign.S03_MultiAssetTransfer qualified as S03
-import Fixtures.RewriteRedesign.S11_AmaruTreasurySwapReal qualified as S11
+import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
+import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
+import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
 
 import Test.Hspec (
     Spec,
@@ -76,7 +76,7 @@ subjects out of it, assert no duplicates.
 -}
 mkCase :: FilePath -> ConwayTx -> Spec
 mkCase slug tx = do
-    let dir = "test/fixtures/rewrite-redesign" </> slug
+    let dir = "test/fixtures/tx-graph" </> slug
         rulesPath = dir </> "rules.yaml"
     (entities, overlay) <- runIO (loadEntitiesAndOverlay rulesPath)
     it (slug <> " — every non-Identifier subject appears at most once") $ do

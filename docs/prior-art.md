@@ -57,7 +57,7 @@ chain-aware operators in the query language.
 | Reference | Relevance |
 |-----------|-----------|
 | [**CIP-57: Plutus Contract Blueprint**](https://cips.cardano.org/cip/CIP-57) — official Cardano Improvement Proposal. | The schema language we consume. `tx-graph` registers blueprints via `rules.yaml` `blueprints:` blocks; the per-script schema is walked at emit time to mint `:<Constructor>_<field>` triples plus per-list `:_<i> :key :value` triples for CIP-57 `SchemaMap` entries. |
-| **Aiken** / **PlutusTx** / **Plinth** code generation. | These projects emit `plutus.json` files that conform to CIP-57. Our shipped `test/fixtures/rewrite-redesign/blueprints/sundaeswap-v3/plutus.json` is one such artefact, pinned at upstream `github.com/SundaeSwap-finance/sundae-contracts` commit `be33466b…`. We *consume* CIP-57 outputs; we don't generate them. |
+| **Aiken** / **PlutusTx** / **Plinth** code generation. | These projects emit `plutus.json` files that conform to CIP-57. Our shipped `test/fixtures/tx-graph/blueprints/sundaeswap-v3/plutus.json` is one such artefact, pinned at upstream `github.com/SundaeSwap-finance/sundae-contracts` commit `be33466b…`. We *consume* CIP-57 outputs; we don't generate them. |
 
 To the best of our knowledge no other project maps CIP-57
 typed schemas into RDF predicates.
@@ -88,7 +88,7 @@ Honest one-liners:
 - [tx-lattice](tx-lattice.md) — the recursive parent-CBOR
   closure builder + its [known limitations](tx-lattice.md#known-limitations).
 - [tx-view](tx-view.md) — the packaged-view library.
-- [rules.yaml](rewriting-rules.md) — the
+- [rules.yaml](rules-yaml.md) — the
   operator-entity overlay format.
 - [May 2026 lattice demo](may-2026-amaru-lattice.md) — eleven
   SPARQL queries against a 30-tx mainnet closure.

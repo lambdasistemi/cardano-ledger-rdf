@@ -41,7 +41,7 @@ For each @<slug>.cbor.hex@ in the cache the spec emits two
    redeemers the check is marked @pending@.
 
 The strict canonical-vocab traceability gate
-('VocabTraceabilitySpec' T123a) runs over the rewrite-redesign
+('VocabTraceabilitySpec' T123a) runs over the tx-graph
 fixtures, not these — real-chain txs may exercise leaves not
 yet declared upstream, in which case the strict gate would
 need a temporary subset relaxation. Until that happens, this
@@ -68,7 +68,7 @@ import Cardano.Ledger.Api.Tx (witsTxL)
 import Cardano.Ledger.Api.Tx.Wits (rdmrsTxWitsL)
 import Lens.Micro ((^.))
 
-import Cardano.Tx.Diff (decodeConwayTxInput)
+import Cardano.Tx.Decode (decodeConwayTxInput)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,

@@ -12,7 +12,7 @@ emitter (#58) builds its credential lookup table from without
 re-parsing the overlay Turtle.
 
 The fixture under exercise is
-@test/fixtures/rewrite-redesign/02-alice-bob-ada@: two
+@test/fixtures/tx-graph/02-alice-bob-ada@: two
 @from-address:@ entities (@alice@, @bob@) in source order, each
 yielding one 'EntityIdentifier'.
 -}
@@ -28,7 +28,7 @@ import System.FilePath ((</>))
 import Test.Hspec (Spec, describe, expectationFailure, it, shouldBe, shouldSatisfy)
 
 fixturesRoot :: FilePath
-fixturesRoot = "test/fixtures/rewrite-redesign"
+fixturesRoot = "test/fixtures/tx-graph"
 
 spec :: Spec
 spec =

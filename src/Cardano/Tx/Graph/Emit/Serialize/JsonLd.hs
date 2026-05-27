@@ -130,7 +130,7 @@ buildContext slug =
 ----------------------------------------------------------------------
 
 {- | Build the JSON-LD object for one subject block. Predicates
-appearing multiple times under the same subject collapse to a
+appearing multiple times under the same subject coalesce to a
 JSON array under one key; @rdf:type@ ('PRdfType') maps to the
 JSON-LD @\@type@ key with a bare CURIE-string value (not an
 @\@id@-wrapped object).

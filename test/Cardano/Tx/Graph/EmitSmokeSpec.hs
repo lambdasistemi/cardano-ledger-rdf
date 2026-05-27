@@ -17,7 +17,7 @@ projection / serializer slice keeps it GREEN as a regression
 guard on the public surface.
 
 The fixture-02-alice-bob-ada @tx@ builder
-(@Fixtures.RewriteRedesign.S02_AliceBobAda@) is reused as the
+(@Fixtures.TxGraph.S02_AliceBobAda@) is reused as the
 minimal hand-built 'ConwayTx'; the resolved-UTxO map is empty
 (the stub ignores it).
 -}
@@ -36,7 +36,7 @@ import Cardano.Tx.Graph.Emit (
  )
 
 import Data.Map.Strict qualified as Map
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 

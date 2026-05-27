@@ -1,11 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
 
 {- |
 Module      : Cardano.Tx.Blueprint
-Description : Plutus blueprint parsing for transaction diffs.
+Description : Plutus blueprint parsing for transaction graph typing.
 
-This module parses the CIP-0057 subset needed by the TxDiff blueprint
+This module parses the CIP-0057 subset needed by the graph blueprint
 boundary: validators, datum and redeemer argument schemas, definitions, and
 the Plutus data schema forms needed to name constructor fields.
 -}
@@ -15,17 +14,14 @@ module Cardano.Tx.Blueprint (
     BlueprintArgumentKind (..),
     BlueprintArgumentSelector (..),
     BlueprintDataError (..),
-    BlueprintDiff (..),
-    BlueprintFallbackReason (..),
     BlueprintMatchError (..),
     BlueprintPreamble (..),
     BlueprintSchema (..),
     BlueprintSchemaKind (..),
     BlueprintValidator (..),
-    blueprintDataDecoder,
+    OpenValue (..),
+    decodeMatchingBlueprintArgument,
     decodeBlueprintData,
-    diffBlueprintArgumentData,
-    diffBlueprintData,
     matchBlueprintArgument,
     parseBlueprintJSON,
     resolveBlueprintSchema,
@@ -38,7 +34,6 @@ import Data.Aeson (
     withObject,
     (.:),
     (.:?),
-    (.=),
  )
 import Data.Aeson qualified as Aeson
 import Data.Aeson.Key qualified as Key
@@ -56,18 +51,7 @@ import Data.Text qualified as Text
 import Data.Text.Encoding qualified as TextEncoding
 
 import Cardano.Ledger.Api.Scripts.Data (Data (..))
-import Cardano.Ledger.Binary (serialize')
 import Cardano.Ledger.Conway (ConwayEra)
-import Cardano.Ledger.Core (eraProtVerLow)
-import Cardano.Tx.Diff (
-    DiffChange (..),
-    DiffNode (..),
-    DiffPath (..),
-    OpenValue (..),
-    TxDiffDataKind (..),
-    TxDiffDataSelector (..),
-    diffOpenValue,
- )
 import PlutusCore.Data qualified as PLC
 
 data Blueprint = Blueprint
@@ -114,14 +98,12 @@ data BlueprintMatchError
     | BlueprintDefinitionCycle Text
     deriving stock (Eq, Show)
 
-data BlueprintDiff
-    = BlueprintDiffDecoded DiffNode
-    | BlueprintDiffFallback BlueprintFallbackReason DiffNode
-    deriving stock (Eq, Show)
-
-data BlueprintFallbackReason
-    = BlueprintMatchFallback BlueprintMatchError
-    | BlueprintDataFallback BlueprintDataError
+data OpenValue
+    = OpenObject (Map Text OpenValue)
+    | OpenArray [OpenValue]
+    | OpenInteger Integer
+    | OpenText Text
+    | OpenBytes Text
     deriving stock (Eq, Show)
 
 data BlueprintDataError
@@ -163,13 +145,6 @@ parseBlueprintJSON :: LBS.ByteString -> Either String Blueprint
 parseBlueprintJSON =
     eitherDecode
 
-blueprintDataDecoder ::
-    [Blueprint] -> TxDiffDataSelector -> Data ConwayEra -> Either Text OpenValue
-blueprintDataDecoder blueprints selector =
-    decodeMatchingBlueprintArgument
-        blueprints
-        (blueprintArgumentSelector selector)
-
 decodeMatchingBlueprintArgument ::
     [Blueprint] ->
     BlueprintArgumentSelector ->
@@ -178,7 +153,7 @@ decodeMatchingBlueprintArgument ::
 decodeMatchingBlueprintArgument blueprints selector datum =
     case matches of
         [] ->
-            Left (Text.pack (show (BlueprintMatchFallback BlueprintArgumentMissing)))
+            Left (Text.pack (show BlueprintArgumentMissing))
         _ ->
             case decodedMatches of
                 [(_, value)] ->
@@ -189,8 +164,7 @@ decodeMatchingBlueprintArgument blueprints selector datum =
                     Left $
                         Text.pack $
                             show $
-                                BlueprintMatchFallback $
-                                    BlueprintArgumentAmbiguous (map fst multiple)
+                                BlueprintArgumentAmbiguous (map fst multiple)
   where
     matches =
         matchingArguments blueprints selector
@@ -198,11 +172,11 @@ decodeMatchingBlueprintArgument blueprints selector datum =
         [ ( matchLabel blueprint validator
           , case resolveBlueprintSchema blueprint (argumentSchema argument) of
                 Left err ->
-                    Left (Text.pack (show (BlueprintMatchFallback err)))
+                    Left (Text.pack (show err))
                 Right schema ->
                     case decodeBlueprintData schema datum of
                         Left err ->
-                            Left (Text.pack (show (BlueprintDataFallback err)))
+                            Left (Text.pack (show err))
                         Right value ->
                             Right value
           )
@@ -217,75 +191,10 @@ decodeMatchingBlueprintArgument blueprints selector datum =
         | (label, Left reason) <- attempts
         ]
 
-blueprintArgumentSelector :: TxDiffDataSelector -> BlueprintArgumentSelector
-blueprintArgumentSelector selector =
-    BlueprintArgumentSelector
-        { selectorValidatorTitle = txDiffDataValidatorTitle selector
-        , selectorArgumentKind =
-            txDiffBlueprintArgumentKind (txDiffDataKind selector)
-        }
-
-txDiffBlueprintArgumentKind :: TxDiffDataKind -> BlueprintArgumentKind
-txDiffBlueprintArgumentKind TxDiffDatum =
-    BlueprintDatum
-txDiffBlueprintArgumentKind TxDiffRedeemer =
-    BlueprintRedeemer
-
 decodeBlueprintData ::
     BlueprintSchema -> Data ConwayEra -> Either BlueprintDataError OpenValue
 decodeBlueprintData schema (Data value) =
     decodeBlueprintValue schema value
-
-diffBlueprintData ::
-    BlueprintSchema ->
-    Data ConwayEra ->
-    Data ConwayEra ->
-    Either BlueprintDataError DiffNode
-diffBlueprintData schema left right = do
-    leftOpen <- decodeBlueprintData schema left
-    rightOpen <- decodeBlueprintData schema right
-    pure (diffOpenValue leftOpen rightOpen)
-
-diffBlueprintArgumentData ::
-    [Blueprint] ->
-    BlueprintArgumentSelector ->
-    Data ConwayEra ->
-    Data ConwayEra ->
-    BlueprintDiff
-diffBlueprintArgumentData blueprints selector left right =
-    case matchBlueprintArgument blueprints selector of
-        Left err ->
-            BlueprintDiffFallback
-                (BlueprintMatchFallback err)
-                (rawBlueprintDataDiff left right)
-        Right schema ->
-            case diffBlueprintData schema left right of
-                Left err ->
-                    BlueprintDiffFallback
-                        (BlueprintDataFallback err)
-                        (rawBlueprintDataDiff left right)
-                Right diff ->
-                    BlueprintDiffDecoded diff
-
-rawBlueprintDataDiff :: Data ConwayEra -> Data ConwayEra -> DiffNode
-rawBlueprintDataDiff left right
-    | left == right =
-        DiffNode
-            (DiffPath [])
-            (DiffSame (Just (rawBlueprintDataValue left)))
-    | otherwise =
-        DiffNode
-            (DiffPath [])
-            ( DiffChanged
-                (rawBlueprintDataValue left)
-                (rawBlueprintDataValue right)
-            )
-
-rawBlueprintDataValue :: Data ConwayEra -> Aeson.Value
-rawBlueprintDataValue datum =
-    Aeson.object
-        [ "cbor" .= hexText (serialize' (eraProtVerLow @ConwayEra) datum)
-        ]
 
 decodeBlueprintValue ::
     BlueprintSchema -> PLC.Data -> Either BlueprintDataError OpenValue

@@ -82,7 +82,7 @@ JSON-LD serializes the same triple set as `@context` plus a flat
 
 ## See Also
 
-- [rules.yaml](rewriting-rules.md) documents the overlay language.
+- [rules.yaml](rules-yaml.md) documents the overlay language.
 - [tx-fetch](tx-fetch.md) fetches a CBOR closure for lattice emission.
 - [tx-view](tx-view.md) projects the emitted Turtle through packaged
   views.

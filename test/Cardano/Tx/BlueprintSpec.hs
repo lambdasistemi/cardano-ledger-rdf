@@ -2,9 +2,6 @@
 
 module Cardano.Tx.BlueprintSpec (spec) where
 
-import Data.Aeson ((.=))
-import Data.Aeson qualified as Aeson
-import Data.Aeson.KeyMap qualified as KeyMap
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy.Char8 qualified as LBS8
 import Data.Map.Strict qualified as Map
@@ -17,27 +14,16 @@ import Cardano.Tx.Blueprint (
     BlueprintArgument (..),
     BlueprintArgumentKind (..),
     BlueprintArgumentSelector (..),
-    BlueprintDiff (..),
-    BlueprintFallbackReason (..),
     BlueprintMatchError (..),
     BlueprintPreamble (..),
     BlueprintSchema (..),
     BlueprintSchemaKind (..),
     BlueprintValidator (..),
-    blueprintDataDecoder,
+    OpenValue (..),
     decodeBlueprintData,
-    diffBlueprintArgumentData,
-    diffBlueprintData,
+    decodeMatchingBlueprintArgument,
     matchBlueprintArgument,
     parseBlueprintJSON,
- )
-import Cardano.Tx.Diff (
-    DiffChange (..),
-    DiffNode (..),
-    DiffPath (..),
-    OpenValue (..),
-    TxDiffDataKind (..),
-    TxDiffDataSelector (..),
  )
 import PlutusCore.Data qualified as PLC
 
@@ -242,11 +228,11 @@ spec =
                         , blueprintValidators = [wrongValidator, rightValidator]
                         , blueprintDefinitions = Map.empty
                         }
-            blueprintDataDecoder
+            decodeMatchingBlueprintArgument
                 [blueprint]
-                TxDiffDataSelector
-                    { txDiffDataValidatorTitle = Nothing
-                    , txDiffDataKind = TxDiffDatum
+                BlueprintArgumentSelector
+                    { selectorValidatorTitle = Nothing
+                    , selectorArgumentKind = BlueprintDatum
                     }
                 (orderDatum 42)
                 `shouldBe` Right
@@ -269,69 +255,13 @@ spec =
                         )
                     )
 
-        it "diffs decoded constructor fields as open application values" $ do
-            diffBlueprintData orderSchema (orderDatum 42) (orderDatum 43)
-                `shouldBe` Right
-                    ( DiffNode
-                        rootPath
-                        ( DiffObject
-                            ( Map.fromList
-                                [ ("owner", Just (Aeson.object ["bytes" .= ("dead" :: String)]))
-                                ]
-                            )
-                            ( Map.fromList
-                                [
-                                    ( "amount"
-                                    , DiffNode
-                                        (DiffPath ["amount"])
-                                        ( DiffChanged
-                                            (Aeson.Number 42)
-                                            (Aeson.Number 43)
-                                        )
-                                    )
-                                ]
-                            )
-                            Map.empty
-                            Map.empty
-                        )
-                    )
-
-        it "falls back to raw data when no blueprint argument matches" $
-            case diffBlueprintArgumentData
-                []
-                orderDatumSelector
-                (orderDatum 42)
-                (orderDatum 43) of
-                BlueprintDiffFallback
-                    (BlueprintMatchFallback BlueprintArgumentMissing)
-                    diff ->
-                        diff `shouldBeRawDataChange` rootPath
-                other ->
-                    expectationFailure ("unexpected fallback result: " <> show other)
-
-        it "falls back to raw data when blueprint argument matches ambiguously" $
+        it "reports ambiguity when more than one blueprint argument matches" $
             case parseBlueprintJSON blueprintJson of
                 Left err ->
                     expectationFailure err
                 Right blueprint ->
-                    case diffBlueprintArgumentData
-                        [blueprint, blueprint]
-                        orderDatumSelector
-                        (orderDatum 42)
-                        (orderDatum 43) of
-                        BlueprintDiffFallback
-                            ( BlueprintMatchFallback
-                                    (BlueprintArgumentAmbiguous ["swap", "swap"])
-                                )
-                            diff ->
-                                diff `shouldBeRawDataChange` rootPath
-                        other ->
-                            expectationFailure $
-                                "unexpected fallback result: " <> show other
-
-rootPath :: DiffPath
-rootPath =
-    DiffPath []
+                    matchBlueprintArgument [blueprint, blueprint] orderDatumSelector
+                        `shouldBe` Left (BlueprintArgumentAmbiguous ["swap", "swap"])
 
 orderSchema :: BlueprintSchema
 orderSchema =
@@ -367,21 +297,6 @@ orderDatumSelector =
         { selectorValidatorTitle = Just "swap"
         , selectorArgumentKind = BlueprintDatum
         }
-
-shouldBeRawDataChange :: DiffNode -> DiffPath -> Expectation
-shouldBeRawDataChange (DiffNode path (DiffChanged left right)) expectedPath = do
-    path `shouldBe` expectedPath
-    left `shouldSatisfy` hasCborField
-    right `shouldSatisfy` hasCborField
-    left `shouldNotBe` right
-shouldBeRawDataChange other _ =
-    expectationFailure ("expected raw data change, got: " <> show other)
-
-hasCborField :: Aeson.Value -> Bool
-hasCborField (Aeson.Object value) =
-    KeyMap.member "cbor" value
-hasCborField _ =
-    False
 
 blueprintJson :: LBS8.ByteString
 blueprintJson =

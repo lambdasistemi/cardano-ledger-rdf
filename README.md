@@ -37,11 +37,11 @@ The main library contains:
 | `Cardano.Tx.Graph.*` | RDF graph emission, operator entity overlays, canonical Turtle/JSON-LD serialization. |
 | `Cardano.Tx.View.*` | Packaged graph projections used by `tx-view` and future HTTP services. |
 | `Cardano.Tx.Blueprint` | CIP-57 blueprint parsing for typed datum/redeemer predicates. |
-| `Cardano.Tx.Diff` | Current internal Conway body projection substrate used by the graph walker. |
+| `Cardano.Tx.Decode` / `Cardano.Tx.Graph.Resolve` | Shared transaction decoding and resolved-input lookup for RDF tools. |
 
-The current module names are migration debt from `cardano-tx-tools`.
-The repository boundary is graph/RDF; a later API pass can rename the
-public surface without mixing that refactor into this extraction.
+The repository boundary is graph/RDF. Downstream transaction diffing,
+inspection, validation, and signing applications can depend on this
+library instead of being owned here.
 
 ## Release
 

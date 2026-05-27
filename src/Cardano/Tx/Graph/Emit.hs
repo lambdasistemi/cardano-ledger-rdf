@@ -4,9 +4,9 @@ Description : Body emitter for Cardano (Conway) transactions — public surface.
 License     : Apache-2.0
 
 Public surface of the joint-graph body emitter introduced by
-@specs\/058-body-emitter@. The emitter walks a 'ConwayTx' via
-@Cardano.Tx.Diff.conwayDiffProjection@, dispatches on the leaves
-to vocab-typed RDF triples, looks up entity-named blank-nodes
+@specs\/058-body-emitter@. The emitter walks a 'ConwayTx',
+dispatches ledger fields to vocab-typed RDF triples, looks up
+entity-named blank-nodes
 against an operator-declared @[EntityDecl]@, and renders the
 result as canonical Turtle (T005) or JSON-LD (T011).
 
@@ -166,8 +166,7 @@ pre-T102 walker.
 'ConwayTx'.
 
 This alias names the shape the rest of the repo spells out inline
-(see 'Cardano.Tx.Diff.TxDiffOptions.txDiffResolvedInputs' and
-'Cardano.Tx.Diff.Resolver.resolveChain'). Named here so the
+(see 'Cardano.Tx.Graph.Resolve.resolveChain'). Named here so the
 emitter's public signature reads as a single typed input rather
 than a raw container.
 -}
@@ -230,9 +229,9 @@ Constructors:
   aeson parser's message.
 * 'UnknownFormat' — the @--format@ CLI argument did not match any
   known 'EmitFormat' value.
-* 'UnsupportedLeafType' — a 'Cardano.Tx.Diff.conwayDiffProjection'
-  leaf appeared that the projection walker does not yet handle;
-  T006-T010 close the last residual leaves.
+* 'UnsupportedLeafType' — a ledger field appeared that the
+  projection walker does not yet handle; T006-T010 close the last
+  residual leaves.
 -}
 data EmitError
     = UtxoRequired !Int
@@ -324,7 +323,7 @@ emit tx utxo entities blueprints =
 'EmitFormat'.
 
 The fixture slug is the directory name under
-@test\/fixtures\/rewrite-redesign\/@ (e.g. @"02-alice-bob-ada"@);
+@test\/fixtures\/tx-graph\/@ (e.g. @"02-alice-bob-ada"@);
 the serializer uses it as the local part of the @\@prefix :@
 declaration (Turtle) or the empty default in @\@context@
 (JSON-LD). For the Turtle path 'serialize' is byte-stable; for

@@ -8,7 +8,8 @@ Covers the in-memory @'parseRulesYamlText' :: ByteString -> Either
 and @asset@ entity shapes, the six Conway base/enterprise address
 classes (the cross-product of payment ∈ {Key,Script} and
 stake ∈ {Key,Script,enterprise}), the slugify algorithm
-(snake_case with @[^a-z0-9]@ → @_@, repeat collapse, end-trim) and
+(snake_case with @[^a-z0-9]@ -> @_@, repeated underscores coalesced,
+end-trim) and
 the two slug edge-cases (empty slug + leading-digit slug).
 
 Per Q-001/A-001 the slug is used for both the entity IRI local-part
@@ -64,7 +65,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
             parseRulesYamlText "blueprints: []\n" `shouldBe` Right []
 
         it "parses a single from-address (PaymentKey + StakeKey)" $ do
-            -- A real mainnet base-address from the rewrite-redesign
+            -- A real mainnet base-address from the tx-graph
             -- fixture-02 corpus. The decoded payment / stake hashes
             -- are the ground-truth bytes the ledger decoder produces
             -- (the fixture's expected.ttl pre-T002 used artisanal,
@@ -285,7 +286,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
                 other ->
                     fail $ "expected EntityNameSlugLeadingDigit, got: " <> show other
 
-        it "rewrites dots and dashes to underscores; collapses runs" $ do
+        it "maps dots and dashes to underscores; coalesces runs" $ do
             let yaml =
                     "entities:\n\
                     \  - name: amaru-treasury.network__compliance\n\
@@ -481,29 +482,6 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
                     \  - script: usdm-control\n\
                     \    datum: ./blueprints/usdm.cip57.json\n"
             parseRulesYamlText yaml `shouldSatisfy` isRightSingleton
-
-    describe "collapse: top-level shape (T005)" $ do
-        it "silently accepts a top-level collapse: list (no triples are emitted)" $ do
-            let yaml =
-                    "entities:\n\
-                    \  - name: foo\n\
-                    \    script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077\n\
-                    \collapse:\n\
-                    \  - name: SwapOrderInput\n\
-                    \    at: body.inputs\n\
-                    \    match:\n\
-                    \      required:\n\
-                    \        - resolved.address\n\
-                    \    view: omit\n"
-            parseRulesYamlText yaml `shouldSatisfy` isRightSingleton
-
-        it "rejects a non-list collapse: value (shape guard)" $ do
-            let yaml =
-                    "entities:\n\
-                    \  - name: foo\n\
-                    \    script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077\n\
-                    \collapse: notalist\n"
-            parseRulesYamlText yaml `shouldSatisfy` isParserError
 
 isEntityZeroIdentifiers :: Either RulesLoadError [EntityDecl] -> Bool
 isEntityZeroIdentifiers (Left EntityZeroIdentifiers{}) = True

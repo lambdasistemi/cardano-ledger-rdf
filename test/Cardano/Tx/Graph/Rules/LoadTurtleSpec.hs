@@ -245,7 +245,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
             -- Operator authored "_:my_custom_bnode" instead of the
             -- canonical "_:foo_paymentScript". The parser routes the
             -- entities through the same Naming algorithm the YAML
-            -- compiler uses, so the serializer rewrites the bnode to
+            -- compiler uses, so the serializer normalizes the bnode to
             -- the deterministic form and the byte output is identical.
             let yaml =
                     "entities:\n\

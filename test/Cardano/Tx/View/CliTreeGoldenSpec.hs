@@ -3,7 +3,7 @@ Module      : Cardano.Tx.View.CliTreeGoldenSpec
 Description : tx-view executable + cli-tree projection byte-equivalence spec.
 License     : Apache-2.0
 
-Cli-tree slice of #51. For each of the ten mandatory rewrite-redesign
+Cli-tree slice of #51. For each of the ten mandatory tx-graph
 stub fixtures (per Q-001 -> A-001), spawn the @tx-view@ binary as a
 subprocess against the fixture's canonical Turtle graph
 (@expected.ttl@) and assert the @--view cli-tree@ stdout
@@ -12,9 +12,7 @@ byte-equals the view-side golden under
 
 The view-side goldens reflect the @cli-tree@ projection over the data
 the canonical graph actually carries today (stub all-zero credential
-bytes, raw policy hashes, undecoded datum bytes); 044 byte-equivalence
-to @expected.txt@ is deferred to the fixture-bridging follow-on filed
-as issue #98.
+bytes, raw policy hashes, undecoded datum bytes).
 
 The binary is located by 'locateTxView', which prefers the
 @TX_VIEW_EXE@ environment variable and falls back to
@@ -73,7 +71,7 @@ import Test.Hspec (
 -- Mandatory cli-tree corpus
 ----------------------------------------------------------------------
 
-{- | The ten rewrite-redesign fixtures the cli-tree slice covers.
+{- | The ten tx-graph fixtures the cli-tree slice covers.
 Per Q-001 -> A-001, fixtures 11+ are deferred to the fixture-bridging
 follow-on (issue #98).
 -}
@@ -142,7 +140,7 @@ cliTreeFixtureCase :: FilePath -> String -> Spec
 cliTreeFixtureCase exe slug =
     it (slug <> " — tx-view --view cli-tree matches cli-tree.txt") $ do
         let graphPath =
-                "test/fixtures/rewrite-redesign" </> slug </> "expected.ttl"
+                "test/fixtures/tx-graph" </> slug </> "expected.ttl"
             goldenPath =
                 "test/fixtures/views" </> slug </> "cli-tree.txt"
         expected <- BS.readFile goldenPath
@@ -204,7 +202,7 @@ defaultsToCliTreeCase :: FilePath -> Spec
 defaultsToCliTreeCase exe =
     it "--view defaults to cli-tree" $ do
         let graphPath =
-                "test/fixtures/rewrite-redesign"
+                "test/fixtures/tx-graph"
                     </> "02-alice-bob-ada"
                     </> "expected.ttl"
         (codeDefault, outDefault, _) <-
@@ -229,7 +227,7 @@ outFileCase exe =
     it "--out FILE writes to file, stdout empty" $
         withSystemTempDirectory "tx-view-out" $ \dir -> do
             let graphPath =
-                    "test/fixtures/rewrite-redesign"
+                    "test/fixtures/tx-graph"
                         </> "02-alice-bob-ada"
                         </> "expected.ttl"
                 outPath = dir </> "cli-tree.txt"
@@ -255,7 +253,7 @@ unknownViewCase :: FilePath -> Spec
 unknownViewCase exe =
     it "unknown --view name — non-zero exit, stderr non-empty" $ do
         let graphPath =
-                "test/fixtures/rewrite-redesign"
+                "test/fixtures/tx-graph"
                     </> "02-alice-bob-ada"
                     </> "expected.ttl"
         (code, _, err) <-

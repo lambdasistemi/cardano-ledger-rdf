@@ -51,23 +51,23 @@ import Cardano.Tx.Graph.Rules.Load (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.Helpers (stubTxIn, stubTxOutMA)
-import Fixtures.RewriteRedesign.S01_AmaruTreasurySwap qualified as S01
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
-import Fixtures.RewriteRedesign.S03_MultiAssetTransfer qualified as S03
-import Fixtures.RewriteRedesign.S04_MintSpendScriptOverlap qualified as S04
-import Fixtures.RewriteRedesign.S05_WithdrawalScriptStake qualified as S05
-import Fixtures.RewriteRedesign.S06_StakePoolDelegation qualified as S06
-import Fixtures.RewriteRedesign.S07_VoteDelegation qualified as S07
-import Fixtures.RewriteRedesign.S08_ContingencyDisburse qualified as S08
-import Fixtures.RewriteRedesign.S09_MpfsFactsRequest qualified as S09
-import Fixtures.RewriteRedesign.S10_GovernanceTreasuryWithdrawal qualified as S10
-import Fixtures.RewriteRedesign.S11_AmaruTreasurySwapReal qualified as S11
-import Fixtures.RewriteRedesign.S12BlueprintTyped qualified as S12
-import Fixtures.RewriteRedesign.S13BlueprintPassthrough qualified as S13
-import Fixtures.RewriteRedesign.S14BlueprintDecodeFail qualified as S14
-import Fixtures.RewriteRedesign.S15_AmaruDisburseNetworkCompliance qualified as S15
-import Fixtures.RewriteRedesign.S17_AmaruDisburseContingency qualified as S17
+import Fixtures.TxGraph.Helpers (stubTxIn, stubTxOutMA)
+import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
+import Fixtures.TxGraph.S04_MintSpendScriptOverlap qualified as S04
+import Fixtures.TxGraph.S05_WithdrawalScriptStake qualified as S05
+import Fixtures.TxGraph.S06_StakePoolDelegation qualified as S06
+import Fixtures.TxGraph.S07_VoteDelegation qualified as S07
+import Fixtures.TxGraph.S08_ContingencyDisburse qualified as S08
+import Fixtures.TxGraph.S09_MpfsFactsRequest qualified as S09
+import Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal qualified as S10
+import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
+import Fixtures.TxGraph.S12BlueprintTyped qualified as S12
+import Fixtures.TxGraph.S13BlueprintPassthrough qualified as S13
+import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
+import Fixtures.TxGraph.S15_AmaruDisburseNetworkCompliance qualified as S15
+import Fixtures.TxGraph.S17_AmaruDisburseContingency qualified as S17
 
 import Test.Hspec (
     Spec,
@@ -84,7 +84,7 @@ spec = describe "Cardano.Tx.Graph.Emit joint Turtle goldens (T005)" $ do
 
 {- | List of every fixture covered by the byte-diff golden suite.
 The slug is the directory name under
-@test/fixtures/rewrite-redesign/@; the @ConwayTx@ comes from the
+@test/fixtures/tx-graph/@; the @ConwayTx@ comes from the
 per-fixture @Sxx@ module. Adding a fixture is a one-line append.
 -}
 allFixtures :: [(String, ConwayTx)]
@@ -115,7 +115,7 @@ before the test body runs.
 -}
 fixtureGoldenItem :: Bool -> (String, ConwayTx) -> Spec
 fixtureGoldenItem regen (slug, tx) = do
-    let dir = "test/fixtures/rewrite-redesign" </> slug
+    let dir = "test/fixtures/tx-graph" </> slug
         rulesPath = dir </> "rules.yaml"
         expectedPath = dir </> "expected.ttl"
     (entities, overlay, blueprints) <-

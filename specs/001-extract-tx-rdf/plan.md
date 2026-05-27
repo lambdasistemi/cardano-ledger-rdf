@@ -89,8 +89,8 @@ passes.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| Retain some `Cardano.Tx.*` names initially | Keeps the copy buildable and testable before deleting old source | Immediate rename would combine extraction with a broad API break and obscure regressions |
-| Copy support modules beyond `Graph`/`View` | Graph code imports blueprint, diff, resolver, ledger, rewrite, and fixture helpers | Hand-stubbing support would not prove the real RDF engine works |
+| Retain some `Cardano.Tx.*` names initially | Keeps the copy buildable and testable before deleting old source | Immediate API-name churn would combine extraction with a broad API break and obscure regressions |
+| Copy support modules beyond `Graph`/`View` | Graph code imports blueprint, diff, resolver, ledger, and fixture helpers | Hand-stubbing support would not prove the real RDF engine works |
 
 ## Phases
 

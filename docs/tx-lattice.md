@@ -75,4 +75,4 @@ credential.
 - [tx-fetch](tx-fetch.md) fetches the CBOR closure.
 - [tx-graph](tx-graph.md) emits canonical Turtle/JSON-LD.
 - [tx-view](tx-view.md) projects generated graphs.
-- [rules.yaml](rewriting-rules.md) documents the operator overlay.
+- [rules.yaml](rules-yaml.md) documents the operator overlay.

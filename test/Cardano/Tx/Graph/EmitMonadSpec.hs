@@ -116,7 +116,7 @@ spec = describe "Cardano.Tx.Graph.Emit.Monad (T102 seam)" $ do
         it "is empty on an empty triple stream" $ do
             groupBySubject [] `shouldBe` []
 
-        it "collapses interleaved emissions for the same subject" $ do
+        it "coalesces interleaved emissions for the same subject" $ do
             -- subjA, subjB, subjA — the subjA block should
             -- contain both subjA predicates in call order; subjB
             -- block stays second.

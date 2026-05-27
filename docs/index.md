@@ -35,10 +35,11 @@ the boundary that talks to Blockfrost-compatible chain APIs.
 | `Cardano.Tx.Graph.*` | RDF graph emission, operator overlays, canonical serialization. |
 | `Cardano.Tx.View.*` | Packaged graph projections. |
 | `Cardano.Tx.Blueprint` | CIP-57 blueprint parsing for typed graph predicates. |
-| `Cardano.Tx.Diff` | Current internal Conway body projection substrate used by the graph walker. |
+| `Cardano.Tx.Decode` / `Cardano.Tx.Graph.Resolve` | Shared transaction decoding and resolved-input lookup for RDF tools. |
 
-The `Cardano.Tx.*` names are migration debt from the original
-`cardano-tx-tools` code. The repository boundary is graph/RDF.
+The repository boundary is graph/RDF. Downstream transaction diffing,
+inspection, validation, signing, and load generation remain
+`cardano-tx-tools` applications.
 
 ## Release
 

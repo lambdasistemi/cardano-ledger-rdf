@@ -4,7 +4,7 @@ Description : Bech32 address decomposition for the YAML compiler.
 License     : Apache-2.0
 
 Internal helper for the @entities: from-address: \<bech32\>@ shape.
-Reuses 'Cardano.Tx.Diff.decodeBech32Address' (already in the
+Reuses 'Cardano.Tx.Decode.decodeBech32Address' (already in the
 @cardano-rdf@ library's dep tree) to decode a bech32 string into a
 'Cardano.Ledger.Address.Addr', then case-matches on the payment and
 stake credentials to produce 1–2 'EntityIdentifier' values.
@@ -33,7 +33,7 @@ module Cardano.Tx.Graph.Rules.Load.Bech32 (
 import Codec.Binary.Bech32 qualified as Bech32
 import Data.ByteString qualified as BS
 
-import Cardano.Tx.Diff (decodeBech32Address)
+import Cardano.Tx.Decode (decodeBech32Address)
 import Cardano.Tx.Graph.Rules.Load.Types (
     EntityIdentifier (..),
     LeafType (..),
@@ -58,7 +58,7 @@ second@ order; enterprise addresses produce a single-element list.
 
 Pointer-style stake references are treated like enterprise: no stake
 identifier is emitted (pointer addresses are deprecated and do not
-appear in the 11 rewrite-redesign fixtures).
+appear in the 11 tx-graph fixtures).
 
 Byron bootstrap addresses are rejected.
 -}

@@ -17,7 +17,7 @@ the four Conway body-root predicates iff their corresponding
 * @cardano:auxiliaryDataHash@ — present iff @auxDataHashTxBodyL@
   is 'SJust'.
 
-The eleven rewrite-redesign fixtures all leave these four fields
+The eleven tx-graph fixtures all leave these four fields
 at @SNothing@; the byte-equal goldens pin the elision branch.
 The populated branches are exercised here via synthetic
 'ConwayTx' values built by lens-set on the 'mkBasicTxBody' default

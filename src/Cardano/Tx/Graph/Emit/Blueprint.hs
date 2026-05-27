@@ -70,11 +70,11 @@ import Cardano.Tx.Blueprint (
     BlueprintArgumentKind (BlueprintDatum, BlueprintRedeemer),
     BlueprintDataError (..),
     BlueprintValidator (validatorDatum, validatorRedeemer),
+    OpenValue,
     blueprintValidators,
     decodeBlueprintData,
     resolveBlueprintSchema,
  )
-import Cardano.Tx.Diff (OpenValue)
 import Cardano.Tx.Graph.Emit.Triple (Predicate (PIri))
 
 {- | Three-way result of consulting the blueprint index at a single

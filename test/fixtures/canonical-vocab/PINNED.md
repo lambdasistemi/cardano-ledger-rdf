@@ -79,7 +79,7 @@ rationale).
 4. T110b — refresh to kmaps@cce9625b (Phase A.1 merged to main).
 5. T114b — refresh to kmaps@a9b5d96 (Phase A.2 branch tip,
    Phase A.1.5 guess content). Enabled the type-driven
-   exhaustive ConwayDiffValue coverage work (T115..T122).
+   exhaustive ConwayGraphField coverage work (T115..T122).
 6. T123a — refresh to kmaps@e0602fe after the parent
    force-pushed kmaps#56 to the Vocab.hs-derived patch verbatim
    (operator A-008). The strict VocabTraceabilitySpec gate

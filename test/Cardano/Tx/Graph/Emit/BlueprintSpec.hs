@@ -88,8 +88,8 @@ import Cardano.Tx.Blueprint (
     BlueprintSchema (..),
     BlueprintSchemaKind (..),
     BlueprintValidator (..),
+    OpenValue (..),
  )
-import Cardano.Tx.Diff (OpenValue (..))
 import Cardano.Tx.Graph.Emit (
     BnodeName (..),
     Object (..),

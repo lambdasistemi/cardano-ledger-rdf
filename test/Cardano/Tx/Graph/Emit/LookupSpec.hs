@@ -217,7 +217,7 @@ mkScriptEntity slug hex =
 -- Fixture loading (injectivity property)
 ----------------------------------------------------------------------
 
--- | The 11 fixture slugs covered by the rewrite-redesign suite.
+-- | The 11 fixture slugs covered by the tx-graph suite.
 fixtureSlugs :: [FilePath]
 fixtureSlugs =
     [ "01-amaru-treasury-swap"
@@ -239,7 +239,7 @@ loadAllFixtureEntities = do
         <$> mapM
             ( \slug -> do
                 let path =
-                        "test/fixtures/rewrite-redesign"
+                        "test/fixtures/tx-graph"
                             </> slug
                             </> "rules.yaml"
                 result <- loadRulesFile path

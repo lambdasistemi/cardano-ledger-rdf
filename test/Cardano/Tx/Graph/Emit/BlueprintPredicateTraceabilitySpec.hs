@@ -13,7 +13,7 @@ T104 / S4 of feature 050 (blueprint-decode typed triples). The existing
 CURIEs only (FR-010); the operator-owned predicates emitted by the
 typed walker (@':\<ctor\>_\<field\>'@) are checked here.
 
-Pinned invariant, swept across every fixture in the rewrite-redesign
+Pinned invariant, swept across every fixture in the tx-graph
 golden suite (the 11 pre-#50 fixtures + fixture 12 from T103 +
 fixture 13 from this slice): __every blueprint-derived predicate
 emitted in the fixture's Turtle has a matching @(constructor, field)@
@@ -51,7 +51,7 @@ predicate; that is the property T105 (decode-failure path) will
 continue to lean on.
 
 Pre-T104 this spec fails to compile because
-'Fixtures.RewriteRedesign.S13BlueprintPassthrough' does not yet exist;
+'Fixtures.TxGraph.S13BlueprintPassthrough' does not yet exist;
 that compile failure is the load-bearing RED.
 -}
 module Cardano.Tx.Graph.Emit.BlueprintPredicateTraceabilitySpec (spec) where
@@ -93,20 +93,20 @@ import Cardano.Tx.Graph.Rules.Load (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.Helpers (stubTxIn, stubTxOutMA)
-import Fixtures.RewriteRedesign.S01_AmaruTreasurySwap qualified as S01
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
-import Fixtures.RewriteRedesign.S03_MultiAssetTransfer qualified as S03
-import Fixtures.RewriteRedesign.S04_MintSpendScriptOverlap qualified as S04
-import Fixtures.RewriteRedesign.S05_WithdrawalScriptStake qualified as S05
-import Fixtures.RewriteRedesign.S06_StakePoolDelegation qualified as S06
-import Fixtures.RewriteRedesign.S07_VoteDelegation qualified as S07
-import Fixtures.RewriteRedesign.S08_ContingencyDisburse qualified as S08
-import Fixtures.RewriteRedesign.S09_MpfsFactsRequest qualified as S09
-import Fixtures.RewriteRedesign.S10_GovernanceTreasuryWithdrawal qualified as S10
-import Fixtures.RewriteRedesign.S11_AmaruTreasurySwapReal qualified as S11
-import Fixtures.RewriteRedesign.S12BlueprintTyped qualified as S12
-import Fixtures.RewriteRedesign.S13BlueprintPassthrough qualified as S13
+import Fixtures.TxGraph.Helpers (stubTxIn, stubTxOutMA)
+import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
+import Fixtures.TxGraph.S04_MintSpendScriptOverlap qualified as S04
+import Fixtures.TxGraph.S05_WithdrawalScriptStake qualified as S05
+import Fixtures.TxGraph.S06_StakePoolDelegation qualified as S06
+import Fixtures.TxGraph.S07_VoteDelegation qualified as S07
+import Fixtures.TxGraph.S08_ContingencyDisburse qualified as S08
+import Fixtures.TxGraph.S09_MpfsFactsRequest qualified as S09
+import Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal qualified as S10
+import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
+import Fixtures.TxGraph.S12BlueprintTyped qualified as S12
+import Fixtures.TxGraph.S13BlueprintPassthrough qualified as S13
 
 import Test.Hspec (
     Spec,
@@ -131,7 +131,7 @@ spec =
 -- Fixture enumeration
 -- ---------------------------------------------------------------------------
 
-{- | Every rewrite-redesign fixture covered by the cross-fixture
+{- | Every tx-graph fixture covered by the cross-fixture
 traceability sweep. The slug + 'ConwayTx' columns mirror
 'Cardano.Tx.Graph.EmitGoldenSpec.allFixtures' (the wider byte-diff
 coverage); duplicated locally so the FR-010 / SC-006 assertion reads
@@ -163,7 +163,7 @@ set.
 traceabilityFixture :: (String, ConwayTx) -> Spec
 traceabilityFixture (slug, tx) = do
     let rulesPath =
-            "test/fixtures/rewrite-redesign" </> slug </> "rules.yaml"
+            "test/fixtures/tx-graph" </> slug </> "rules.yaml"
     (entities, blueprints) <- runIO (loadRules rulesPath)
     it
         ( slug

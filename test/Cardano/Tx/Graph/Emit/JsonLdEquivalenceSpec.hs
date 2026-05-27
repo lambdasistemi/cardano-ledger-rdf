@@ -53,17 +53,17 @@ import Cardano.Tx.Graph.Rules.Load (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.S01_AmaruTreasurySwap qualified as S01
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
-import Fixtures.RewriteRedesign.S03_MultiAssetTransfer qualified as S03
-import Fixtures.RewriteRedesign.S04_MintSpendScriptOverlap qualified as S04
-import Fixtures.RewriteRedesign.S05_WithdrawalScriptStake qualified as S05
-import Fixtures.RewriteRedesign.S06_StakePoolDelegation qualified as S06
-import Fixtures.RewriteRedesign.S07_VoteDelegation qualified as S07
-import Fixtures.RewriteRedesign.S08_ContingencyDisburse qualified as S08
-import Fixtures.RewriteRedesign.S09_MpfsFactsRequest qualified as S09
-import Fixtures.RewriteRedesign.S10_GovernanceTreasuryWithdrawal qualified as S10
-import Fixtures.RewriteRedesign.S11_AmaruTreasurySwapReal qualified as S11
+import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
+import Fixtures.TxGraph.S04_MintSpendScriptOverlap qualified as S04
+import Fixtures.TxGraph.S05_WithdrawalScriptStake qualified as S05
+import Fixtures.TxGraph.S06_StakePoolDelegation qualified as S06
+import Fixtures.TxGraph.S07_VoteDelegation qualified as S07
+import Fixtures.TxGraph.S08_ContingencyDisburse qualified as S08
+import Fixtures.TxGraph.S09_MpfsFactsRequest qualified as S09
+import Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal qualified as S10
+import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
 
 import Data.ByteString qualified as BS
 import Test.Hspec (
@@ -102,7 +102,7 @@ spec =
 
 fixtureSpec :: (String, ConwayTx) -> Spec
 fixtureSpec (slug, tx) = describe slug $ do
-    let dir = "test/fixtures/rewrite-redesign" </> slug
+    let dir = "test/fixtures/tx-graph" </> slug
         rulesPath = dir </> "rules.yaml"
     (entities, overlay) <- runIO (loadEntitiesAndOverlay rulesPath)
     case emit tx emptyUtxo entities [] of

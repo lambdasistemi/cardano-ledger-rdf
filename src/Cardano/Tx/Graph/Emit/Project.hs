@@ -4,9 +4,9 @@ Description : Projection-driven body walker for the joint Turtle emitter (privat
 License     : Apache-2.0
 
 Private submodule of 'Cardano.Tx.Graph.Emit'. Walks the
-'Cardano.Tx.Diff.conwayDiffProjection' tree over a 'ConwayTx',
-dispatches on the typed @ConwayDiffValue@ leaves, and produces
-a 'BodySection' list ready for the Turtle / JSON-LD serializers.
+'ConwayTx' ledger structure, dispatches typed graph fields, and
+produces a 'BodySection' list ready for the Turtle / JSON-LD
+serializers.
 
 T005 ships **fixture-02 coverage**: @cardano:Transaction@,
 @cardano:Input@, @cardano:Output@, @cardano:Address@, payment +
@@ -270,11 +270,9 @@ import Cardano.Tx.Blueprint (
     BlueprintDataError,
     BlueprintSchema (..),
     BlueprintValidator (..),
+    OpenValue (..),
     blueprintValidators,
     resolveBlueprintSchema,
- )
-import Cardano.Tx.Diff (
-    OpenValue (..),
  )
 import Cardano.Tx.Graph.Emit.Blueprint (
     BlueprintDecodeResult (..),
@@ -1353,7 +1351,7 @@ The base must be unique per /address/, not per payment credential —
 two addresses that share a payment credential but differ in their
 stake credential are distinct addresses and must mint distinct
 @\<base\>Addr@ blank-node labels. Otherwise their @cardano:Address@
-declarations collapse onto one node with conflicting @cardano:bech32@
+declarations coalesce onto one node with conflicting @cardano:bech32@
 and @cardano:hasStakeCredential@ properties.
 
 When an entity in @entities@ covers the payment credential's

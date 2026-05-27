@@ -29,7 +29,7 @@ Test cases (six invariants from the navigator brief):
   'DuplicateBlueprintPredicate' (D-001b / A-001: hard error).
 
 The vendored blueprint at
-@test/fixtures/rewrite-redesign/blueprints/swap-v2-datum.cip57.json@
+@test/fixtures/tx-graph/blueprints/swap-v2-datum.cip57.json@
 provides the CIP-57 payload (preamble title @\"amaru.swap.v2\"@,
 constructor title @\"SwapOrder\"@, field title @\"recipient\"@). The
 spec writes synthetic @rules.yaml@ files into a fresh
@@ -74,7 +74,7 @@ import Test.Hspec (
 
 -- | Root of the vendored fixture tree.
 fixturesRoot :: FilePath
-fixturesRoot = "test/fixtures/rewrite-redesign"
+fixturesRoot = "test/fixtures/tx-graph"
 
 {- | The vendored CIP-57 blueprint used by every happy-path / warning
 test that needs a real blueprint payload. The file ships with fixture

@@ -1,21 +1,20 @@
 {- |
 Module      : Cardano.Tx.Graph.Emit.ExhaustivitySpec
-Description : Type-driven ConwayDiffValue dispatcher coverage (T115).
+Description : Graph-field dispatcher coverage (T115).
 License     : Apache-2.0
 
 == Belt-and-suspenders, not load-bearing (per A-007 v3)
 
 The load-bearing exhaustivity gate is the compiler itself:
-@-Wincomplete-patterns@ + @-Werror@ (constitution-mandated)
-guarantees a missing 'Cardano.Tx.Diff.ConwayDiffValue' arm fails
-the build. This spec is a secondary check that catches dispatcher
-drift outside the literal pattern-match (e.g. a fail-loudly stub
-that compiles but raises 'PUnsupportedLeafType' at runtime).
+@-Wincomplete-patterns@ + @-Werror@ (constitution-mandated). This
+spec is a secondary regression checklist that catches dispatcher drift
+outside literal pattern matches, e.g. a fail-loudly stub that compiles
+but raises 'PUnsupportedLeafType' at runtime.
 
 Per A-007 v3 corrected scope: the spec asserts coverage of the
 __full chain-visible surface__ of a 'Cardano.Tx.Ledger.ConwayTx',
 not the body-only subset the earlier A-006 framing carved out.
-For each constructor in 'allConwayDiffConstructors' the spec ships
+For each constructor in 'allConwayGraphFields' the spec ships
 a synthetic 'ConwayTx' that populates the field labelled by the
 constructor and asserts 'Cardano.Tx.Graph.Emit.emit' returns
 'Right' (not @Left ('UnsupportedLeafType' _)@) for each witness.
@@ -27,41 +26,33 @@ on 2026-05-21) into a test-time per-constructor failure.
 
 == Construction list
 
-'allConwayDiffConstructors' is the hand-maintained enumeration of
-every constructor declared in @Cardano.Tx.Diff.ConwayDiffValue@.
-Its sole purpose is the @exhaustivity_lint@ step in @gate.sh@,
-which @diff -u@s this list against the constructors @grep@ed out
-of @src/Cardano/Tx/Diff.hs@; any drift (a new ledger constructor
-without a list entry, or a stale list entry that no longer
-matches a Diff.hs constructor) fails the gate.
+'allConwayGraphFields' is the hand-maintained enumeration of the
+chain-visible field families the emitter must cover. The list is kept
+in this spec so fixture additions and direct synthetic witnesses have a
+single review point.
 
-== Pending witness-set + diff-fallback constructors
+== Pending constructors
 
-'pendingTillT128b' enumerates the 13 constructors that a synthetic
-'ConwayTx' cannot exercise through the body walker alone — the 12
-witness-set leaves (vkey witnesses, bootstrap witnesses, scripts,
-datums-as-witnesses, redeemers, ex-units) plus 'ConwayOpenValue'
-(the diff-projection fallback the body walker bypasses via direct
-lens access). T128b promotes the 12 witness entries into positive
-assertions when the new
-@Cardano.Tx.Graph.Emit.Witness@ walker lands; 'ConwayOpenValue'
-stays pending as a documented permanent elision (no chain-visible
-content of its own).
+'pendingCoverageLabels' is empty after the witness-set walker landed.
+It remains as an explicit escape hatch for future ledger fields that
+cannot be represented by a synthetic 'ConwayTx' while the positive
+fixture is being built.
 
 == Per-constructor witness assertion
 
-For every constructor in 'allConwayDiffConstructors', the spec
+For every constructor in 'allConwayGraphFields', the spec
 ships a synthetic 'ConwayTx' that populates the body field
 labelled by the constructor (via lens-set on @mkBasicTxBody@
 where no fixture covers the case naturally). The assertion is
 @'emit' witnessTx 'Map.empty' [] = 'Right' _@ — a per-constructor
 'expectationFailure' isolates which leaf regressed when the
-spec is RED. Constructors listed in 'pendingTillT128b' short-circuit
-to 'pendingWith' so the suite stays green while T128b is in flight.
+spec is RED. Constructors listed in 'pendingCoverageLabels'
+short-circuit to 'pendingWith' while the positive fixture is being
+built.
 -}
 module Cardano.Tx.Graph.Emit.ExhaustivitySpec (
     spec,
-    allConwayDiffConstructors,
+    allConwayGraphFields,
 ) where
 
 import Data.Map.Strict qualified as Map
@@ -119,7 +110,7 @@ import Cardano.Tx.Graph.Emit (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.Helpers (
+import Fixtures.TxGraph.Helpers (
     stubMintEntry,
     stubRefScript,
     stubRewardAccount,
@@ -140,16 +131,14 @@ import Test.Hspec (
 -- Constructor enumeration
 ----------------------------------------------------------------------
 
-{- | Every constructor declared in @Cardano.Tx.Diff.ConwayDiffValue@.
+{- | Chain-visible field families covered by synthetic emitter witnesses.
 
-Hand-maintained, alphabetized. The @exhaustivity_lint@ step in
-@gate.sh@ diffs this list against
-@grep -hE '^\s+\| Conway[A-Z][A-Za-z]*Value' src/Cardano/Tx/Diff.hs@;
-symmetric drift (a new ledger constructor not here, or a stale
-entry here that no longer matches Diff.hs) fails the gate.
+Hand-maintained and alphabetized. A new ledger field that the graph
+emitter handles should receive either a positive witness entry here or a
+short-lived entry in 'pendingCoverageLabels'.
 -}
-allConwayDiffConstructors :: [Text]
-allConwayDiffConstructors =
+allConwayGraphFields :: [Text]
+allConwayGraphFields =
     [ "ConwayAddressValue"
     , "ConwayAssetQuantitiesValue"
     , "ConwayBodyValue"
@@ -165,7 +154,6 @@ allConwayDiffConstructors =
     , "ConwayKeyHashValue"
     , "ConwayKeyHashesValue"
     , "ConwayMintValue"
-    , "ConwayOpenValue"
     , "ConwayOutputsValue"
     , "ConwayRedeemerValue"
     , "ConwayRedeemersValue"
@@ -186,18 +174,10 @@ allConwayDiffConstructors =
     , "ConwayWitnessesValue"
     ]
 
-{- | Constructors the body walker cannot reach with a synthetic
-'ConwayTx' alone via either body or witness-set lenses.
-
-After T128b the only remaining permanent elision is
-'ConwayOpenValue' — the diff-projection fallback the body
-walker bypasses via direct lens access. There is no chain-visible
-content of its own to assert against.
--}
-pendingTillT128b :: [Text]
-pendingTillT128b =
-    [ "ConwayOpenValue"
-    ]
+-- | Temporarily pending graph-coverage labels.
+pendingCoverageLabels :: [Text]
+pendingCoverageLabels =
+    []
 
 ----------------------------------------------------------------------
 -- Witness ConwayTx per body-reachable constructor
@@ -214,11 +194,11 @@ baseTx = mkBasicTx mkBasicTxBody
 {- | The witness 'ConwayTx' for the named constructor — a minimal
 tx that populates the body field labelled by the constructor.
 
-Only called for constructors not in 'pendingTillT128b'
+Only called for constructors not in 'pendingCoverageLabels'
 (those short-circuit before reaching here). The catch-all
 'error' branch only fires if a body-reachable constructor is
-added to 'allConwayDiffConstructors' without a corresponding
-witness arm or a 'pendingTillT128b' entry.
+added to 'allConwayGraphFields' without a corresponding
+witness arm or a 'pendingCoverageLabels' entry.
 -}
 witnessTx :: Text -> ConwayTx
 witnessTx = \case
@@ -310,7 +290,7 @@ witnessTx = \case
         error
             ( "ExhaustivitySpec.witnessTx: no witness clause for "
                 <> Text.unpack name
-                <> ". Add a witnessTx arm or extend pendingTillT128b."
+                <> ". Add a witnessTx arm or extend pendingCoverageLabels."
             )
 
 -- | A tx with exactly one body input.
@@ -411,38 +391,36 @@ txWithScriptWitness =
 ----------------------------------------------------------------------
 
 spec :: Spec
-spec = describe "Cardano.Tx.Graph.Emit ConwayDiffValue exhaustivity (T115)" $ do
+spec = describe "Cardano.Tx.Graph.Emit ConwayGraphField exhaustivity (T115)" $ do
     handListShapeSpec
     witnessCoverageSpec
 
 -- | Sanity-check the hand list itself: alphabetized, no duplicates.
 handListShapeSpec :: Spec
 handListShapeSpec = describe "constructor hand list" $ do
-    it "allConwayDiffConstructors is alphabetized" $
-        allConwayDiffConstructors `shouldBe` sortedNub allConwayDiffConstructors
+    it "allConwayGraphFields is alphabetized" $
+        allConwayGraphFields `shouldBe` sortedNub allConwayGraphFields
 
 sortedNub :: (Ord a) => [a] -> [a]
 sortedNub = Set.toAscList . Set.fromList
 
 {- | The load-bearing assertion: for each constructor in
-'allConwayDiffConstructors', the witness 'ConwayTx' emits
+'allConwayGraphFields', the witness 'ConwayTx' emits
 without a @PUnsupportedLeafType@.
 
-Constructors listed in 'pendingTillT128b' short-circuit to
-'pendingWith' — T128b's witness-set walker will promote the
-12 witness entries into active assertions; 'ConwayOpenValue'
-stays pending as a documented permanent elision.
+Constructors listed in 'pendingCoverageLabels' short-circuit to
+'pendingWith' while the positive synthetic witness is being built.
 -}
 witnessCoverageSpec :: Spec
 witnessCoverageSpec =
     describe "witness ConwayTx emits without PUnsupportedLeafType" $
-        mapM_ assertWitnessCovers allConwayDiffConstructors
+        mapM_ assertWitnessCovers allConwayGraphFields
 
 assertWitnessCovers :: Text -> Spec
 assertWitnessCovers name =
     it (Text.unpack name) $
-        if name `elem` pendingTillT128b
-            then pendingWith "T128b: witness-set walker / diff fallback"
+        if name `elem` pendingCoverageLabels
+            then pendingWith "pending synthetic graph-field witness"
             else case emit (witnessTx name) emptyUtxo [] [] of
                 Left err ->
                     expectationFailure $

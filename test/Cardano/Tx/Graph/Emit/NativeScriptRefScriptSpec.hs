@@ -12,7 +12,7 @@ script). The Plutus branch additionally carries
 
 The fixture-driven path is covered by
 'Cardano.Tx.Graph.Emit.OutputScriptRefSpec' against the 11
-rewrite-redesign fixtures (fixture 01's @stubRefScript@ is a
+tx-graph fixtures (fixture 01's @stubRefScript@ is a
 @TimelockScript@). This spec is the synthetic Path-A complement —
 it exercises the native-script discrimination in isolation,
 anchored on a minimal 'ConwayTx' witness so the

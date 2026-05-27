@@ -6,7 +6,7 @@ License     : Apache-2.0
 Renders an operator-authored rules overlay and/or one Turtle (or
 JSON-LD) graph per Conway transaction CBOR.
 
-CLI surface (see issue #114 — operator-led role audit collapse):
+CLI surface (see issue #114 — operator-led role audit consolidation):
 
 * @--rules FILE@ — operator overlay + blueprints + attestations.
   Used alone, emits overlay-only Turtle to stdout. Combined with
@@ -121,11 +121,11 @@ import Data.Set qualified as Set
 import Data.Text.Encoding qualified as TextEncoding
 import Lens.Micro ((^.))
 
-import Cardano.Tx.Diff (decodeConwayTxInput)
-import Cardano.Tx.Diff.Resolver (Resolver (..), resolveChain)
+import Cardano.Tx.Decode (decodeConwayTxInput)
+import Cardano.Tx.Graph.Resolve (Resolver (..), resolveChain)
 import Cardano.Tx.Ledger (ConwayTx)
 
-{- | Command-line options. Post-#114 collapse: @--rules@ + one of
+{- | Command-line options. Post-#114 consolidation: @--rules@ + one of
 @--in-dir@ / positional / stdin + @--out-dir@ + @--format@.
 -}
 data Options = Options

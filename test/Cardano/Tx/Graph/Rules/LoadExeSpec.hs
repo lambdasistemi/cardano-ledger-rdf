@@ -66,11 +66,11 @@ spec = describe "tx-graph executable (T011, US7)" $ do
         )
         $ do
             let rulesPath =
-                    "test/fixtures/rewrite-redesign"
+                    "test/fixtures/tx-graph"
                         </> "02-alice-bob-ada"
                         </> "rules.yaml"
                 expectedPath =
-                    "test/fixtures/rewrite-redesign"
+                    "test/fixtures/tx-graph"
                         </> "02-alice-bob-ada"
                         </> "expected.entities.ttl"
             expected <- BS.readFile expectedPath

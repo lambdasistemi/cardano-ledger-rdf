@@ -532,7 +532,7 @@ The fix introduced **a lattice-aware in-memory resolver**:
   the in-memory map — pulling the parent body's output at the
   consumed `TxIx`. The resolver is implemented in
   `app/tx-graph/Main.hs:inMemoryResolver` and plugs into the
-  existing `Cardano.Tx.Diff.Resolver` chain abstraction — no
+  existing `Cardano.Tx.Graph.Resolve` chain abstraction — no
   changes to the Witness walker were needed.
 * `scripts/tx-lattice` walks the BFS closure into
   `OUT_DIR/cbor/<txid>.cbor` (Blockfrost `/txs/<hash>/cbor` per
@@ -545,7 +545,7 @@ The fix introduced **a lattice-aware in-memory resolver**:
 
 (The original #112 fix was an on-disk `--closure-dir DIR`
 resolver that read parent CBORs from disk at emit time. #114
-collapsed that disk handshake into the pure-transformation
+reduced that disk handshake into the pure-transformation
 contract: tx-graph now sees the whole lattice as its input,
 not as a side-channel directory.)
 
@@ -563,7 +563,7 @@ an Amaru contract (authoritatively named
 `sundaeOrderScriptHashMainnet` in
 `/code/amaru-treasury-tx/lib/Amaru/Treasury/Constants.hs`). The
 upstream Aiken plutus.json now ships under
-`test/fixtures/rewrite-redesign/blueprints/sundaeswap-v3/` pinned
+`test/fixtures/tx-graph/blueprints/sundaeswap-v3/` pinned
 at commit `be33466b…` of
 `github.com/SundaeSwap-finance/sundae-contracts` (Apache-2.0).
 

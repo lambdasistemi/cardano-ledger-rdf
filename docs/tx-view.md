@@ -160,7 +160,7 @@ same graph (modulo trivial whitespace differences in the renderers).
 
 - [tx-graph](tx-graph.md) — emits the canonical Turtle graph that
   `tx-view` consumes.
-- [rules.yaml](rewriting-rules.md) — operator
+- [rules.yaml](rules-yaml.md) — operator
   rules.yaml language; controls the entity overlay that affects
   cli-tree's address resolution and asset-flow's source / destination
   columns.

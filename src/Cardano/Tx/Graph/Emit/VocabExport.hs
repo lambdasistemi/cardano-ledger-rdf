@@ -5,7 +5,7 @@ License     : Apache-2.0
 
 Per A-006: 'Cardano.Tx.Graph.Emit.Vocab' is the local source of
 truth for every @cardano:@-namespaced term the body emitter
-writes. Once exhaustive ConwayDiffValue coverage has landed
+writes. Once exhaustive graph-field coverage has landed
 (T122) and the identity-vs-literal audit (T122c) has flipped
 predicates that should carry bnode targets, this module
 generates the canonical Turtle fragment for upstream publication

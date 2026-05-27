@@ -11,7 +11,7 @@ The first behaviour-changing on-disk fixture for feature 050
 through 'Cardano.Tx.Graph.Emit.emit'; T103 ships the first fixture
 whose @rules.yaml@ registers an on-disk CIP-57 blueprint (the
 @amaru.swap.v2@ SwapOrder blueprint at
-@test/fixtures/rewrite-redesign/blueprints/swap-v2-datum.cip57.json@)
+@test/fixtures/tx-graph/blueprints/swap-v2-datum.cip57.json@)
 and whose @expected.ttl@ records the typed-emission byte shape.
 
 This spec pins three invariants on the bytes 'emit' produces when
@@ -20,7 +20,7 @@ the SwapOrder blueprint is in the index:
 * __fixture-12-emits-typed__ — the Turtle output contains the typed
   predicate @:SwapOrder_recipient@ at least once (FR-004 / D-001b).
   Pre-T103 this fails to compile because
-  'Fixtures.RewriteRedesign.S12BlueprintTyped' does not yet exist;
+  'Fixtures.TxGraph.S12BlueprintTyped' does not yet exist;
   that compile failure is the load-bearing RED.
 
 * __typed-no-rawbytes__ — the @a cardano:Datum@ stanza emitted for
@@ -70,7 +70,7 @@ import Cardano.Tx.Graph.Rules.Load (
     rulesEntities,
  )
 
-import Fixtures.RewriteRedesign.S12BlueprintTyped qualified as S12
+import Fixtures.TxGraph.S12BlueprintTyped qualified as S12
 
 import Test.Hspec (
     Spec,
@@ -136,14 +136,14 @@ spec =
 -- Fixture 12 emission
 -- ---------------------------------------------------------------------------
 
--- | Slug for fixture 12 under @test/fixtures/rewrite-redesign/@.
+-- | Slug for fixture 12 under @test/fixtures/tx-graph/@.
 fixtureSlug :: String
 fixtureSlug = "12-blueprint-typed"
 
 -- | On-disk @rules.yaml@ for fixture 12.
 fixtureRulesPath :: FilePath
 fixtureRulesPath =
-    "test/fixtures/rewrite-redesign" </> fixtureSlug </> "rules.yaml"
+    "test/fixtures/tx-graph" </> fixtureSlug </> "rules.yaml"
 
 {- | Load fixture 12's rules + blueprint index and run 'emit' /
 'serialize' to produce the joint Turtle byte stream. Each error

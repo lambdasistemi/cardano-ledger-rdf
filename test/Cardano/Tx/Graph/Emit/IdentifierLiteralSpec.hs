@@ -18,7 +18,7 @@ no IRI surgery required. Operator-driven gap: pre-T119b the
 bnode was named after the hex prefix in its IRI but the hex
 bytes themselves were not exposed as RDF data.
 
-This spec exercises the path via the rewrite-redesign fixtures
+This spec exercises the path via the tx-graph fixtures
 which contain payment-key credentials (every fixture) — the
 emitted bytes must contain at least one
 @_:cred_paymentkey_\<hex\> a cardano:Identifier ;@ subject
@@ -38,7 +38,7 @@ import Cardano.Tx.Graph.Emit (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 

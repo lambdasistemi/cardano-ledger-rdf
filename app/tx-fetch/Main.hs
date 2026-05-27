@@ -23,7 +23,7 @@ SPARQL can distinguish seeds from BFS-walked parents.
 
 Sequential, single-threaded, resumable: existing
 @cbor\/\<txid\>.cbor@ files are skipped, so re-running over an
-already-fetched lattice is a no-op (plus the seeds.txt rewrite).
+already-fetched lattice is a no-op (plus the seeds.txt refresh).
 
 CLI:
 
@@ -98,8 +98,8 @@ import Data.ByteString.Base16 qualified as Base16
 import Lens.Micro ((^.))
 import Network.HTTP.Client.TLS (newTlsManager)
 
-import Cardano.Tx.Diff (decodeConwayTxInput)
-import Cardano.Tx.Diff.Resolver.Web2 (
+import Cardano.Tx.Decode (decodeConwayTxInput)
+import Cardano.Tx.Graph.Resolve.Web2 (
     Web2FetchError (..),
     Web2FetchTx,
     httpFetchTx,

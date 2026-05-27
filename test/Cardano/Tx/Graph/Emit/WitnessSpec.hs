@@ -55,7 +55,7 @@ import Cardano.Tx.Graph.Emit (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Fixtures.RewriteRedesign.Helpers (stubRefScript)
+import Fixtures.TxGraph.Helpers (stubRefScript)
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 

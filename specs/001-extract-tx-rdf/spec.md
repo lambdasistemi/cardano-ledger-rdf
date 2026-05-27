@@ -22,7 +22,7 @@ fixture, and compare the emitted Turtle with the migrated golden.
 **Acceptance Scenarios**:
 
 1. **Given** migrated source and fixtures, **When** `tx-graph` is built and run
-   on a rewrite-redesign fixture, **Then** the emitted Turtle matches the
+   on a tx-graph fixture, **Then** the emitted Turtle matches the
    expected `.ttl`.
 2. **Given** a lattice directory of CBOR files, **When** `tx-graph --in-dir`
    runs, **Then** it writes one deterministic `.ttl` per transaction.

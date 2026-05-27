@@ -4,7 +4,6 @@ import Test.Hspec (hspec)
 
 import Cardano.Tx.Build.MinUtxoSpec qualified as BuildMinUtxoSpec
 import Cardano.Tx.BuildSpec qualified as BuildSpec
-import Cardano.Tx.DiffSpec qualified as DiffSpec
 import Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec qualified as GraphEmitBlockfrostSampleSmokeSpec
 import Cardano.Tx.Graph.Emit.BlueprintPredicateTraceabilitySpec qualified as GraphEmitBlueprintPredicateTraceabilitySpec
 import Cardano.Tx.Graph.Emit.BlueprintSpec qualified as GraphEmitBlueprintSpec
@@ -38,6 +37,8 @@ import Cardano.Tx.Graph.Emit.WitnessSpec qualified as GraphEmitWitnessSpec
 import Cardano.Tx.Graph.EmitGoldenSpec qualified as GraphEmitGoldenSpec
 import Cardano.Tx.Graph.EmitMonadSpec qualified as GraphEmitMonadSpec
 import Cardano.Tx.Graph.EmitSmokeSpec qualified as GraphEmitSmokeSpec
+import Cardano.Tx.Graph.ResolveSpec qualified as GraphResolveSpec
+import Cardano.Tx.Graph.ResolveWeb2Spec qualified as GraphResolveWeb2Spec
 import Cardano.Tx.Graph.Rules.Load.BlueprintLoadSpec qualified as GraphRulesLoadBlueprintLoadSpec
 import Cardano.Tx.Graph.Rules.LoadEntitiesSpec qualified as GraphRulesLoadEntitiesSpec
 import Cardano.Tx.Graph.Rules.LoadExeSpec qualified as GraphRulesLoadExeSpec
@@ -55,7 +56,6 @@ import Cardano.Tx.View.JsonLdSpec qualified as ViewJsonLdSpec
 
 main :: IO ()
 main = hspec $ do
-    DiffSpec.spec
     BuildSpec.spec
     BuildMinUtxoSpec.spec
     GraphEmitBlockfrostSampleSmokeSpec.spec
@@ -100,6 +100,8 @@ main = hspec $ do
     GraphRulesLoadTurtleSpec.spec
     GraphRulesLoadValidationSpec.spec
     GraphRulesLoadYamlSpec.spec
+    GraphResolveSpec.spec
+    GraphResolveWeb2Spec.spec
     GraphTxGraphExeSpec.spec
     ViewAssetFlowSpec.spec
     ViewCliTreeGoldenSpec.spec

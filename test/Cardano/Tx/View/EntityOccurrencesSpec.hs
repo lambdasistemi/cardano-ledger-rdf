@@ -80,7 +80,7 @@ amaruSwapCase exe =
     describe "01-amaru-treasury-swap" $
         it "renders per-entity counts distinct from asset-flow" $ do
             let graphPath =
-                    "test/fixtures/rewrite-redesign"
+                    "test/fixtures/tx-graph"
                         </> "01-amaru-treasury-swap"
                         </> "expected.ttl"
                 runView viewName =

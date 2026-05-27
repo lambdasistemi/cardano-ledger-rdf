@@ -88,7 +88,7 @@ amaruSwapCase :: FilePath -> Spec
 amaruSwapCase exe =
     describe "01-amaru-treasury-swap" $ do
         let graphPath =
-                "test/fixtures/rewrite-redesign"
+                "test/fixtures/tx-graph"
                     </> "01-amaru-treasury-swap"
                     </> "expected.ttl"
             runIt =

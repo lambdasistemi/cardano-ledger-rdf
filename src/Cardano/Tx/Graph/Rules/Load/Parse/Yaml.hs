@@ -23,16 +23,11 @@ accepts verbatim; resolution against the filesystem lives in a
 later slice. A reference to an unknown or non-script entity name
 returns 'BlueprintRefsUnknownScript'.
 
-@collapse:@ is silently accepted — it is the view-collapse surface
-owned by #51 and the overlay serializer does not emit triples for
-it. The parser only verifies the value is a list (so a typed key
-is not misread as a different shape).
-
 The slug algorithm:
 
 * lowercase the @name:@ field;
-* rewrite every character outside @[a-z0-9]@ to @_@;
-* collapse runs of @_@ into a single @_@;
+* map every character outside @[a-z0-9]@ to @_@;
+* coalesce runs of @_@ into a single @_@;
 * trim leading and trailing @_@.
 
 An empty slug or a slug that starts with a digit is rejected with
@@ -242,9 +237,6 @@ walkTop ctx = \case
         -- 'ScriptHash' and the raw @datum:@ path string; the
         -- resolver's IO stage does the file-read + JSON-parse step.
         stubs <- validateBlueprints ctx entities obj
-        -- @collapse:@ is silently accepted (typed-list shape only;
-        -- triples are emitted by #51, not the overlay serializer).
-        validateCollapse ctx obj
         -- @attestations:@ is parsed into a typed list; the overlay
         -- emitter renders one block per entry referencing the
         -- entity slug it attests to. Issue #105.
@@ -506,27 +498,6 @@ lookupScriptHash entities refName = do
   where
     find p = foldr (\x acc -> if p x then Just x else acc) Nothing
 
-{- | Walk the top-level @collapse:@ value. The view-collapse surface
-is owned by #51; the loader only enforces the list shape so a
-mistyped @collapse:@ value is caught at parse time rather than
-silently swallowed.
--}
-validateCollapse ::
-    Ctx -> KeyMap.KeyMap Aeson.Value -> Either RulesLoadError ()
-validateCollapse ctx obj =
-    case KeyMap.lookup (Key.fromText "collapse") obj of
-        Nothing -> Right ()
-        Just Aeson.Null -> Right ()
-        Just (Aeson.Array _) -> Right ()
-        Just other ->
-            Left $
-                ParserError
-                    (ctxFile ctx)
-                    topLevelLine
-                    ( "collapse: must be a list, got: "
-                        <> typeName other
-                    )
-
 parseEntity ::
     Ctx -> Int -> Aeson.Value -> Either RulesLoadError EntityDecl
 parseEntity ctx ln = \case
@@ -691,8 +662,8 @@ slugifyOrError ctx ln name = do
                     Left (EntityNameSlugLeadingDigit (ctxFile ctx) ln name)
             _ -> Right s
 
-{- | Pure slug algorithm: lowercase the input, rewrite every character
-outside @[a-z0-9]@ to @_@, collapse runs of @_@, trim leading and
+{- | Pure slug algorithm: lowercase the input, map every character
+outside @[a-z0-9]@ to @_@, coalesce runs of @_@, trim leading and
 trailing @_@. Exported so future slices (Turtle serializer in T003,
 overlap-detector in T005) can apply the same transform without an
 import-cycle through 'parseRulesYamlText'.
@@ -700,7 +671,7 @@ import-cycle through 'parseRulesYamlText'.
 slugify :: Text -> Text
 slugify =
     trimUnderscores
-        . collapseUnderscores
+        . coalesceUnderscores
         . Text.map normalizeChar
         . Text.toLower
   where
@@ -708,8 +679,8 @@ slugify =
         | isAsciiLower c || isDigit c = c
         | otherwise = '_'
 
-collapseUnderscores :: Text -> Text
-collapseUnderscores t =
+coalesceUnderscores :: Text -> Text
+coalesceUnderscores t =
     let (chunk, rest) = Text.span (== '_') t
      in case Text.uncons rest of
             Nothing
@@ -721,7 +692,7 @@ collapseUnderscores t =
   where
     takeNonUnderscore s =
         let (run, more) = Text.span (/= '_') s
-         in run <> collapseUnderscores more
+         in run <> coalesceUnderscores more
 
 trimUnderscores :: Text -> Text
 trimUnderscores = Text.dropAround (== '_')

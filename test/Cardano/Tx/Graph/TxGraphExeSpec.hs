@@ -24,7 +24,7 @@ or @cabal list-bin -O0 exe:tx-graph@ as a dev-shell fallback —
 identical to 'Cardano.Tx.Graph.Rules.LoadExeSpec'.
 
 The fixture-02 @S02.tx@ builder
-(@Fixtures.RewriteRedesign.S02_AliceBobAda@) is reused: each test
+(@Fixtures.TxGraph.S02_AliceBobAda@) is reused: each test
 case writes a tmp @tx.cbor@ to
 'System.IO.Temp.withSystemTempDirectory' so no new on-disk
 fixture is needed.
@@ -65,8 +65,8 @@ import Cardano.Ledger.Binary (serialize)
 import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Core (eraProtVerLow)
 
-import Fixtures.RewriteRedesign.S02_AliceBobAda qualified as S02
-import Fixtures.RewriteRedesign.S14BlueprintDecodeFail qualified as S14
+import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
+import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
 
 ----------------------------------------------------------------------
 -- Spec
@@ -92,11 +92,11 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                 )
                 $ do
                     let rulesPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "02-alice-bob-ada"
                                 </> "rules.yaml"
                         expectedPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "02-alice-bob-ada"
                                 </> "expected.entities.ttl"
                     expected <- BS.readFile expectedPath
@@ -133,7 +133,7 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                 $ \dir -> do
                     let txPath = dir </> "tx.cbor"
                         rulesPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "02-alice-bob-ada"
                                 </> "rules.yaml"
                     BS.writeFile txPath s02CborBytes
@@ -156,7 +156,7 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                 $ withSystemTempDirectory "tx-graph-missing"
                 $ \dir -> do
                     let rulesPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "02-alice-bob-ada"
                                 </> "rules.yaml"
                         bogusTx = dir </> "does-not-exist.cbor"
@@ -176,7 +176,7 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                 $ \dir -> do
                     let txPath = dir </> "tx.cbor"
                         rulesPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "02-alice-bob-ada"
                                 </> "rules.yaml"
                     BS.writeFile txPath s02CborBytes
@@ -228,18 +228,18 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
             it
                 ( "(8) fixture 14-blueprint-decode-fail — exit 0,"
                     <> " stderr carries the FR-014 WARN line matching"
-                    <> " expected.txt (T105 / S5)"
+                    <> " expected.stderr (T105 / S5)"
                 )
                 $ withSystemTempDirectory "tx-graph-decode-fail"
                 $ \dir -> do
                     let rulesPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "14-blueprint-decode-fail"
                                 </> "rules.yaml"
                         expectedTxtPath =
-                            "test/fixtures/rewrite-redesign"
+                            "test/fixtures/tx-graph"
                                 </> "14-blueprint-decode-fail"
-                                </> "expected.txt"
+                                </> "expected.stderr"
                         txPath = dir </> "tx.cbor"
                     BS.writeFile txPath s14CborBytes
                     expectedTxt <- BS.readFile expectedTxtPath
@@ -297,7 +297,7 @@ s14CborBytes =
 
 {- | Drop a single trailing @\\n@ off a ByteString (Unix line-ending
 convention). Used by the fixture-14 stderr-substring assertion so
-@expected.txt@ can ship its single WARN line as one logical line
+@expected.stderr@ can ship its single WARN line as one logical line
 followed by a terminating newline without breaking the
 @isInfixOf@ match.
 -}

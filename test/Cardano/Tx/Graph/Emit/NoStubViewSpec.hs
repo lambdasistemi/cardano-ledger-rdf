@@ -20,7 +20,7 @@ view lives at @views/no-stub-triples.rq@:
 
 This spec re-implements the same predicate as a line-scanning
 structural check over the regenerated @expected.ttl@ of every
-fixture under @test/fixtures/rewrite-redesign/@. The view returns
+fixture under @test/fixtures/tx-graph/@. The view returns
 zero rows iff no @cardano:Input@ / @cardano:Output@ subject block
 is reduced to only its @rdf:type@ triple.
 
@@ -138,7 +138,7 @@ violation.
 -}
 fixtureCase :: String -> Spec
 fixtureCase slug = do
-    let path = "test/fixtures/rewrite-redesign" </> slug </> "expected.ttl"
+    let path = "test/fixtures/tx-graph" </> slug </> "expected.ttl"
     bytes <- runIO (BS.readFile path)
     it (slug <> " — no Input/Output subject has only rdf:type") $ do
         let violations = noStubViolations bytes

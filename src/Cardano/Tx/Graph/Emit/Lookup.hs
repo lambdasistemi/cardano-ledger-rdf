@@ -81,7 +81,7 @@ type LookupTable = Map (LeafType, ByteString) BnodeName
 {- | Hex-prefix length used in raw-bytes bnode names — 16
 hex chars (8 bytes) per research R3.
 
-R3's empirical floor across the 11 rewrite-redesign fixtures is
+R3's empirical floor across the 11 tx-graph fixtures is
 small (single-digit collisions disappear by @N = 12@); 16 adds
 ~4 chars of safety margin so future fixtures with closely-spaced
 key prefixes don't immediately tip the property over. T004's
