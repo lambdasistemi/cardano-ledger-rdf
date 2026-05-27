@@ -750,6 +750,21 @@ idProposalAnchorBnode :: Int -> BnodeName
 idProposalAnchorBnode k =
     BnodeName ("proposalAnchor" <> Text.pack (show k))
 
+-- | Bnode name a proposal's typed governance action sub-block gets.
+idProposalGovActionBnode :: Int -> BnodeName
+idProposalGovActionBnode k =
+    BnodeName ("govAction" <> Text.pack (show k))
+
+-- | Bnode name a proposal treasury-withdrawal entry gets.
+idProposalWithdrawalBnode :: Int -> Int -> BnodeName
+idProposalWithdrawalBnode proposalK withdrawalK =
+    BnodeName
+        ( "withdrawal"
+            <> Text.pack (show proposalK)
+            <> "_"
+            <> Text.pack (show withdrawalK)
+        )
+
 -- | Bnode name a vote entry at position @k@ (1-based) gets.
 idVoteBnode :: Int -> BnodeName
 idVoteBnode k = BnodeName ("vote" <> Text.pack (show k))
@@ -2740,6 +2755,14 @@ buildProposalCluster ::
 buildProposalCluster lookupTbl k proposal@(ProposalProcedure _ _ action _) =
     clusterBlocks $ do
         emitProposalShell lookupTbl k proposal
+        case action of
+            TreasuryWithdrawals withdrawals guardPolicy ->
+                emitTreasuryWithdrawalsGovAction
+                    lookupTbl
+                    k
+                    withdrawals
+                    guardPolicy
+            _ -> pure ()
         emitProposalDatumFallback k (govActionTag action) proposal
 
 {- | Stable variety-tag string for any Conway 'GovAction'
@@ -2829,6 +2852,97 @@ emitProposalShell
                 (OBnode returnAddrBnode)
             )
         emitProposalAnchor k propSubj anchor
+
+{- | Emit the typed payload for a TreasuryWithdrawals governance
+action while leaving the proposal datum fallback to
+'emitProposalDatumFallback'. The withdrawal map is traversed in
+ledger map order for byte-stable output.
+-}
+emitTreasuryWithdrawalsGovAction ::
+    LookupTable ->
+    Int ->
+    Map AccountAddress Coin ->
+    StrictMaybe ScriptHash ->
+    Emit ()
+emitTreasuryWithdrawalsGovAction
+    lookupTbl
+    k
+    withdrawals
+    guardPolicy = do
+        let propSubj = SBnode (idProposalBnode k)
+            actionBnode = idProposalGovActionBnode k
+            actionSubj = SBnode actionBnode
+        tellTriple
+            ( Triple
+                propSubj
+                (PIri (vocabCurie TermHasGovAction))
+                (OBnode actionBnode)
+            )
+        tellTriple
+            ( Triple
+                actionSubj
+                PRdfType
+                (OIri (vocabCurie TermTreasuryWithdrawals))
+            )
+        mapM_
+            (emitTreasuryWithdrawal lookupTbl actionSubj k)
+            (zip [1 ..] (Map.toAscList withdrawals))
+        case guardPolicy of
+            SNothing -> pure ()
+            SJust (ScriptHash h) -> do
+                guardBnode <-
+                    resolveCredentialAndIntroduceIdent
+                        lookupTbl
+                        LtScriptHash
+                        (hashToBytes h)
+                tellTriple
+                    ( Triple
+                        actionSubj
+                        (PIri (vocabCurie TermHasGuardPolicy))
+                        (OBnode guardBnode)
+                    )
+
+emitTreasuryWithdrawal ::
+    LookupTable ->
+    Subject ->
+    Int ->
+    (Int, (AccountAddress, Coin)) ->
+    Emit ()
+emitTreasuryWithdrawal
+    lookupTbl
+    actionSubj
+    proposalK
+    (withdrawalK, (account, Coin lovelace)) = do
+        let withdrawalBnode =
+                idProposalWithdrawalBnode proposalK withdrawalK
+            withdrawalSubj = SBnode withdrawalBnode
+            (leafTy, credBytes) = accountStakeLeaf account
+        tellTriple
+            ( Triple
+                actionSubj
+                (PIri (vocabCurie TermHasWithdrawal))
+                (OBnode withdrawalBnode)
+            )
+        rewardBnode <-
+            resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
+        tellTriple
+            ( Triple
+                withdrawalSubj
+                PRdfType
+                (OIri (vocabCurie TermWithdrawal))
+            )
+        tellTriple
+            ( Triple
+                withdrawalSubj
+                (PIri (vocabCurie TermToRewardAccount))
+                (OBnode rewardBnode)
+            )
+        tellTriple
+            ( Triple
+                withdrawalSubj
+                (PIri (vocabCurie TermHasLovelace))
+                (OIntLit (fromIntegral lovelace))
+            )
 
 {- | Emit the proposal anchor edge and typed anchor sub-block. The
 predicate names and literal rendering match the existing vote

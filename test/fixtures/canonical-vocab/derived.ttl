@@ -31,6 +31,9 @@ cardano:Datum a rdfs:Class ;
 cardano:ExUnits a rdfs:Class ;
   rdfs:label "ExUnits" .
 
+cardano:GovAction a rdfs:Class ;
+  rdfs:label "GovAction" .
+
 cardano:GovActionId a rdfs:Class ;
   rdfs:label "GovActionId" .
 
@@ -81,6 +84,9 @@ cardano:StakeDelegation a rdfs:Class ;
 
 cardano:Transaction a rdfs:Class ;
   rdfs:label "Transaction" .
+
+cardano:TreasuryWithdrawals a rdfs:Class ;
+  rdfs:label "TreasuryWithdrawals" .
 
 cardano:TxOutRef a rdfs:Class ;
   rdfs:label "TxOutRef" .
@@ -169,6 +175,12 @@ cardano:hasExUnits a rdf:Property ;
 cardano:hasFee a rdf:Property ;
   rdfs:label "hasFee" .
 
+cardano:hasGovAction a rdf:Property ;
+  rdfs:label "hasGovAction" .
+
+cardano:hasGuardPolicy a rdf:Property ;
+  rdfs:label "hasGuardPolicy" .
+
 cardano:hasHash a rdf:Property ;
   rdfs:label "hasHash" .
 
@@ -183,6 +195,9 @@ cardano:hasInput a rdf:Property ;
 
 cardano:hasKeyWitness a rdf:Property ;
   rdfs:label "hasKeyWitness" .
+
+cardano:hasLovelace a rdf:Property ;
+  rdfs:label "hasLovelace" .
 
 cardano:hasMint a rdf:Property ;
   rdfs:label "hasMint" .
@@ -294,6 +309,9 @@ cardano:toDRep a rdf:Property ;
 
 cardano:toPool a rdf:Property ;
   rdfs:label "toPool" .
+
+cardano:toRewardAccount a rdf:Property ;
+  rdfs:label "toRewardAccount" .
 
 cardano:totalCollateral a rdf:Property ;
   rdfs:label "totalCollateral" .

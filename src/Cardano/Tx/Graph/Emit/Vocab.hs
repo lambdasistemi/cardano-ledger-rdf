@@ -80,6 +80,8 @@ data VocabTerm
     | TermDatum
     | TermGovActionId
     | TermProposal
+    | TermGovAction
+    | TermTreasuryWithdrawals
     | TermAnchor
     | -- Body predicates
       TermHasInput
@@ -105,6 +107,10 @@ data VocabTerm
     | TermHasProposal
     | TermHasDeposit
     | TermHasReturnAddress
+    | TermHasGovAction
+    | TermToRewardAccount
+    | TermHasLovelace
+    | TermHasGuardPolicy
     | TermDecodedAs
     | TermFromTxOutRef
     | -- Value semantics (T104 / S3 — output ADA + multi-asset)
@@ -225,6 +231,8 @@ vocabIri = \case
     TermDatum -> cardanoPrefix <> "Datum"
     TermGovActionId -> cardanoPrefix <> "GovActionId"
     TermProposal -> cardanoPrefix <> "Proposal"
+    TermGovAction -> cardanoPrefix <> "GovAction"
+    TermTreasuryWithdrawals -> cardanoPrefix <> "TreasuryWithdrawals"
     TermAnchor -> cardanoPrefix <> "Anchor"
     TermHasInput -> cardanoPrefix <> "hasInput"
     TermHasOutput -> cardanoPrefix <> "hasOutput"
@@ -249,6 +257,10 @@ vocabIri = \case
     TermHasProposal -> cardanoPrefix <> "hasProposal"
     TermHasDeposit -> cardanoPrefix <> "hasDeposit"
     TermHasReturnAddress -> cardanoPrefix <> "hasReturnAddress"
+    TermHasGovAction -> cardanoPrefix <> "hasGovAction"
+    TermToRewardAccount -> cardanoPrefix <> "toRewardAccount"
+    TermHasLovelace -> cardanoPrefix <> "hasLovelace"
+    TermHasGuardPolicy -> cardanoPrefix <> "hasGuardPolicy"
     TermDecodedAs -> cardanoPrefix <> "decodedAs"
     TermFromTxOutRef -> cardanoPrefix <> "fromTxOutRef"
     TermLovelace -> cardanoPrefix <> "lovelace"
@@ -331,6 +343,8 @@ vocabCurie = \case
     TermDatum -> "cardano:Datum"
     TermGovActionId -> "cardano:GovActionId"
     TermProposal -> "cardano:Proposal"
+    TermGovAction -> "cardano:GovAction"
+    TermTreasuryWithdrawals -> "cardano:TreasuryWithdrawals"
     TermAnchor -> "cardano:Anchor"
     TermHasInput -> "cardano:hasInput"
     TermHasOutput -> "cardano:hasOutput"
@@ -355,6 +369,10 @@ vocabCurie = \case
     TermHasProposal -> "cardano:hasProposal"
     TermHasDeposit -> "cardano:hasDeposit"
     TermHasReturnAddress -> "cardano:hasReturnAddress"
+    TermHasGovAction -> "cardano:hasGovAction"
+    TermToRewardAccount -> "cardano:toRewardAccount"
+    TermHasLovelace -> "cardano:hasLovelace"
+    TermHasGuardPolicy -> "cardano:hasGuardPolicy"
     TermDecodedAs -> "cardano:decodedAs"
     TermFromTxOutRef -> "cardano:fromTxOutRef"
     TermLovelace -> "cardano:lovelace"

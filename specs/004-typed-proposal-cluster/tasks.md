@@ -12,14 +12,14 @@
 
 ## Slice B — `TreasuryWithdrawals` body (closes #3)
 
-- [ ] T004-S2 — add `TermTreasuryWithdrawals`, `TermWithdrawal`, `TermHasGovAction`, `TermHasWithdrawal`, `TermToRewardAccount`, `TermHasLovelace`, `TermHasGuardPolicy` to `Vocab.hs`
-- [ ] T004-S2 — case-split `buildProposalCluster` on the `GovAction` constructor; for `TreasuryWithdrawals`, emit a typed `_:govActionK` sub-block with `hasWithdrawal` per map entry + optional `hasGuardPolicy`; other constructors continue to use the existing fallback
-- [ ] T004-S2 — each withdrawal sub-block emits `toRewardAccount` (reusing credential-bnode scheme) + `hasLovelace` (integer literal)
-- [ ] T004-S2 — declare new classes + predicates in `vocab/cardano/transactions.ttl`
-- [ ] T004-S2 — regenerate goldens; verify only TreasuryWithdrawals-bearing fixtures changed
-- [ ] T004-S2 — verify `nix build .#checks.x86_64-linux.unit` green
-- [ ] T004-S2 — smoke: SPARQL `SELECT (SUM(?ada) AS ?total) WHERE { ?p a cardano:Proposal ; cardano:hasGovAction/cardano:hasWithdrawal/cardano:hasLovelace ?ada }` against a TreasuryWithdrawals fixture returns the expected total
-- [ ] T004-S2 — commit: `feat(emitter): typed TreasuryWithdrawals body (recipient + lovelace + guard policy)` with `Tasks: T004-S2`
+- [X] T004-S2 — add `TermTreasuryWithdrawals`, `TermWithdrawal`, `TermHasGovAction`, `TermHasWithdrawal`, `TermToRewardAccount`, `TermHasLovelace`, `TermHasGuardPolicy` to `Vocab.hs`
+- [X] T004-S2 — case-split `buildProposalCluster` on the `GovAction` constructor; for `TreasuryWithdrawals`, emit a typed `_:govActionK` sub-block with `hasWithdrawal` per map entry + optional `hasGuardPolicy`; other constructors continue to use the existing fallback
+- [X] T004-S2 — each withdrawal sub-block emits `toRewardAccount` (reusing credential-bnode scheme) + `hasLovelace` (integer literal)
+- [X] T004-S2 — declare new classes + predicates in `vocab/cardano/transactions.ttl`
+- [X] T004-S2 — regenerate goldens; verify only TreasuryWithdrawals-bearing fixtures changed
+- [X] T004-S2 — verify `nix build .#checks.x86_64-linux.unit` green
+- [X] T004-S2 — smoke: SPARQL `SELECT (SUM(?ada) AS ?total) WHERE { ?p a cardano:Proposal ; cardano:hasGovAction/cardano:hasWithdrawal/cardano:hasLovelace ?ada }` against a TreasuryWithdrawals fixture returns the expected total
+- [X] T004-S2 — commit: `feat(emitter): typed TreasuryWithdrawals body (recipient + lovelace + guard policy)` with `Tasks: T004-S2`
 
 ## Finalization
 

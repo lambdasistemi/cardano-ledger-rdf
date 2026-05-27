@@ -102,7 +102,12 @@ cardano:hasCertificate a rdf:Property ;
 
 cardano:hasWithdrawal a rdf:Property ;
   rdfs:label "hasWithdrawal" ;
-  dcterms:description "A reward-account withdrawal carried by the transaction." .
+  rdfs:domain [
+    a owl:Class ;
+    owl:unionOf ( cardano:Transaction cardano:TreasuryWithdrawals )
+  ] ;
+  rdfs:range  cardano:Withdrawal ;
+  dcterms:description "A reward-account withdrawal carried by the transaction body or by a TreasuryWithdrawals governance action." .
 
 cardano:hasProposal a rdf:Property ;
   rdfs:label "hasProposal" ;
@@ -434,6 +439,15 @@ cardano:Proposal a rdfs:Class ;
   rdfs:label "Proposal" ;
   dcterms:description "A Conway governance proposal procedure submitted by a transaction. Carries the proposal deposit, return reward-account, anchor metadata, and a per-variant governance action payload." .
 
+cardano:GovAction a rdfs:Class ;
+  rdfs:label "GovAction" ;
+  dcterms:description "A Conway governance action carried by a Proposal. Specific subclasses describe the typed payload for each governance-action constructor." .
+
+cardano:TreasuryWithdrawals a rdfs:Class ;
+  rdfs:label "TreasuryWithdrawals" ;
+  rdfs:subClassOf cardano:GovAction ;
+  dcterms:description "A Conway governance action withdrawing lovelace from the treasury to one or more reward accounts, optionally guarded by a policy script hash." .
+
 cardano:Anchor a rdfs:Class ;
   rdfs:label "Anchor" ;
   dcterms:description "An off-chain pointer to governance metadata, decomposed into a URL and content hash." .
@@ -488,7 +502,7 @@ cardano:VoterCommitteeCold a rdfs:Class ;
 
 cardano:Withdrawal a rdfs:Class ;
   rdfs:label "Withdrawal" ;
-  dcterms:description "A single withdrawal entry — taking accumulated rewards out of a reward account back into the spendable UTxO. Carries cardano:withdrawalAccount (a stake credential identifier) + cardano:lovelace (the amount withdrawn)." .
+  dcterms:description "A single withdrawal entry — taking accumulated rewards out of a reward account or naming a treasury withdrawal recipient. Body-level withdrawals carry cardano:withdrawalAccount + cardano:lovelace; TreasuryWithdrawals actions carry cardano:toRewardAccount + cardano:hasLovelace." .
 
 # ----- Properties (16) ------------------------------------------------------
 
@@ -543,6 +557,30 @@ cardano:hasReturnAddress a rdf:Property ;
   rdfs:domain cardano:Proposal ;
   rdfs:range  cardano:Identifier ;
   dcterms:description "Binds a governance proposal to the reward-account credential that receives the returned deposit. Object is the same Identifier node scheme used for withdrawal reward accounts." .
+
+cardano:hasGovAction a rdf:Property ;
+  rdfs:label "hasGovAction" ;
+  rdfs:domain cardano:Proposal ;
+  rdfs:range  cardano:GovAction ;
+  dcterms:description "Binds a Proposal to its typed Conway governance-action payload. The raw CBOR fallback remains available through cardano:hasDatum on the same proposal subject." .
+
+cardano:toRewardAccount a rdf:Property ;
+  rdfs:label "toRewardAccount" ;
+  rdfs:domain cardano:Withdrawal ;
+  rdfs:range  cardano:Identifier ;
+  dcterms:description "Binds a treasury-withdrawal recipient entry to the reward-account stake credential receiving lovelace." .
+
+cardano:hasLovelace a rdf:Property ;
+  rdfs:label "hasLovelace" ;
+  rdfs:domain cardano:Withdrawal ;
+  rdfs:range  xsd:integer ;
+  dcterms:description "The lovelace amount carried by a treasury-withdrawal recipient entry." .
+
+cardano:hasGuardPolicy a rdf:Property ;
+  rdfs:label "hasGuardPolicy" ;
+  rdfs:domain cardano:TreasuryWithdrawals ;
+  rdfs:range  cardano:Identifier ;
+  dcterms:description "Optional policy script hash that guards a TreasuryWithdrawals governance action." .
 
 cardano:hasVote a rdf:Property ;
   rdfs:label "hasVote" ;

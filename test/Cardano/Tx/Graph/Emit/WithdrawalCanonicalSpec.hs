@@ -116,7 +116,6 @@ fixtureSpec (slug, tx) = describe slug $ do
                 countOccurrences "cardano:withAmount" bytes `shouldBe` 0
         else it "no Withdrawal section is emitted when the body carries no withdrawals" $ do
             countOccurrences "# Withdrawal " bytes `shouldBe` 0
-            countOccurrences "cardano:Withdrawal" bytes `shouldBe` 0
             countOccurrences "cardano:withdrawalAccount" bytes `shouldBe` 0
             countOccurrences "cardano:withAmount" bytes `shouldBe` 0
 
