@@ -2,13 +2,13 @@
 
 ## Slice A — proposal shell (closes #4)
 
-- [ ] T004-S1 — add `TermHasDeposit`, `TermHasReturnAddress` to `src/Cardano/Tx/Graph/Emit/Vocab.hs` (the existing `TermHasAnchor` is reused)
-- [ ] T004-S1 — refactor `buildProposalCluster` in `src/Cardano/Tx/Graph/Emit/Project.hs` to emit `hasDeposit`, `hasReturnAddress`, `hasAnchor` on the proposal subject for every gov-action variant
-- [ ] T004-S1 — emit a typed `cardano:Anchor` sub-block for the proposal's anchor field, reusing the vote-anchor shape (`anchorUrl`, `anchorHash`)
-- [ ] T004-S1 — declare new predicates in `vocab/cardano/transactions.ttl` (labels, descriptions, domain/range where unambiguous); widen `cardano:hasAnchor` domain if needed
-- [ ] T004-S1 — regenerate goldens via the harness's regen mode; verify diffs are additive (new predicates only)
-- [ ] T004-S1 — verify `nix build .#checks.x86_64-linux.unit` green
-- [ ] T004-S1 — commit: `feat(emitter): typed proposal_procedure shell (deposit + return_address + anchor)` with `Tasks: T004-S1`
+- [X] T004-S1 — add `TermHasDeposit`, `TermHasReturnAddress` to `src/Cardano/Tx/Graph/Emit/Vocab.hs` (the existing `TermHasAnchor` is reused)
+- [X] T004-S1 — refactor `buildProposalCluster` in `src/Cardano/Tx/Graph/Emit/Project.hs` to emit `hasDeposit`, `hasReturnAddress`, `hasAnchor` on the proposal subject for every gov-action variant
+- [X] T004-S1 — emit a typed `cardano:Anchor` sub-block for the proposal's anchor field, reusing the vote-anchor shape (`anchorUrl`, `anchorHash`)
+- [X] T004-S1 — declare new predicates in `vocab/cardano/transactions.ttl` (labels, descriptions, domain/range where unambiguous); widen `cardano:hasAnchor` domain if needed
+- [X] T004-S1 — regenerate goldens via the harness's regen mode; verify diffs are additive (new predicates only)
+- [X] T004-S1 — verify `nix build .#checks.x86_64-linux.unit` green
+- [X] T004-S1 — commit: `feat(emitter): typed proposal_procedure shell (deposit + return_address + anchor)` with `Tasks: T004-S1`
 
 ## Slice B — `TreasuryWithdrawals` body (closes #3)
 

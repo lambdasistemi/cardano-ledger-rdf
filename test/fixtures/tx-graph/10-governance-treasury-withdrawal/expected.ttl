@@ -78,7 +78,19 @@ _:output1 a cardano:Output ;
 # Proposal 1
 #
 
-_:proposal1 cardano:hasDatum _:proposalDatum1 .
+_:cred_stakekey_00000000000000000000000000000000000000000000000000000001 a cardano:Identifier ;
+  cardano:leafType "StakeKey" ;
+  cardano:bytesHex "00000000000000000000000000000000000000000000000000000001" .
+
+_:proposal1 a cardano:Proposal ;
+  cardano:hasDeposit 100000000000 ;
+  cardano:hasReturnAddress _:cred_stakekey_00000000000000000000000000000000000000000000000000000001 ;
+  cardano:hasAnchor _:proposalAnchor1 ;
+  cardano:hasDatum _:proposalDatum1 .
+
+_:proposalAnchor1 a cardano:Anchor ;
+  cardano:anchorUrl "https://example.invalid/stub-anchor" ;
+  cardano:anchorHash "0000000000000000000000000000000000000000000000000000000000000000" .
 
 _:proposalDatum1 a cardano:Datum ;
   cardano:decodedAs "TreasuryWithdrawals" ;

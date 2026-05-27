@@ -79,6 +79,8 @@ data VocabTerm
     | TermDRep
     | TermDatum
     | TermGovActionId
+    | TermProposal
+    | TermAnchor
     | -- Body predicates
       TermHasInput
     | TermHasOutput
@@ -101,6 +103,8 @@ data VocabTerm
     | TermHasCollateralInput
     | TermHasReferenceInput
     | TermHasProposal
+    | TermHasDeposit
+    | TermHasReturnAddress
     | TermDecodedAs
     | TermFromTxOutRef
     | -- Value semantics (T104 / S3 — output ADA + multi-asset)
@@ -220,6 +224,8 @@ vocabIri = \case
     TermDRep -> cardanoPrefix <> "DRep"
     TermDatum -> cardanoPrefix <> "Datum"
     TermGovActionId -> cardanoPrefix <> "GovActionId"
+    TermProposal -> cardanoPrefix <> "Proposal"
+    TermAnchor -> cardanoPrefix <> "Anchor"
     TermHasInput -> cardanoPrefix <> "hasInput"
     TermHasOutput -> cardanoPrefix <> "hasOutput"
     TermHasFee -> cardanoPrefix <> "hasFee"
@@ -241,6 +247,8 @@ vocabIri = \case
     TermHasCollateralInput -> cardanoPrefix <> "hasCollateralInput"
     TermHasReferenceInput -> cardanoPrefix <> "hasReferenceInput"
     TermHasProposal -> cardanoPrefix <> "hasProposal"
+    TermHasDeposit -> cardanoPrefix <> "hasDeposit"
+    TermHasReturnAddress -> cardanoPrefix <> "hasReturnAddress"
     TermDecodedAs -> cardanoPrefix <> "decodedAs"
     TermFromTxOutRef -> cardanoPrefix <> "fromTxOutRef"
     TermLovelace -> cardanoPrefix <> "lovelace"
@@ -322,6 +330,8 @@ vocabCurie = \case
     TermDRep -> "cardano:DRep"
     TermDatum -> "cardano:Datum"
     TermGovActionId -> "cardano:GovActionId"
+    TermProposal -> "cardano:Proposal"
+    TermAnchor -> "cardano:Anchor"
     TermHasInput -> "cardano:hasInput"
     TermHasOutput -> "cardano:hasOutput"
     TermHasFee -> "cardano:hasFee"
@@ -343,6 +353,8 @@ vocabCurie = \case
     TermHasCollateralInput -> "cardano:hasCollateralInput"
     TermHasReferenceInput -> "cardano:hasReferenceInput"
     TermHasProposal -> "cardano:hasProposal"
+    TermHasDeposit -> "cardano:hasDeposit"
+    TermHasReturnAddress -> "cardano:hasReturnAddress"
     TermDecodedAs -> "cardano:decodedAs"
     TermFromTxOutRef -> "cardano:fromTxOutRef"
     TermLovelace -> "cardano:lovelace"

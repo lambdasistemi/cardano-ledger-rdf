@@ -10,6 +10,9 @@
 cardano:Address a rdfs:Class ;
   rdfs:label "Address" .
 
+cardano:Anchor a rdfs:Class ;
+  rdfs:label "Anchor" .
+
 cardano:Asset a rdfs:Class ;
   rdfs:label "Asset" .
 
@@ -63,6 +66,9 @@ cardano:Policy a rdfs:Class ;
 
 cardano:Pool a rdfs:Class ;
   rdfs:label "Pool" .
+
+cardano:Proposal a rdfs:Class ;
+  rdfs:label "Proposal" .
 
 cardano:Redeemer a rdfs:Class ;
   rdfs:label "Redeemer" .
@@ -154,6 +160,9 @@ cardano:hasDatum a rdf:Property ;
 cardano:hasDatumWitness a rdf:Property ;
   rdfs:label "hasDatumWitness" .
 
+cardano:hasDeposit a rdf:Property ;
+  rdfs:label "hasDeposit" .
+
 cardano:hasExUnits a rdf:Property ;
   rdfs:label "hasExUnits" .
 
@@ -207,6 +216,9 @@ cardano:hasReferenceScript a rdf:Property ;
 
 cardano:hasRequiredSigner a rdf:Property ;
   rdfs:label "hasRequiredSigner" .
+
+cardano:hasReturnAddress a rdf:Property ;
+  rdfs:label "hasReturnAddress" .
 
 cardano:hasScriptWitness a rdf:Property ;
   rdfs:label "hasScriptWitness" .
