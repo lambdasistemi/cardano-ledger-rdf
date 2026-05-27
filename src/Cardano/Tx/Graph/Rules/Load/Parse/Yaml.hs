@@ -84,6 +84,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as TextEncoding
 import Data.Text.Encoding.Error (lenientDecode)
+import Data.Text.Read qualified as TextRead
 import Data.Yaml qualified as Yaml
 import System.FilePath (isAbsolute)
 import Text.Libyaml qualified as Libyaml
@@ -907,11 +908,13 @@ requireField ctx ln obj fieldName missingMsg =
         Just v -> Right v
         Nothing -> Left (ParserError (ctxFile ctx) ln missingMsg)
 
-{- | Parse the compound-key shape (@keys: [LeafType, …] + bytes: \<hex\>@).
+{- | Parse the compound-key shape (@keys: [LeafType, …] + bytes: \<token\>@).
 Produces N 'EntityIdentifier' values, one per leafType in the
-@keys:@ list, all sharing the validated 28-byte @bytes:@ payload.
-The cross-leaf identity surface is owned downstream by the naming
-table (first-entity-wins on @(leafType, bytesHex)@).
+@keys:@ list, all sharing the validated @bytes:@ payload. Most
+leaf types use 28-byte hex; @TxId@ uses 32-byte hex; @GovActionId@
+uses @txid:index@. The cross-leaf identity surface is owned
+downstream by the naming table (first-entity-wins on
+@(leafType, bytesHex)@).
 -}
 parseCompoundKey ::
     Ctx ->
@@ -923,13 +926,13 @@ parseCompoundKey ::
 parseCompoundKey ctx ln slug keysV bytesV = do
     leaves <- parseKeysList ctx ln slug keysV
     bytesHex <- case bytesV of
-        Aeson.String t -> validateHash28 ctx ln t BadPolicyHex
+        Aeson.String t -> validateCompoundBytes ctx ln leaves t
         other ->
             Left $
                 ParserError
                     (ctxFile ctx)
                     ln
-                    ("bytes: must be a 56-char hex string, got: " <> typeName other)
+                    ("bytes: must be a string, got: " <> typeName other)
     Right [EntityIdentifier lt bytesHex | lt <- leaves]
 
 {- | Parse the @keys:@ list value as a non-empty list of 'LeafType'
@@ -992,7 +995,81 @@ parseLeafType = \case
     "PoolId" -> Just PoolId
     "DRepKey" -> Just DRepKey
     "DRepScript" -> Just DRepScript
+    "TxId" -> Just LtTxId
+    "GovActionId" -> Just LtGovActionId
     _ -> Nothing
+
+validateCompoundBytes ::
+    Ctx -> Int -> [LeafType] -> Text -> Either RulesLoadError Text
+validateCompoundBytes ctx ln leaves raw = do
+    validated <- traverse (validateLeafBytes ctx ln raw) leaves
+    case validated of
+        [] ->
+            Left $
+                ParserError
+                    (ctxFile ctx)
+                    ln
+                    "entity declares an empty 'keys:' list"
+        first : rest
+            | all (== first) rest -> Right first
+            | otherwise ->
+                Left $
+                    ParserError
+                        (ctxFile ctx)
+                        ln
+                        "bytes: incompatible payload for mixed leaf types"
+
+validateLeafBytes ::
+    Ctx -> Int -> Text -> LeafType -> Either RulesLoadError Text
+validateLeafBytes ctx ln raw = \case
+    LtTxId -> validateHash32 ctx ln raw
+    LtGovActionId -> validateGovActionIdBytes ctx ln raw
+    _ -> validateHash28 ctx ln raw BadPolicyHex
+
+validateHash32 :: Ctx -> Int -> Text -> Either RulesLoadError Text
+validateHash32 ctx ln hex =
+    let lowered = Text.toLower hex
+     in if Text.length lowered /= 64
+            then
+                Left $
+                    ParserError
+                        (ctxFile ctx)
+                        ln
+                        "bytes: TxId must be a 64-char hex string"
+            else case Base16.decode (TextEncoding.encodeUtf8 lowered) of
+                Right bs | BS.length bs == 32 -> Right lowered
+                _ ->
+                    Left $
+                        ParserError
+                            (ctxFile ctx)
+                            ln
+                            "bytes: TxId must be valid lowercase hex"
+
+validateGovActionIdBytes :: Ctx -> Int -> Text -> Either RulesLoadError Text
+validateGovActionIdBytes ctx ln raw =
+    case Text.splitOn ":" raw of
+        [txIdRaw, indexRaw] -> do
+            txId <- validateHash32 ctx ln txIdRaw
+            index <- validateGovActionIndex ctx ln indexRaw
+            Right (txId <> ":" <> Text.pack (show index))
+        _ ->
+            Left $
+                ParserError
+                    (ctxFile ctx)
+                    ln
+                    "bytes: GovActionId must be '<txid_hex>:<index>'"
+
+validateGovActionIndex :: Ctx -> Int -> Text -> Either RulesLoadError Integer
+validateGovActionIndex ctx ln raw =
+    case TextRead.decimal raw of
+        Right (n, rest)
+            | Text.null rest -> Right n
+        _ ->
+            Left $
+                ParserError
+                    (ctxFile ctx)
+                    ln
+                    "bytes: GovActionId index must be a decimal integer"
 
 {- | Validate a 56-char hex value used in a @script:@ shape.
 Reuses 'BadPolicyHex' for the error variant — both @script:@ and

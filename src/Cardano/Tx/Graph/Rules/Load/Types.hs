@@ -39,10 +39,10 @@ each of the entity's identifiers.
   @bytesHex = policy ++ hex(ascii(name))@.
 * @pool: \<bech32\>@ → 1 'PoolId' identifier.
 * @drep: \<CIP-129 bech32\>@ → 1 'DRepKey' or 'DRepScript' identifier.
-* @keys: [LeafType, …] + bytes: \<hex\>@ → N identifiers (one per
-  @keys:@ leafType) that all share the same 28-byte @bytes:@ payload
-  — the cross-leaf identity surface used by fixture-04's
-  @usdm-control@ entity.
+* @keys: [LeafType, …] + bytes: \<token\>@ → N identifiers (one per
+  @keys:@ leafType) that all share the same validated @bytes:@ payload
+  — usually a 28-byte hash, with explicit 32-byte @TxId@ and
+  @txid:index@ @GovActionId@ extensions.
 -}
 data EntityDecl = EntityDecl
     { entityName :: !Text
@@ -94,8 +94,9 @@ data EntityIdentifier = EntityIdentifier
     -- ^ The role-class the bytes belong to (one of the nine fixed
     -- values pinned by FR-013).
     , entityIdBytesHex :: !Text
-    -- ^ Lowercase hex string. 56 chars for 28-byte hashes;
-    -- @policy ++ hex(ascii(name))@ for an 'AssetClass'.
+    -- ^ Canonical identifier token. Lowercase hex for hash-shaped
+    -- identifiers; @policy ++ hex(ascii(name))@ for an
+    -- 'AssetClass'; @txid:index@ for 'LtGovActionId'.
     }
     deriving stock (Eq, Ord, Show)
 
@@ -129,13 +130,14 @@ FR-013 and the @roleSuffix@ table in plan D2 — they appear in
 operator rules files and the entity-overlay path.
 
 The remaining six (TxId, GovActionId, DatumHash, ScriptHash, ScriptDataHash,
-AuxiliaryDataHash) are body-walker-only leaf types introduced by
+AuxiliaryDataHash) started as body-walker leaf types introduced by
 T122c / S22 for the literal-vs-node consistency audit (A-007):
 any hash with independent identity (txid, datum hash, script
 hash, script-data hash, auxiliary-data hash) emits as a
 @cardano:Identifier@-typed bnode under the @_:hash_*@ raw-bytes
 naming prefix, so cross-position bnode joins in SPARQL views
-work without literal-string surgery.
+work without literal-string surgery. @TxId@ and @GovActionId@ are also
+operator-declarable through the @keys:@ + @bytes:@ rules shape.
 -}
 data LeafType
     = -- Operator-declarable credential leaves (FR-013 / plan D2).

@@ -281,10 +281,9 @@ renderLeafType = \case
     PoolId -> "PoolId"
     DRepKey -> "DRepKey"
     DRepScript -> "DRepScript"
-    -- T122c hash leaves are body-walker-only — they don't
-    -- appear in the operator-overlay rules path but the pattern
-    -- match here stays total so a future overlay extension can
-    -- consume them without an exhaustivity warning.
+    -- T122c hash leaves started body-walker-only; TxId and
+    -- GovActionId are now also accepted through the operator
+    -- keys+bytes overlay path.
     LtTxId -> "TxId"
     LtGovActionId -> "GovActionId"
     LtDatumHash -> "DatumHash"

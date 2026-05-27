@@ -282,7 +282,10 @@ import Cardano.Tx.Graph.Emit.Blueprint (
 import Cardano.Tx.Graph.Emit.Lookup (
     BnodeName (..),
     LookupTable,
+    lookupByteIdentifier,
+    lookupTextIdentifier,
     rawBytesBnodeName,
+    rawTextBnodeName,
  )
 import Cardano.Tx.Graph.Emit.Monad (
     Emit,
@@ -405,7 +408,7 @@ projectBody entities lookupTbl blueprints tx utxo =
             ]
         -- Per-vote clusters (T119 / S18 — voting procedures).
         voteBlocks =
-            [ clusterBlocks (buildVoteCluster k voter actionId procedure)
+            [ clusterBlocks (buildVoteCluster lookupTbl k voter actionId procedure)
             | (k, (voter, actionId, procedure)) <- zip [1 ..] votes
             ]
         -- Assemble the tx subject block via the Emit monad —
@@ -610,7 +613,7 @@ resolveCredentialAndIntroduceIdent ::
     ByteString ->
     Emit BnodeName
 resolveCredentialAndIntroduceIdent tbl lt bytes = do
-    case Map.lookup (lt, bytes) tbl of
+    case lookupByteIdentifier tbl lt bytes of
         Just bn ->
             -- Entity-named — overlay path emits the literal triples.
             pure bn
@@ -772,10 +775,6 @@ idVoteBnode k = BnodeName ("vote" <> Text.pack (show k))
 -- | Bnode name a vote's voter sub-block at position @k@ gets.
 idVoterBnode :: Int -> BnodeName
 idVoterBnode k = BnodeName ("voter" <> Text.pack (show k))
-
--- | Bnode name a vote's governance-action-id sub-block at position @k@ gets.
-idGovActionIdBnode :: Int -> BnodeName
-idGovActionIdBnode k = BnodeName ("govActionId" <> Text.pack (show k))
 
 -- | Bnode name a vote's anchor sub-block at position @k@ gets.
 idVoteAnchorBnode :: Int -> BnodeName
@@ -2996,12 +2995,15 @@ flattenVotingProcedures =
 @
 _:voteK a cardano:Vote ;
         cardano:hasVoter _:voterK ;
-        cardano:hasVotingAction _:govActionIdK ;
+        cardano:hasVotingAction _:hash_govactionid_\<txid\>_\<ix\> ;
         cardano:hasVerdict "Yes" | "No" | "Abstain" ;
         cardano:hasAnchor _:voteAnchorK .  -- when SJust
 
-_:govActionIdK a cardano:GovActionId ;
-        cardano:hasTxId _:hash_govactionid_\<txid\> ;
+_:hash_govactionid_\<txid\>_\<ix\> a cardano:GovActionId ;
+        a cardano:Identifier ;
+        cardano:leafType "GovActionId" ;
+        cardano:bytesHex "\<txid\>:\<ix\>" ;
+        cardano:hasTxId _:hash_txid_\<txid\> ;
         cardano:hasIndex \<ix\> .
 @
 
@@ -3015,15 +3017,17 @@ When the procedure carries an 'Anchor', @_:voteAnchorK@ carries
 @cardano:anchorUrl "url"@ + @cardano:anchorHash "hex"@.
 -}
 buildVoteCluster ::
+    LookupTable ->
     Int ->
     Voter ->
     GovActionId ->
     VotingProcedure ConwayEra ->
     Emit ()
-buildVoteCluster k voter actionId procedure = do
+buildVoteCluster lookupTbl k voter actionId procedure = do
     let voteSubj = SBnode (idVoteBnode k)
         voterSubj = SBnode (idVoterBnode k)
         VotingProcedure vote mAnchor = procedure
+    govActionBnode <- emitGovActionIdBlock lookupTbl actionId
     tellTriple (Triple voteSubj PRdfType (OIri (vocabCurie TermVote)))
     tellTriple
         ( Triple
@@ -3035,9 +3039,8 @@ buildVoteCluster k voter actionId procedure = do
         ( Triple
             voteSubj
             (PIri (vocabCurie TermHasVotingAction))
-            (OBnode (idGovActionIdBnode k))
+            (OBnode govActionBnode)
         )
-    emitGovActionIdBlock k actionId
     tellTriple
         ( Triple
             voteSubj
@@ -3058,35 +3061,62 @@ verdictText = \case
 
 {- | Emit a vote target as a typed @cardano:GovActionId@ sub-block.
 
-The per-vote @_:govActionIdK@ subject remains position-scoped,
-while the TxId Identifier leaf is deterministic from the proposing
-transaction hash and therefore merges across votes targeting the
-same action.
+The subject is deterministic over @txid:index@ and can be replaced
+by an operator-declared entity bnode through the rules lookup table.
 -}
-emitGovActionIdBlock :: Int -> GovActionId -> Emit ()
-emitGovActionIdBlock k (GovActionId (TxId safeHash) (GovActionIx ix)) = do
-    let govActionSubj = SBnode (idGovActionIdBnode k)
-        txIdBytes = hashToBytes (extractHash safeHash)
-    tellTriple
-        ( Triple
-            govActionSubj
-            PRdfType
-            (OIri (vocabCurie TermGovActionId))
-        )
+emitGovActionIdBlock :: LookupTable -> GovActionId -> Emit BnodeName
+emitGovActionIdBlock lookupTbl (GovActionId (TxId safeHash) (GovActionIx ix)) = do
+    let txIdBytes = hashToBytes (extractHash safeHash)
+        token = hexText txIdBytes <> ":" <> Text.pack (show ix)
+        mEntityBnode = lookupTextIdentifier lookupTbl LtGovActionId token
+        govActionBnode =
+            Maybe.fromMaybe
+                (rawTextBnodeName LtGovActionId token)
+                mEntityBnode
+        govActionSubj = SBnode govActionBnode
     txIdBnode <-
-        resolveCredentialAndIntroduceIdent Map.empty LtGovActionId txIdBytes
-    tellTriple
-        ( Triple
-            govActionSubj
-            (PIri (vocabCurie TermHasTxId))
-            (OBnode txIdBnode)
-        )
-    tellTriple
-        ( Triple
-            govActionSubj
-            (PIri (vocabCurie TermHasIndex))
-            (OIntLit (fromIntegral ix))
-        )
+        resolveCredentialAndIntroduceIdent lookupTbl LtTxId txIdBytes
+    introduce govActionSubj $ do
+        tellTriple
+            ( Triple
+                govActionSubj
+                PRdfType
+                (OIri (vocabCurie TermGovActionId))
+            )
+        if Maybe.isJust mEntityBnode
+            then pure ()
+            else do
+                tellTriple
+                    ( Triple
+                        govActionSubj
+                        PRdfType
+                        (OIri (vocabCurie TermIdentifier))
+                    )
+                tellTriple
+                    ( Triple
+                        govActionSubj
+                        (PIri (vocabCurie TermLeafType))
+                        (OStringLit (leafTypeText LtGovActionId))
+                    )
+                tellTriple
+                    ( Triple
+                        govActionSubj
+                        (PIri (vocabCurie TermBytesHex))
+                        (OStringLit token)
+                    )
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermHasTxId))
+                (OBnode txIdBnode)
+            )
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermHasIndex))
+                (OIntLit (fromIntegral ix))
+            )
+    pure govActionBnode
 
 {- | Emit the @_:voterK a cardano:VoterX ; cardano:hasIdentifier
 "\<hex\>"@ sub-block. The discriminating class

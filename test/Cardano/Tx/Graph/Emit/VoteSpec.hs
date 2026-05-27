@@ -30,6 +30,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Char8 qualified as BS8
 import Data.Map.Strict qualified as Map
 import Data.Maybe (fromJust)
+import Data.Text.Encoding qualified as TextEncoding
 
 import Lens.Micro ((&), (.~))
 
@@ -60,6 +61,11 @@ import Cardano.Tx.Graph.Emit (
     emit,
     serialize,
  )
+import Cardano.Tx.Graph.Rules.Load (
+    EntityDecl (..),
+    EntityIdentifier (..),
+    LeafType (..),
+ )
 import Cardano.Tx.Ledger (ConwayTx)
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
@@ -73,6 +79,7 @@ spec =
         committeeSpec
         verdictsSpec
         anchorSpec
+        operatorNamedGovActionSpec
 
 elisionSpec :: Spec
 elisionSpec = describe "elision" $
@@ -90,24 +97,29 @@ drepSpec = describe "DRep voter" $
         bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasVoter _:voter1"
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                "cardano:hasVotingAction _:govActionId1"
-        bytes `shouldSatisfy` BS8.isInfixOf "_:govActionId1 a cardano:GovActionId"
-        bytes
-            `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasTxId _:hash_govactionid_" <> govActionHashHex)
-        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasIndex 0"
+                ( "cardano:hasVotingAction _:hash_govactionid_"
+                    <> govActionHashHex
+                    <> "_0"
+                )
         bytes
             `shouldSatisfy` BS8.isInfixOf
                 ( "_:hash_govactionid_"
                     <> govActionHashHex
-                    <> " a cardano:Identifier"
+                    <> "_0 a cardano:GovActionId"
                 )
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ("cardano:hasTxId _:hash_txid_" <> govActionHashHex)
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasIndex 0"
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                "a cardano:Identifier"
         bytes
             `shouldSatisfy` BS8.isInfixOf
                 "cardano:leafType \"GovActionId\""
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:bytesHex \"" <> govActionHashHex <> "\"")
+                ("cardano:bytesHex \"" <> govActionHashHex <> ":0\"")
         bytes
             `shouldSatisfy` (not . BS8.isInfixOf (govActionHashHex <> "#0"))
         bytes `shouldSatisfy` BS8.isInfixOf "_:voter1 a cardano:VoterDRep"
@@ -170,6 +182,20 @@ anchorSpec = describe "anchor sub-block" $
             `shouldSatisfy` BS8.isInfixOf
                 ("cardano:anchorHash \"" <> BS8.replicate 64 '0' <> "\"")
 
+operatorNamedGovActionSpec :: Spec
+operatorNamedGovActionSpec = describe "operator-named GovActionId" $
+    it "uses the rules entity bnode for a matching txid:index action" $ do
+        let voter = DRepVoter (KeyHashObj (drepKeyHash 1))
+            bytes =
+                emitBytesWithEntities
+                    [govActionEntity]
+                    (txWithSingleVote voter VoteYes SNothing)
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ( "cardano:hasVotingAction "
+                    <> "_:io_proposal_developer_experience_govActionId"
+                )
+
 ----------------------------------------------------------------------
 -- Synthesis helpers
 ----------------------------------------------------------------------
@@ -229,10 +255,29 @@ mkKeyHash n =
     d k = "0123456789abcdef" !! k
 
 emitBytes :: ConwayTx -> ByteString
-emitBytes tx =
-    case emit tx emptyUtxo [] [] of
+emitBytes = emitBytesWithEntities []
+
+emitBytesWithEntities :: [EntityDecl] -> ConwayTx -> ByteString
+emitBytesWithEntities entities tx =
+    case emit tx emptyUtxo entities [] of
         Right g -> serialize Turtle "vote-spec" g
         Left e -> error ("VoteSpec.emit: " <> show e)
 
 emptyUtxo :: ResolvedUTxO
 emptyUtxo = Map.empty
+
+govActionEntity :: EntityDecl
+govActionEntity =
+    EntityDecl
+        { entityName = "io.proposal.developer-experience"
+        , entitySlug = "io_proposal_developer_experience"
+        , entityIdentifiers =
+            [ EntityIdentifier
+                LtGovActionId
+                (TextEncoding.decodeUtf8 govActionHashHex <> ":0")
+            ]
+        , entityBech32 = Nothing
+        , entityRole = Nothing
+        , entityPaidVia = Nothing
+        , entitySourceFile = "<in-memory>"
+        }

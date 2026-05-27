@@ -1101,6 +1101,8 @@ parseLeafType file ln bnodeName = \case
     "PoolId" -> Right PoolId
     "DRepKey" -> Right DRepKey
     "DRepScript" -> Right DRepScript
+    "TxId" -> Right LtTxId
+    "GovActionId" -> Right LtGovActionId
     other ->
         Left $
             ParserError
