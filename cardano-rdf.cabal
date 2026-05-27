@@ -1,0 +1,324 @@
+cabal-version:   3.4
+name:            cardano-rdf
+version:         0.2.2.0
+synopsis:        Cardano transaction RDF graph tooling
+description:
+  Library and executables for emitting Cardano Conway transactions as RDF,
+  fetching transaction CBOR closure lattices, and projecting generated graphs
+  through packaged views. Generic transaction inspection, signing, validation,
+  diffing, and load-generation remain downstream cardano-tx-tools concerns.
+
+license:         Apache-2.0
+license-file:    LICENSE
+author:          Paolo Veronelli
+maintainer:      paolo.veronelli@gmail.com
+homepage:        https://lambdasistemi.github.io/cardano-rdf/
+bug-reports:     https://github.com/lambdasistemi/cardano-rdf/issues
+category:        Cardano
+build-type:      Simple
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
+flag werror
+  description: Enable -Werror (compile-time enforcement of warnings).
+  default:     False
+  manual:      True
+
+common warnings
+  ghc-options:
+    -Wall -Wunused-imports -Wmissing-export-lists -Wname-shadowing
+    -Wredundant-constraints
+
+  if flag(werror)
+    ghc-options: -Werror
+
+  default-extensions:
+    DataKinds
+    DerivingStrategies
+    DuplicateRecordFields
+    FlexibleContexts
+    GADTs
+    ImportQualifiedPost
+    LambdaCase
+    OverloadedStrings
+    PatternSynonyms
+    ScopedTypeVariables
+    StrictData
+    TypeApplications
+    TypeOperators
+    ViewPatterns
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  default-language: GHC2021
+  exposed-modules:
+    Cardano.Tx.Balance
+    Cardano.Tx.Blueprint
+    Cardano.Tx.Build
+    Cardano.Tx.Decode
+    Cardano.Tx.Evaluate
+    Cardano.Tx.Graph.Emit
+    Cardano.Tx.Graph.Emit.Blueprint
+    Cardano.Tx.Graph.Emit.Project
+    Cardano.Tx.Graph.Resolve
+    Cardano.Tx.Graph.Resolve.Web2
+    Cardano.Tx.Graph.Rules.Load
+    Cardano.Tx.Ledger
+    Cardano.Tx.View
+
+  other-modules:
+    Cardano.Tx.Credentials
+    Cardano.Tx.Deposits
+    Cardano.Tx.Graph.Emit.Lookup
+    Cardano.Tx.Graph.Emit.Monad
+    Cardano.Tx.Graph.Emit.Serialize.JsonLd
+    Cardano.Tx.Graph.Emit.Serialize.Turtle
+    Cardano.Tx.Graph.Emit.Triple
+    Cardano.Tx.Graph.Emit.Vocab
+    Cardano.Tx.Graph.Emit.VocabExport
+    Cardano.Tx.Graph.Emit.Witness
+    Cardano.Tx.Graph.Rules.Load.Bech32
+    Cardano.Tx.Graph.Rules.Load.Emit.Overlay
+    Cardano.Tx.Graph.Rules.Load.Naming
+    Cardano.Tx.Graph.Rules.Load.Parse.Turtle
+    Cardano.Tx.Graph.Rules.Load.Parse.Yaml
+    Cardano.Tx.Graph.Rules.Load.Resolve.Imports
+    Cardano.Tx.Graph.Rules.Load.Types
+    Cardano.Tx.Inputs
+    Cardano.Tx.Scripts
+    Cardano.Tx.View.AssetFlow
+    Cardano.Tx.View.CliTree
+    Cardano.Tx.View.EntityOccurrences
+    Cardano.Tx.View.JsonLd
+    Cardano.Tx.View.Turtle
+    Cardano.Tx.Witnesses
+
+  build-depends:
+    , aeson                      >=2.2  && <2.3
+    , aeson-pretty               >=0.8  && <0.9
+    , base                       <5
+    , base16-bytestring          >=1.0  && <1.1
+    , bech32                     >=1.1  && <1.2
+    , bytestring                 >=0.12 && <0.13
+    , cardano-binary             >=1.8  && <3
+    , cardano-crypto             >=1.3  && <3
+    , cardano-crypto-class       >=2.3  && <4
+    , cardano-data               >=1.3  && <3
+    , cardano-ledger-allegra     >=1.9  && <3
+    , cardano-ledger-alonzo      >=1.15 && <3
+    , cardano-ledger-api         >=1.13 && <3
+    , cardano-ledger-binary      >=1.8  && <3
+    , cardano-ledger-conway      >=1.21 && <3
+    , cardano-ledger-core        >=1.19 && <3
+    , cardano-ledger-mary        >=1.10 && <3
+    , cardano-ledger-shelley     >=1.18 && <3
+    , cardano-slotting           >=0.2  && <0.4
+    , cardano-strict-containers  >=0.1  && <0.3
+    , containers                 >=0.7  && <0.8
+    , crypton                    >=1.0  && <1.1
+    , data-default               >=0.8  && <0.9
+    , directory                  >=1.3  && <1.4
+    , exceptions                 >=0.10 && <0.11
+    , filepath                   >=1.5  && <1.6
+    , http-client                >=0.7  && <0.8
+    , http-client-tls            >=0.3  && <0.4
+    , http-types                 >=0.12 && <0.13
+    , libyaml                    >=0.1  && <0.2
+    , memory                     >=0.18 && <0.19
+    , microlens                  >=0.4  && <0.5
+    , operational                >=0.2  && <0.3
+    , optparse-applicative       >=0.19 && <0.20
+    , plutus-core                >=1.60 && <3
+    , plutus-tx                  >=1.60 && <3
+    , scientific                 >=0.3  && <0.4
+    , serialise                  >=0.2  && <0.3
+    , text                       >=2.1  && <2.2
+    , time                       >=1.12 && <1.13
+    , transformers               >=0.6  && <0.7
+    , tree-view                  >=0.5  && <0.6
+    , yaml                       >=0.11 && <0.12
+
+executable tx-graph
+  import:           warnings
+  hs-source-dirs:   app/tx-graph
+  main-is:          Main.hs
+  default-language: GHC2021
+  autogen-modules:  Paths_cardano_rdf
+  other-modules:    Paths_cardano_rdf
+  build-depends:
+    , base
+    , base16-bytestring      >=1.0  && <1.1
+    , bytestring             >=0.12 && <0.13
+    , cardano-crypto-class   >=2.3  && <4
+    , cardano-ledger-api     >=1.13 && <3
+    , cardano-ledger-conway  >=1.21 && <3
+    , cardano-ledger-core    >=1.19 && <3
+    , cardano-rdf
+    , containers             >=0.7  && <0.8
+    , directory              >=1.3  && <1.4
+    , filepath               >=1.5  && <1.6
+    , microlens              >=0.4  && <0.5
+    , optparse-applicative   >=0.19 && <0.20
+    , text                   >=2.1  && <2.2
+
+executable tx-fetch
+  import:           warnings
+  hs-source-dirs:   app/tx-fetch
+  main-is:          Main.hs
+  default-language: GHC2021
+  autogen-modules:  Paths_cardano_rdf
+  other-modules:    Paths_cardano_rdf
+  build-depends:
+    , base
+    , base16-bytestring     >=1.0  && <1.1
+    , bytestring            >=0.12 && <0.13
+    , cardano-crypto-class  >=2.3  && <4
+    , cardano-ledger-api    >=1.13 && <3
+    , cardano-ledger-core   >=1.19 && <3
+    , cardano-rdf
+    , containers            >=0.7  && <0.8
+    , directory             >=1.3  && <1.4
+    , filepath              >=1.5  && <1.6
+    , http-client           >=0.7  && <0.8
+    , http-client-tls       >=0.3  && <0.4
+    , microlens             >=0.4  && <0.5
+    , optparse-applicative  >=0.19 && <0.20
+    , text                  >=2.1  && <2.2
+
+executable tx-view
+  import:           warnings
+  hs-source-dirs:   app/tx-view
+  main-is:          Main.hs
+  default-language: GHC2021
+  autogen-modules:  Paths_cardano_rdf
+  other-modules:    Paths_cardano_rdf
+  build-depends:
+    , base
+    , bytestring            >=0.12 && <0.13
+    , cardano-rdf
+    , optparse-applicative  >=0.19 && <0.20
+    , text                  >=2.1  && <2.2
+
+test-suite unit-tests
+  import:             warnings
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test test/fixtures/tx-graph
+  main-is:            unit-main.hs
+  default-language:   GHC2021
+  other-modules:
+    Cardano.Tx.BlueprintSpec
+    Cardano.Tx.Build.MinUtxoSpec
+    Cardano.Tx.BuildSpec
+    Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec
+    Cardano.Tx.Graph.Emit.BlueprintPredicateTraceabilitySpec
+    Cardano.Tx.Graph.Emit.BlueprintSpec
+    Cardano.Tx.Graph.Emit.BlueprintTypedFixtureSpec
+    Cardano.Tx.Graph.Emit.BlueprintWiringSpec
+    Cardano.Tx.Graph.Emit.BodyRootSpec
+    Cardano.Tx.Graph.Emit.CertVariantsSpec
+    Cardano.Tx.Graph.Emit.ExhaustivitySpec
+    Cardano.Tx.Graph.Emit.IdentifierLiteralSpec
+    Cardano.Tx.Graph.Emit.InputSemanticSpec
+    Cardano.Tx.Graph.Emit.JsonLdEquivalenceSpec
+    Cardano.Tx.Graph.Emit.LookupSpec
+    Cardano.Tx.Graph.Emit.MintQuantitySpec
+    Cardano.Tx.Graph.Emit.MultiAssetListSpec
+    Cardano.Tx.Graph.Emit.NativeScriptRefScriptSpec
+    Cardano.Tx.Graph.Emit.NoStubViewSpec
+    Cardano.Tx.Graph.Emit.OutputDatumSpec
+    Cardano.Tx.Graph.Emit.OutputLovelaceSpec
+    Cardano.Tx.Graph.Emit.OutputScriptRefSpec
+    Cardano.Tx.Graph.Emit.ProposalSpec
+    Cardano.Tx.Graph.Emit.ProposalVariantsSpec
+    Cardano.Tx.Graph.Emit.ReproducibilitySpec
+    Cardano.Tx.Graph.Emit.RequiredSignersSpec
+    Cardano.Tx.Graph.Emit.SubjectDeDupSpec
+    Cardano.Tx.Graph.Emit.TotalCollateralSpec
+    Cardano.Tx.Graph.Emit.VocabExportSpec
+    Cardano.Tx.Graph.Emit.VocabTraceabilitySpec
+    Cardano.Tx.Graph.Emit.VoteSpec
+    Cardano.Tx.Graph.Emit.WithdrawalCanonicalSpec
+    Cardano.Tx.Graph.Emit.WitnessSpec
+    Cardano.Tx.Graph.EmitGoldenSpec
+    Cardano.Tx.Graph.EmitMonadSpec
+    Cardano.Tx.Graph.EmitSmokeSpec
+    Cardano.Tx.Graph.ResolveSpec
+    Cardano.Tx.Graph.ResolveWeb2Spec
+    Cardano.Tx.Graph.Rules.Load.BlueprintLoadSpec
+    Cardano.Tx.Graph.Rules.LoadEntitiesSpec
+    Cardano.Tx.Graph.Rules.LoadExeSpec
+    Cardano.Tx.Graph.Rules.LoadGoldenSpec
+    Cardano.Tx.Graph.Rules.LoadImportsSpec
+    Cardano.Tx.Graph.Rules.LoadSmokeSpec
+    Cardano.Tx.Graph.Rules.LoadTurtleSpec
+    Cardano.Tx.Graph.Rules.LoadValidationSpec
+    Cardano.Tx.Graph.Rules.LoadYamlSpec
+    Cardano.Tx.Graph.TxGraphExeSpec
+    Cardano.Tx.View.AssetFlowSpec
+    Cardano.Tx.View.CliTreeGoldenSpec
+    Cardano.Tx.View.EntityOccurrencesSpec
+    Cardano.Tx.View.JsonLdSpec
+    Fixtures.TxGraph.Helpers
+    Fixtures.TxGraph.S01_AmaruTreasurySwap
+    Fixtures.TxGraph.S02_AliceBobAda
+    Fixtures.TxGraph.S03_MultiAssetTransfer
+    Fixtures.TxGraph.S04_MintSpendScriptOverlap
+    Fixtures.TxGraph.S05_WithdrawalScriptStake
+    Fixtures.TxGraph.S06_StakePoolDelegation
+    Fixtures.TxGraph.S07_VoteDelegation
+    Fixtures.TxGraph.S08_ContingencyDisburse
+    Fixtures.TxGraph.S09_MpfsFactsRequest
+    Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal
+    Fixtures.TxGraph.S11_AmaruTreasurySwapReal
+    Fixtures.TxGraph.S12BlueprintTyped
+    Fixtures.TxGraph.S13BlueprintPassthrough
+    Fixtures.TxGraph.S14BlueprintDecodeFail
+    Fixtures.TxGraph.S15_AmaruDisburseNetworkCompliance
+    Fixtures.TxGraph.S17_AmaruDisburseContingency
+    Fixtures.TxGraph.TurtleShim
+
+  build-depends:
+    , aeson                      >=2.2  && <2.3
+    , base
+    , base16-bytestring          >=1.0  && <1.1
+    , bech32                     >=1.1  && <1.2
+    , bytestring                 >=0.12 && <0.13
+    , cardano-binary             >=1.8  && <3
+    , cardano-crypto-class       >=2.3  && <4
+    , cardano-data               >=1.3  && <3
+    , cardano-ledger-allegra     >=1.9  && <3
+    , cardano-ledger-alonzo      >=1.15 && <3
+    , cardano-ledger-api         >=1.13 && <3
+    , cardano-ledger-binary      >=1.8  && <3
+    , cardano-ledger-conway      >=1.21 && <3
+    , cardano-ledger-core        >=1.19 && <3
+    , cardano-ledger-mary        >=1.10 && <3
+    , cardano-ledger-shelley     >=1.18 && <3
+    , cardano-rdf
+    , cardano-slotting           >=0.2  && <0.4
+    , cardano-strict-containers  >=0.1  && <0.3
+    , containers                 >=0.7  && <0.8
+    , data-default               >=0.8  && <0.9
+    , directory                  >=1.3  && <1.4
+    , filepath                   >=1.5  && <1.6
+    , hspec                      >=2.11 && <2.12
+    , microlens                  >=0.4  && <0.5
+    , plutus-core                >=1.60 && <3
+    , plutus-tx                  >=1.60 && <3
+    , process                    >=1.6  && <1.7
+    , QuickCheck                 >=2.15 && <2.16
+    , temporary                  >=1.3  && <1.4
+    , text                       >=2.1  && <2.2
+
+  -- Cabal places tx-view on PATH for `cabal test`, so
+  -- Cardano.Tx.View.CliTreeGoldenSpec can spawn it as a subprocess
+  -- without a `cabal list-bin` env-var dance in the dev shell. The
+  -- nix flake check path wires the same store path through
+  -- TX_VIEW_EXE (see flake.nix's unit-check override).
+  build-tool-depends: cardano-rdf:tx-view
+
+source-repository head
+  type:     git
+  location: https://github.com/lambdasistemi/cardano-rdf.git

@@ -31,7 +31,24 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Repository boundary**: Feature belongs in generic Cardano RDF core,
+  packaged views, export surfaces, or explicitly named hosted-service
+  boundary. It does not reintroduce downstream `cardano-tx-tools` applications.
+- **Deterministic RDF**: Plan identifies graph/vocabulary impact and the
+  fixtures, goldens, docs, and migration notes required for any public triple
+  shape change.
+- **Generic core**: Core logic models Cardano concepts, not Amaru/treasury
+  business semantics. Amaru appears only as canary config, fixtures, or a
+  downstream extension.
+- **Offline/network boundary**: Pure graph and view flows remain offline.
+  Networked fetchers/services are explicit, configurable, and record
+  provenance.
+- **Hackage-ready Haskell**: Cabal metadata, Haddock/export lists, bounded
+  dependencies, formatting, linting, `cabal check`, and Nix gates remain green.
+- **Spec/test/verification**: Behavior changes include tests or goldens written
+  before implementation, plus the final verification command.
+- **Migration deletion stop**: No old `cardano-tx-tools` source deletion unless
+  a separate deletion plan has explicit approval.
 
 ## Project Structure
 

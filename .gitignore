@@ -1,8 +1,10 @@
 dist-newstyle/
-.direnv/
+.llm/
+llm/reviews/local-*/
+cabal.project.local
 result
 result-*
+site/
+
 WIP.md
-.llm/
-.env
-.env.*
+.orch/

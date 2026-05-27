@@ -1,41 +1,71 @@
 # cardano-rdf
 
-Generic Cardano RDF vocabulary, transaction graph extraction, packaged views,
-and export tooling.
+`cardano-rdf` is the graph/RDF backend for Cardano transaction data.
+It owns the reusable Haskell library plus the tools that build and
+consume transaction graphs:
 
-The first package surface is transaction RDF: Conway transaction CBOR plus
-operator rules to deterministic Turtle/JSON-LD, with packaged views over the
-canonical graph. `cardano-tx-tools` is expected to consume this repository as
-a downstream compatibility layer.
+| Tool | Role |
+|------|------|
+| `tx-fetch` | Fetch a seed transaction set and its parent CBOR closure into a local lattice. |
+| `tx-graph` | Convert Conway transaction CBOR plus operator rules into canonical Turtle or JSON-LD. |
+| `tx-view` | Project a generated Turtle graph through packaged views such as `cli-tree`, `asset-flow`, `entity-occurrences`, or `json-ld`. |
 
-## Development
+Generic applications such as transaction diffing, inspecting, signing,
+validating, and load generation belong in `cardano-tx-tools`. That
+suite can depend on this repository when those applications are backed
+by `tx-graph` output.
 
-```bash
-nix develop --quiet
-just --list
-just ci
-```
+Documentation: <https://lambdasistemi.github.io/cardano-rdf/>.
 
-The repository uses Spec Kit. Start with the constitution in
-`.specify/memory/constitution.md` before writing specs or implementation.
-
-## Secrets
-
-Agents must not populate repository secrets. Operators can populate the
-required Cachix secret with:
+## Workflow
 
 ```bash
-gh secret set CACHIX_AUTH_TOKEN \
-  --repo lambdasistemi/cardano-rdf \
-  --body "$CACHIX_AUTH_TOKEN"
+tx-fetch --out-dir lattice --depth 1 <seed-txid> ...
+tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out-dir lattice
+tx-view --graph lattice/<txid>.ttl --view cli-tree
 ```
 
-Verify with:
+`tx-fetch` is the only networked tool in the core pipeline. `tx-graph`
+and `tx-view` are offline transformations over local files.
+
+## Library
+
+The main library contains:
+
+| Module family | Role |
+|---------------|------|
+| `Cardano.Tx.Graph.*` | RDF graph emission, operator entity overlays, canonical Turtle/JSON-LD serialization. |
+| `Cardano.Tx.View.*` | Packaged graph projections used by `tx-view` and future HTTP services. |
+| `Cardano.Tx.Blueprint` | CIP-57 blueprint parsing for typed datum/redeemer predicates. |
+| `Cardano.Tx.Decode` / `Cardano.Tx.Graph.Resolve` | Shared transaction decoding and resolved-input lookup for RDF tools. |
+
+The repository boundary is graph/RDF. Downstream transaction diffing,
+inspection, validation, and signing applications can depend on this
+library instead of being owned here.
+
+## Release
+
+Release automation packages only the RDF tools:
 
 ```bash
-gh secret list --repo lambdasistemi/cardano-rdf
+nix build .#tx-graph-linux-release-artifacts
+nix build .#tx-fetch-linux-release-artifacts
+nix build .#tx-view-linux-release-artifacts
 ```
+
+Darwin/Homebrew artifacts are built by the corresponding GitHub
+Actions workflows for the same three executables.
+
+## Develop
+
+```bash
+nix develop --quiet -c just build
+nix develop --quiet -c just ci
+nix flake check --no-eval-cache
+```
+
+Specs and per-feature design notes live under `specs/`.
 
 ## License
 
-Apache-2.0.
+[Apache 2.0](LICENSE).

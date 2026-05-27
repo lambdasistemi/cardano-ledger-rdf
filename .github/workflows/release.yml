@@ -1,0 +1,106 @@
+name: Linux Release
+
+on:
+  push:
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - ".github/workflows/release.yml"
+      - "flake.nix"
+      - "flake.lock"
+      - "nix/**"
+      - "scripts/release/**"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Release mode"
+        required: true
+        default: release
+        type: choice
+        options:
+          - release
+          - dev-linux
+      tag:
+        description: "Existing release tag, for example v0.1.0.0"
+        required: false
+        type: string
+      publish:
+        description: "Upload release assets when mode=release"
+        required: true
+        default: "no"
+        type: choice
+        options:
+          - "no"
+          - "yes"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: linux-release-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref_name || inputs.tag || inputs.mode }}
+  cancel-in-progress: false
+
+jobs:
+  linux-bundles:
+    name: Build Linux ${{ matrix.executable.name }} bundles
+    runs-on: nixos
+    strategy:
+      fail-fast: false
+      matrix:
+        executable:
+          - name: tx-graph
+            release-output: tx-graph-linux-release-artifacts
+            dev-output: tx-graph-linux-dev-release-artifacts
+            usage-grep: "operator-entity overlay + body emitter"
+            dev-tag: dev-linux-tx-graph
+          - name: tx-fetch
+            release-output: tx-fetch-linux-release-artifacts
+            dev-output: tx-fetch-linux-dev-release-artifacts
+            usage-grep: "closure-walking Conway CBOR fetcher"
+            dev-tag: dev-linux-tx-fetch
+          - name: tx-view
+            release-output: tx-view-linux-release-artifacts
+            dev-output: tx-view-linux-dev-release-artifacts
+            usage-grep: "canonical Turtle graph file"
+            dev-tag: dev-linux-tx-view
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag || github.ref }}
+
+      - uses: cachix/cachix-action@v17
+        with:
+          name: paolino
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - uses: paolino/dev-assets/linux-release@41a598ad94d6b4b6aad0162f673786e4fc57db9b
+        with:
+          mode: >-
+            ${{
+              github.event_name == 'pull_request' && 'dev-linux'
+              || inputs.mode
+              || 'release'
+            }}
+          tag: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+          publish: >-
+            ${{
+              github.event_name == 'push' && 'yes'
+              || inputs.publish
+              || 'no'
+            }}
+          release-output: ${{ matrix.executable.release-output }}
+          dev-output: ${{ matrix.executable.dev-output }}
+          executable-name: ${{ matrix.executable.name }}
+          usage-grep: ${{ matrix.executable.usage-grep }}
+          dev-tag: ${{ matrix.executable.dev-tag }}
+          release-version-command: scripts/release/get-cabal-version
+          release-check-command: 'scripts/release/check-version-consistency "$TAG"'
+          release-notes-command: 'scripts/release/extract-notes "$TAG"'
+          release-title: cardano-rdf ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+          dev-release-title: ${{ matrix.executable.name }} dev Linux bundles
+          github-token: ${{ github.token }}

@@ -1,0 +1,145 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/08-contingency-disburse#> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+:amaru_treasury_contingency_account a cardano:Entity ;
+  rdfs:label "amaru-treasury.contingency.account" ;
+  cardano:bech32 "addr1x8ndhlcfy30t38z0tql64fpg8ply93r37xrgvdagfpsz5nhxm0lsjfz7hzwy7kpl42jzswr7gtz8ruvxscm6sjrq9f8qruq0ae" ;
+  cardano:hasIdentifier _:amaru_treasury_contingency_account_paymentScript ;
+  cardano:hasIdentifier _:amaru_treasury_contingency_account_stakeScript .
+
+_:amaru_treasury_contingency_account_paymentScript a cardano:Identifier ;
+  cardano:leafType "PaymentScript" ;
+  cardano:bytesHex "e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e" .
+
+_:amaru_treasury_contingency_account_stakeScript a cardano:Identifier ;
+  cardano:leafType "StakeScript" ;
+  cardano:bytesHex "e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e" .
+
+:user_wallet a cardano:Entity ;
+  rdfs:label "user-wallet" ;
+  cardano:bech32 "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz" ;
+  cardano:hasIdentifier _:user_wallet_paymentKey ;
+  cardano:hasIdentifier _:user_wallet_stakeKey .
+
+_:user_wallet_paymentKey a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1" .
+
+_:user_wallet_stakeKey a cardano:Identifier ;
+  cardano:leafType "StakeKey" ;
+  cardano:bytesHex "4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3" .
+
+:recipient a cardano:Entity ;
+  rdfs:label "recipient" ;
+  cardano:bech32 "addr1qy5yrukx9ysjqqa79jrl6qkql7glhqwcnycjjqmdwk962j89fcz6lc7tj6k5yegw8zdnj7chytcfrr9fwlernl2etg2qdhrzz0" ;
+  cardano:hasIdentifier _:recipient_paymentKey ;
+  cardano:hasIdentifier _:recipient_stakeKey .
+
+_:recipient_paymentKey a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "2841f2c629212003be2c87fd02c0ff91fb81d8993129036d758ba548" .
+
+_:recipient_stakeKey a cardano:Identifier ;
+  cardano:leafType "StakeKey" ;
+  cardano:bytesHex "e54e05afe3cb96ad42650e389b397b1722f0918ca977f239fd595a14" .
+
+#
+# Transaction body.
+#
+
+_:tx a cardano:Transaction ;
+  cardano:hasTxId _:hash_txid_d032495b8dbdb3d0055621178adac43e21f5b6eab8ad6d34778b19c1d9345af1 ;
+  cardano:hasInput _:input1 ;
+  cardano:hasInput _:input2 ;
+  cardano:hasOutput _:output1 ;
+  cardano:hasOutput _:output2 ;
+  cardano:hasCollateralInput _:collateral1 ;
+  cardano:hasFee 0 .
+
+_:hash_txid_d032495b8dbdb3d0055621178adac43e21f5b6eab8ad6d34778b19c1d9345af1 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "d032495b8dbdb3d0055621178adac43e21f5b6eab8ad6d34778b19c1d9345af1" .
+
+#
+# Input 1
+#
+
+_:input1 a cardano:Input ;
+  cardano:fromTxOutRef _:inputTxOutRef1 .
+
+_:inputTxOutRef1 a cardano:TxOutRef ;
+  cardano:hasTxId _:hash_txid_0000000000000000000000000000000000000000000000000000000000000001 ;
+  cardano:hasIndex 0 .
+
+_:hash_txid_0000000000000000000000000000000000000000000000000000000000000001 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000001" .
+
+#
+# Input 2
+#
+
+_:input2 a cardano:Input ;
+  cardano:fromTxOutRef _:inputTxOutRef2 .
+
+_:inputTxOutRef2 a cardano:TxOutRef ;
+  cardano:hasTxId _:hash_txid_0000000000000000000000000000000000000000000000000000000000000002 ;
+  cardano:hasIndex 0 .
+
+_:hash_txid_0000000000000000000000000000000000000000000000000000000000000002 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000002" .
+
+#
+# Output 1
+#
+
+_:output1 a cardano:Output ;
+  cardano:hasIndex 0 ;
+  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:lovelace 100000000 .
+
+#
+# Output 2
+#
+
+_:output2 a cardano:Output ;
+  cardano:hasIndex 1 ;
+  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:lovelace 9825000 .
+
+#
+# Collateral 1
+#
+
+_:collateral1 a cardano:Input ;
+  cardano:fromTxOutRef _:collateralTxOutRef1 .
+
+_:collateralTxOutRef1 a cardano:TxOutRef ;
+  cardano:hasTxId _:hash_txid_0000000000000000000000000000000000000000000000000000000000000003 ;
+  cardano:hasIndex 0 .
+
+_:hash_txid_0000000000000000000000000000000000000000000000000000000000000003 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000003" .
+
+#
+# Address decompositions — payment + stake credential per leaf.
+#
+
+_:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
+  cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:hasPaymentCredential _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000CredPayment .
+
+_:cred_paymentkey_00000000000000000000000000000000000000000000000000000000 a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "00000000000000000000000000000000000000000000000000000000" .
+
+_:cred_paymentkey_00000000000000000000000000000000000000000000000000000000CredPayment a cardano:PaymentCredential ;
+  cardano:hasIdentifier _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000 .

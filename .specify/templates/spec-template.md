@@ -95,6 +95,19 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Constitution Alignment *(mandatory)*
+
+- **CA-001**: State whether this feature belongs to the generic Cardano RDF
+  core, a packaged view/export surface, a hosted-service boundary, or a
+  downstream consumer outside this repository.
+- **CA-002**: Identify any RDF vocabulary, namespace, subject naming, predicate
+  ordering, or fixture/golden impact.
+- **CA-003**: Identify any network boundary and the provenance/configuration
+  it records; state `N/A` for offline-only work.
+- **CA-004**: State whether the change touches migration from
+  `cardano-tx-tools`; deletion of old source is out of scope unless separately
+  approved.
+
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]

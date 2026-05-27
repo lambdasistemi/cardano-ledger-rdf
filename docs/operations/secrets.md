@@ -2,12 +2,21 @@
 
 Agents must not populate repository secrets.
 
-Run this from an operator shell with the token available in the environment:
+Run this from an operator shell with the tokens available in the
+environment and the release deploy key private half on disk:
 
 ```bash
 gh secret set CACHIX_AUTH_TOKEN \
   --repo lambdasistemi/cardano-rdf \
   --body "$CACHIX_AUTH_TOKEN"
+
+gh secret set TAP_TOKEN \
+  --repo lambdasistemi/cardano-rdf \
+  --body "$TAP_TOKEN"
+
+gh secret set RELEASE_BOT_SSH_KEY \
+  --repo lambdasistemi/cardano-rdf \
+  < "$RELEASE_BOT_SSH_KEY_FILE"
 ```
 
 Verify with:
