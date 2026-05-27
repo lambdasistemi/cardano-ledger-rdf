@@ -10,8 +10,6 @@ and project those graphs through packaged views.
   parent CBOR closure into a local lattice.
 - [**tx-graph**](tx-graph.md) turns Conway transaction CBOR plus
   operator rules into Turtle or JSON-LD.
-- [**tx-view**](tx-view.md) runs packaged projections over generated
-  Turtle graphs.
 
 Generic transaction tools such as inspect, diff, sign, validate, and
 load generation remain `cardano-tx-tools` applications. They can depend
@@ -20,13 +18,13 @@ on this repository when their backend is a generated graph.
 ## Pipeline
 
 ```bash
-tx-fetch --out-dir lattice --depth 1 <seed-txid> ...
-tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out-dir lattice
-tx-view --graph lattice/<txid>.ttl --view cli-tree
+tx-fetch --out-dir lattice/cbor --depth 1 <seed-txid> ...
+tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out lattice.ttl
+arq --data lattice.ttl --query my.rq    # consume directly via Apache Jena, or any SPARQL engine
 ```
 
-The graph and view stages are offline and deterministic. `tx-fetch` is
-the boundary that talks to Blockfrost-compatible chain APIs.
+The graph and SPARQL stages are offline and deterministic. `tx-fetch`
+is the boundary that talks to Blockfrost-compatible chain APIs.
 
 ## Library Surface
 
@@ -43,6 +41,5 @@ inspection, validation, signing, and load generation remain
 
 ## Release
 
-Release automation packages `tx-graph`, `tx-fetch`, and `tx-view`.
-Secrets required by the release workflows are documented in
-[Repository secrets](operations/secrets.md).
+Release automation packages `tx-graph` and `tx-fetch`. Workflow secrets
+are populated by operators outside agent sessions.

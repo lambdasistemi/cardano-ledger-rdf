@@ -20,13 +20,13 @@ Documentation: <https://lambdasistemi.github.io/cardano-ledger-rdf/>.
 ## Workflow
 
 ```bash
-tx-fetch --out-dir lattice --depth 1 <seed-txid> ...
-tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out-dir lattice
-tx-view --graph lattice/<txid>.ttl --view cli-tree
+tx-fetch --out-dir lattice/cbor --depth 1 <seed-txid> ...
+tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out lattice.ttl
+arq --data lattice.ttl --query my.rq    # consume directly via Apache Jena, or any SPARQL engine
 ```
 
 `tx-fetch` is the only networked tool in the core pipeline. `tx-graph`
-and `tx-view` are offline transformations over local files.
+and SPARQL querying are offline transformations over local files.
 
 ## Library
 

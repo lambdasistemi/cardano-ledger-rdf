@@ -6,13 +6,13 @@ spending / reference / collateral input parents up to `--depth`,
 hash-verifies every fetched CBOR against its requested `TxId`, and
 writes one `<out-dir>/cbor/<txid-hex>.cbor` per tx in the closure.
 
-`tx-fetch` is the first stage of the three-tool RDF lattice pipeline:
+`tx-fetch` is the first stage of the RDF lattice pipeline:
 
 | Stage | Input | Output | Side effects |
 |--|--|--|--|
 | **tx-fetch** | seed txids + chain source | `<dir>/cbor/<txid>.cbor` per tx + `<dir>/seeds.txt` | network I/O |
-| [tx-graph](tx-graph.md) | `<dir>/cbor` + rules.yaml | `<dir>/<txid>.ttl` per tx | none |
-| [tx-view](tx-view.md) | `<txid>.ttl` + view name | projection bytes | none |
+| [tx-graph](tx-graph.md) | `<dir>/cbor` + rules.yaml | Turtle or JSON-LD graph | none |
+| SPARQL engine | graph + query | query results | none |
 
 ```text
 tx-fetch — Conway closure CBOR fetcher
@@ -81,13 +81,11 @@ export BLOCKFROST_PROJECT_ID=mainnet...
 tx-fetch --out-dir lattice --depth 1 \
     013329ee... 107e439f... 11ace24a...
 
-# 2. Emit one Turtle file per tx, with operator overlay merged in.
-tx-graph --rules rules.yaml --in-dir lattice/cbor --out-dir lattice
+# 2. Emit one merged Turtle lattice, with operator overlay merged in.
+tx-graph --rules rules.yaml --in-dir lattice/cbor --out lattice.ttl
 
 # 3. Query across the lattice with any SPARQL engine.
-nix-shell -p apache-jena --run \
-    "sparql $(printf -- '--data %s ' lattice/*.ttl) \
-        --query queries/per-scope-flow.rq"
+arq --data lattice.ttl --query queries/per-scope-flow.rq
 ```
 
 The internal `scripts/tx-lattice` shell script wraps steps (1) and (2)
