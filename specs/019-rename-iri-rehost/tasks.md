@@ -16,11 +16,11 @@ Issue: [#19](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/19)
 
 ## Slice B — import transactions.ttl + serve at /vocab/cardano
 
-- [ ] T019-S2 — copy `data/rdf/transactions.ttl` from `/code/cardano-knowledge-maps/data/rdf/transactions.ttl` into `vocab/cardano/transactions.ttl` in this repo; add provenance comment at top
-- [ ] T019-S2 — update `mkdocs.yml` to include the file in the docs site under the path that serves to `/vocab/cardano`
-- [ ] T019-S2 — verify `mkdocs build` clean locally; verify `text/turtle` Content-Type plumbing if possible (best-effort — note in WIP.md if unclear)
-- [ ] T019-S2 — verify `nix build .#checks.x86_64-linux.unit` green (no behaviour change expected)
-- [ ] T019-S2 — commit: `feat(vocab): import transactions.ttl + serve at /vocab/cardano (IRI still old)` with `Tasks: T019-S2`
+- [X] T019-S2 — copy `data/rdf/transactions.ttl` from `/code/cardano-knowledge-maps/data/rdf/transactions.ttl` into `vocab/cardano/transactions.ttl` in this repo; add provenance comment at top
+- [X] T019-S2 — update `mkdocs.yml` to include the file in the docs site under the path that serves to `/vocab/cardano`
+- [X] T019-S2 — verify `mkdocs build` clean locally; verify `text/turtle` Content-Type plumbing if possible (best-effort — note in WIP.md if unclear)
+- [X] T019-S2 — verify `nix build .#checks.x86_64-linux.unit` green (no behaviour change expected)
+- [X] T019-S2 — commit: `feat(vocab): import transactions.ttl + serve at /vocab/cardano (IRI still old)` with `Tasks: T019-S2`
 
 ## Slice C — re-host vocab IRI
 
