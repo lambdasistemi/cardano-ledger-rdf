@@ -1,4 +1,4 @@
-{ pkgs, src, components, lintPkgs ? pkgs }:
+{ pkgs, src, components, lintPkgs ? pkgs, pythonEnv, eye }:
 let
   lib = pkgs.lib;
 
@@ -79,6 +79,24 @@ let
         find . -type f -name '*.hs' \
           -not -path '*/dist-newstyle/*' \
           -exec hlint {} +
+      '';
+    };
+
+    vocab-validate = {
+      name = "vocab-validate";
+      runtimeInputs = [ pythonEnv ];
+      text = ''
+        cd ${src}
+        python3 scripts/validate-ttl.py
+      '';
+    };
+
+    vocab-owl-smoke = {
+      name = "vocab-owl-smoke";
+      runtimeInputs = [ pythonEnv eye ];
+      text = ''
+        cd ${src}
+        python3 scripts/owl-smoke.py
       '';
     };
   };
