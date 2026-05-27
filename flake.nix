@@ -62,8 +62,6 @@
           };
           lib = pkgs.lib;
           lintPkgs = import lintNixpkgs { inherit system; };
-          indexState = "2026-02-17T10:15:41Z";
-          indexTool = { index-state = indexState; };
           fix-libs = { lib, pkgs, ... }: {
             packages.cardano-crypto-praos.components.library.pkgconfig =
               lib.mkForce [ [ pkgs.libsodium-vrf ] ];
@@ -86,7 +84,7 @@
             shell = {
               withHoogle = true;
               tools = {
-                cabal = indexTool;
+                cabal = { };
               };
               buildInputs = [
                 lintPkgs.haskellPackages.cabal-fmt

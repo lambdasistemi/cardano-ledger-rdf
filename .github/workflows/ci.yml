@@ -31,6 +31,7 @@ jobs:
         run: scripts/release/check-version-consistency
 
   build:
+    name: CI build
     needs: build-gate
     runs-on: nixos
     steps:
@@ -43,6 +44,7 @@ jobs:
         run: nix run --quiet .#build
 
   unit:
+    name: CI unit
     needs: build-gate
     runs-on: nixos
     steps:
@@ -55,6 +57,7 @@ jobs:
         run: nix run --quiet .#unit
 
   lint:
+    name: CI lint
     needs: build-gate
     runs-on: nixos
     steps:

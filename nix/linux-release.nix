@@ -33,5 +33,5 @@ pkgs.runCommand
   cp "$deb_file" "$out/${executableName}-${artifactVersion}-${system}.deb"
   cp "$rpm_file" "$out/${executableName}-${artifactVersion}-${system}.rpm"
 
-  (cd "$out" && sha256sum * > SHA256SUMS)
+  (cd "$out" && sha256sum * > "${executableName}-${artifactVersion}-${system}.SHA256SUMS")
 ''
