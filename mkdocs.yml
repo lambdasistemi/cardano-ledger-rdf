@@ -61,7 +61,6 @@ nav:
       - tx-graph: tx-graph.md
       - tx-fetch: tx-fetch.md
       - rules.yaml: rules-yaml.md
-  - "May 2026 lattice demo": may-2026-amaru-lattice.md
   - Case studies:
       - Overview: case-studies/index.md
       - Template: case-studies/_template/case.md
@@ -86,3 +85,18 @@ nav:
               - Action-type correlation: case-studies/drep-vote-correlations/queries/q4-action-type-correlation.md
               - Anchor coverage: case-studies/drep-vote-correlations/queries/q5-anchor-coverage.md
               - Arrival-time dynamics: case-studies/drep-vote-correlations/queries/q6-arrival-time-dynamics.md
+      - "2026-05 Amaru Treasury":
+          - Presentation: case-studies/2026-05-amaru-treasury/case.md
+          - Dataset selection: case-studies/2026-05-amaru-treasury/selection.md
+          - Queries:
+              - Conservation check: case-studies/2026-05-amaru-treasury/queries/q0-conservation-check.md
+              - Monthly totals: case-studies/2026-05-amaru-treasury/queries/q1-monthly-totals.md
+              - Where did USDM land?: case-studies/2026-05-amaru-treasury/queries/q2-where-did-usdm-land.md
+              - Per-scope ADA flow: case-studies/2026-05-amaru-treasury/queries/q3-per-scope-ada-flow.md
+              - Multisig shape distribution: case-studies/2026-05-amaru-treasury/queries/q4-multisig-shape-distribution.md
+              - Vendor-payment chain: case-studies/2026-05-amaru-treasury/queries/q5-vendor-payment-chain.md
+              - Disbursement detection: case-studies/2026-05-amaru-treasury/queries/q6-disbursement-detection.md
+              - Per-scope USDM flow: case-studies/2026-05-amaru-treasury/queries/q7-per-scope-usdm-flow.md
+              - Scoop detection: case-studies/2026-05-amaru-treasury/queries/q8-scoop-detection.md
+              - Reference-script reuse: case-studies/2026-05-amaru-treasury/queries/q9-reference-script-reuse.md
+              - Scoop-recipient resolution: case-studies/2026-05-amaru-treasury/queries/q10-scoop-recipient-resolution.md
