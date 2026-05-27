@@ -126,3 +126,40 @@ Drafted the presentation and six query pages under
 
 Committed as `82e3324` with subject
 `docs(case-study): DRep vote correlation across governance actions`.
+
+# Issue #31 restore tx-view docs WIP
+
+## 2026-05-27T17:21:31+01:00 - brief received
+
+Loaded `.worker-brief.md`, the repository constitution, and GitHub issue #31.
+
+## 2026-05-27T17:23:58+01:00 - tool probed
+
+Built `tx-view` with `nix develop --quiet -c cabal build tx-view -O0` and
+captured `--help`. Flags are `--graph FILE`, `--view NAME` defaulting to
+`cli-tree`, `--out FILE`, and `-h,--help`. The help text still says the
+packaged view name is "currently: cli-tree"; source dispatcher names are
+`cli-tree`, `asset-flow`, `entity-occurrences`, and `json-ld`.
+
+## 2026-05-27T17:23:58+01:00 - packaged views enumerated
+
+Found 5 files under `views/`: `asset-flow`, `cli-tree`,
+`entity-occurrences`, `json-ld`, and `no-stub-triples`. The tx-view
+dispatcher accepts the first four; `no-stub-triples` is a shipped SPARQL
+gate/query contract rather than a current `tx-view --view` name.
+
+## 2026-05-27T17:24:53+01:00 - page drafted
+
+Drafted `docs/tx-view.md` at 107 lines, including the quick example,
+input expectations, executable view sections, the `no-stub-triples`
+SPARQL-only note, and a direct `arq` alternative.
+
+## 2026-05-27T17:24:53+01:00 - mkdocs registered
+
+Registered `tx-view: tx-view.md` under the `Tools` nav group between
+`tx-fetch` and `rules.yaml`.
+
+## 2026-05-27T17:25:24+01:00 - mkdocs build green
+
+`nix develop github:paolino/dev-assets?dir=mkdocs --quiet -c mkdocs build
+--strict --site-dir /tmp/site-test` exited 0.
