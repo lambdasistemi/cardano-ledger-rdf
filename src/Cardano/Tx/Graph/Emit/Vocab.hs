@@ -79,6 +79,10 @@ data VocabTerm
     | TermDRep
     | TermDatum
     | TermGovActionId
+    | TermProposal
+    | TermGovAction
+    | TermTreasuryWithdrawals
+    | TermAnchor
     | -- Body predicates
       TermHasInput
     | TermHasOutput
@@ -101,6 +105,12 @@ data VocabTerm
     | TermHasCollateralInput
     | TermHasReferenceInput
     | TermHasProposal
+    | TermHasDeposit
+    | TermHasReturnAddress
+    | TermHasGovAction
+    | TermToRewardAccount
+    | TermHasLovelace
+    | TermHasGuardPolicy
     | TermDecodedAs
     | TermFromTxOutRef
     | -- Value semantics (T104 / S3 — output ADA + multi-asset)
@@ -220,6 +230,10 @@ vocabIri = \case
     TermDRep -> cardanoPrefix <> "DRep"
     TermDatum -> cardanoPrefix <> "Datum"
     TermGovActionId -> cardanoPrefix <> "GovActionId"
+    TermProposal -> cardanoPrefix <> "Proposal"
+    TermGovAction -> cardanoPrefix <> "GovAction"
+    TermTreasuryWithdrawals -> cardanoPrefix <> "TreasuryWithdrawals"
+    TermAnchor -> cardanoPrefix <> "Anchor"
     TermHasInput -> cardanoPrefix <> "hasInput"
     TermHasOutput -> cardanoPrefix <> "hasOutput"
     TermHasFee -> cardanoPrefix <> "hasFee"
@@ -241,6 +255,12 @@ vocabIri = \case
     TermHasCollateralInput -> cardanoPrefix <> "hasCollateralInput"
     TermHasReferenceInput -> cardanoPrefix <> "hasReferenceInput"
     TermHasProposal -> cardanoPrefix <> "hasProposal"
+    TermHasDeposit -> cardanoPrefix <> "hasDeposit"
+    TermHasReturnAddress -> cardanoPrefix <> "hasReturnAddress"
+    TermHasGovAction -> cardanoPrefix <> "hasGovAction"
+    TermToRewardAccount -> cardanoPrefix <> "toRewardAccount"
+    TermHasLovelace -> cardanoPrefix <> "hasLovelace"
+    TermHasGuardPolicy -> cardanoPrefix <> "hasGuardPolicy"
     TermDecodedAs -> cardanoPrefix <> "decodedAs"
     TermFromTxOutRef -> cardanoPrefix <> "fromTxOutRef"
     TermLovelace -> cardanoPrefix <> "lovelace"
@@ -322,6 +342,10 @@ vocabCurie = \case
     TermDRep -> "cardano:DRep"
     TermDatum -> "cardano:Datum"
     TermGovActionId -> "cardano:GovActionId"
+    TermProposal -> "cardano:Proposal"
+    TermGovAction -> "cardano:GovAction"
+    TermTreasuryWithdrawals -> "cardano:TreasuryWithdrawals"
+    TermAnchor -> "cardano:Anchor"
     TermHasInput -> "cardano:hasInput"
     TermHasOutput -> "cardano:hasOutput"
     TermHasFee -> "cardano:hasFee"
@@ -343,6 +367,12 @@ vocabCurie = \case
     TermHasCollateralInput -> "cardano:hasCollateralInput"
     TermHasReferenceInput -> "cardano:hasReferenceInput"
     TermHasProposal -> "cardano:hasProposal"
+    TermHasDeposit -> "cardano:hasDeposit"
+    TermHasReturnAddress -> "cardano:hasReturnAddress"
+    TermHasGovAction -> "cardano:hasGovAction"
+    TermToRewardAccount -> "cardano:toRewardAccount"
+    TermHasLovelace -> "cardano:hasLovelace"
+    TermHasGuardPolicy -> "cardano:hasGuardPolicy"
     TermDecodedAs -> "cardano:decodedAs"
     TermFromTxOutRef -> "cardano:fromTxOutRef"
     TermLovelace -> "cardano:lovelace"

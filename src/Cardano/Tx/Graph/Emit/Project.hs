@@ -400,7 +400,7 @@ projectBody entities lookupTbl blueprints tx utxo =
         -- every Conway GovAction variant flows through the same
         -- fallback shape).
         proposalBlocks =
-            [ buildProposalCluster k proposal
+            [ buildProposalCluster lookupTbl k proposal
             | (k, proposal) <- zip [1 ..] proposals
             ]
         -- Per-vote clusters (T119 / S18 — voting procedures).
@@ -744,6 +744,26 @@ idResolvedCollateralBnode k =
 idProposalBnode :: Int -> BnodeName
 idProposalBnode k =
     BnodeName ("proposal" <> Text.pack (show k))
+
+-- | Bnode name a proposal's anchor sub-block at position @k@ gets.
+idProposalAnchorBnode :: Int -> BnodeName
+idProposalAnchorBnode k =
+    BnodeName ("proposalAnchor" <> Text.pack (show k))
+
+-- | Bnode name a proposal's typed governance action sub-block gets.
+idProposalGovActionBnode :: Int -> BnodeName
+idProposalGovActionBnode k =
+    BnodeName ("govAction" <> Text.pack (show k))
+
+-- | Bnode name a proposal treasury-withdrawal entry gets.
+idProposalWithdrawalBnode :: Int -> Int -> BnodeName
+idProposalWithdrawalBnode proposalK withdrawalK =
+    BnodeName
+        ( "withdrawal"
+            <> Text.pack (show proposalK)
+            <> "_"
+            <> Text.pack (show withdrawalK)
+        )
 
 -- | Bnode name a vote entry at position @k@ (1-based) gets.
 idVoteBnode :: Int -> BnodeName
@@ -2696,10 +2716,17 @@ T108 / S7 introduced the D-006 fallback shape; T121 / S20
 generalizes it across every Conway 'GovAction' constructor so
 the emit walker is total over 'ProposalProcedure ConwayEra'.
 
-Every proposal emits:
+Every proposal emits a typed shell plus the D-006 fallback datum:
 
 @
-_:proposalK cardano:hasDatum _:proposalDatumK .
+_:proposalK a cardano:Proposal ;
+  cardano:hasDeposit ?lovelace ;
+  cardano:hasReturnAddress ?credential ;
+  cardano:hasAnchor _:proposalAnchorK ;
+  cardano:hasDatum _:proposalDatumK .
+_:proposalAnchorK a cardano:Anchor ;
+  cardano:anchorUrl "\<url\>" ;
+  cardano:anchorHash "\<hex\>" .
 _:proposalDatumK a cardano:Datum ;
   cardano:decodedAs "\<varietyTag\>" ;
   cardano:hasRawBytes "\<cbor-hex\>" .
@@ -2713,19 +2740,30 @@ The variety tag names the 'GovAction' constructor
 @ProposalProcedure@ wire encoding via 'serialize'' at
 'eraProtVerLow' for 'ConwayEra'.
 
-The proposer's return-address and the per-variant inner
-shape (treasury withdrawal targets, parameter-change deltas,
-hard-fork target version, committee membership tuples,
-constitution anchor) are still folded into the @hasRawBytes@
-literal — typed RDF decomposition for those is deferred to a
-follow-on (typed datum decoding via CIP-57 blueprints, #50).
+The per-variant inner shape (treasury withdrawal targets,
+parameter-change deltas, hard-fork target version, committee
+membership tuples, constitution anchor) is still folded into the
+@hasRawBytes@ literal. Slice B replaces the TreasuryWithdrawals
+payload only; this shell stays uniform across every governance
+action variant.
 -}
 buildProposalCluster ::
+    LookupTable ->
     Int ->
     ProposalProcedure ConwayEra ->
     [SubjectBlock]
-buildProposalCluster k proposal@(ProposalProcedure _ _ action _) =
-    clusterBlocks (emitProposalDatumFallback k (govActionTag action) proposal)
+buildProposalCluster lookupTbl k proposal@(ProposalProcedure _ _ action _) =
+    clusterBlocks $ do
+        emitProposalShell lookupTbl k proposal
+        case action of
+            TreasuryWithdrawals withdrawals guardPolicy ->
+                emitTreasuryWithdrawalsGovAction
+                    lookupTbl
+                    k
+                    withdrawals
+                    guardPolicy
+            _ -> pure ()
+        emitProposalDatumFallback k (govActionTag action) proposal
 
 {- | Stable variety-tag string for any Conway 'GovAction'
 constructor — the literal that appears in the proposal datum
@@ -2779,6 +2817,159 @@ emitProposalDatumFallback k variety proposal = do
             datumSubj
             (PIri (vocabCurie TermHasRawBytes))
             (OStringLit (hexText rawBytes))
+        )
+
+{- | Emit the typed shell common to every 'ProposalProcedure':
+deposit, return reward-account, proposal anchor, and the
+proposal's class triple. The return reward-account reuses the
+same credential bnode resolver as withdrawals, including
+identifier literal introduction for raw credential hashes.
+-}
+emitProposalShell ::
+    LookupTable ->
+    Int ->
+    ProposalProcedure ConwayEra ->
+    Emit ()
+emitProposalShell
+    lookupTbl
+    k
+    (ProposalProcedure (Coin lovelace) returnAddr _ anchor) = do
+        let propSubj = SBnode (idProposalBnode k)
+            (leafTy, credBytes) = accountStakeLeaf returnAddr
+        returnAddrBnode <-
+            resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
+        tellTriple (Triple propSubj PRdfType (OIri (vocabCurie TermProposal)))
+        tellTriple
+            ( Triple
+                propSubj
+                (PIri (vocabCurie TermHasDeposit))
+                (OIntLit (fromIntegral lovelace))
+            )
+        tellTriple
+            ( Triple
+                propSubj
+                (PIri (vocabCurie TermHasReturnAddress))
+                (OBnode returnAddrBnode)
+            )
+        emitProposalAnchor k propSubj anchor
+
+{- | Emit the typed payload for a TreasuryWithdrawals governance
+action while leaving the proposal datum fallback to
+'emitProposalDatumFallback'. The withdrawal map is traversed in
+ledger map order for byte-stable output.
+-}
+emitTreasuryWithdrawalsGovAction ::
+    LookupTable ->
+    Int ->
+    Map AccountAddress Coin ->
+    StrictMaybe ScriptHash ->
+    Emit ()
+emitTreasuryWithdrawalsGovAction
+    lookupTbl
+    k
+    withdrawals
+    guardPolicy = do
+        let propSubj = SBnode (idProposalBnode k)
+            actionBnode = idProposalGovActionBnode k
+            actionSubj = SBnode actionBnode
+        tellTriple
+            ( Triple
+                propSubj
+                (PIri (vocabCurie TermHasGovAction))
+                (OBnode actionBnode)
+            )
+        tellTriple
+            ( Triple
+                actionSubj
+                PRdfType
+                (OIri (vocabCurie TermTreasuryWithdrawals))
+            )
+        mapM_
+            (emitTreasuryWithdrawal lookupTbl actionSubj k)
+            (zip [1 ..] (Map.toAscList withdrawals))
+        case guardPolicy of
+            SNothing -> pure ()
+            SJust (ScriptHash h) -> do
+                guardBnode <-
+                    resolveCredentialAndIntroduceIdent
+                        lookupTbl
+                        LtScriptHash
+                        (hashToBytes h)
+                tellTriple
+                    ( Triple
+                        actionSubj
+                        (PIri (vocabCurie TermHasGuardPolicy))
+                        (OBnode guardBnode)
+                    )
+
+emitTreasuryWithdrawal ::
+    LookupTable ->
+    Subject ->
+    Int ->
+    (Int, (AccountAddress, Coin)) ->
+    Emit ()
+emitTreasuryWithdrawal
+    lookupTbl
+    actionSubj
+    proposalK
+    (withdrawalK, (account, Coin lovelace)) = do
+        let withdrawalBnode =
+                idProposalWithdrawalBnode proposalK withdrawalK
+            withdrawalSubj = SBnode withdrawalBnode
+            (leafTy, credBytes) = accountStakeLeaf account
+        tellTriple
+            ( Triple
+                actionSubj
+                (PIri (vocabCurie TermHasWithdrawal))
+                (OBnode withdrawalBnode)
+            )
+        rewardBnode <-
+            resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
+        tellTriple
+            ( Triple
+                withdrawalSubj
+                PRdfType
+                (OIri (vocabCurie TermWithdrawal))
+            )
+        tellTriple
+            ( Triple
+                withdrawalSubj
+                (PIri (vocabCurie TermToRewardAccount))
+                (OBnode rewardBnode)
+            )
+        tellTriple
+            ( Triple
+                withdrawalSubj
+                (PIri (vocabCurie TermHasLovelace))
+                (OIntLit (fromIntegral lovelace))
+            )
+
+{- | Emit the proposal anchor edge and typed anchor sub-block. The
+predicate names and literal rendering match the existing vote
+anchor shape.
+-}
+emitProposalAnchor :: Int -> Subject -> Anchor -> Emit ()
+emitProposalAnchor k propSubj (Anchor url dataHash) = do
+    let anchorBnode = idProposalAnchorBnode k
+        anchorSubj = SBnode anchorBnode
+    tellTriple
+        ( Triple
+            propSubj
+            (PIri (vocabCurie TermHasAnchor))
+            (OBnode anchorBnode)
+        )
+    tellTriple (Triple anchorSubj PRdfType (OIri (vocabCurie TermAnchor)))
+    tellTriple
+        ( Triple
+            anchorSubj
+            (PIri (vocabCurie TermAnchorUrl))
+            (OStringLit (urlToText url))
+        )
+    tellTriple
+        ( Triple
+            anchorSubj
+            (PIri (vocabCurie TermAnchorHash))
+            (OStringLit (hexText (hashToBytes (extractHash dataHash))))
         )
 
 ----------------------------------------------------------------------

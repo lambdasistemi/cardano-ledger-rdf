@@ -3,7 +3,7 @@ default:
 
 format:
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec fourmolu -i {} +
-    cabal-fmt -i cardano-rdf.cabal
+    cabal-fmt -i cardano-ledger-rdf.cabal
 
 hlint:
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec hlint {} +
@@ -19,9 +19,9 @@ unit match="":
     export TX_GRAPH_EXE="$(cabal list-bin exe:tx-graph -O0)"
     export TX_VIEW_EXE="$(cabal list-bin exe:tx-view -O0)"
     if [[ '{{ match }}' == "" ]]; then
-        cabal test cardano-rdf:unit-tests -O0 --test-show-details=direct
+        cabal test cardano-ledger-rdf:unit-tests -O0 --test-show-details=direct
     else
-        cabal test cardano-rdf:unit-tests -O0 \
+        cabal test cardano-ledger-rdf:unit-tests -O0 \
             --test-show-details=direct \
             --test-option=--match \
             --test-option="{{ match }}"
@@ -44,7 +44,7 @@ ci:
     just unit
     just smoke-graph
     just smoke-view
-    cabal-fmt -c cardano-rdf.cabal
+    cabal-fmt -c cardano-ledger-rdf.cabal
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec fourmolu -m check {} +
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec hlint {} +
 
