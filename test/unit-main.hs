@@ -29,6 +29,7 @@ import Cardano.Tx.Graph.Emit.ReproducibilitySpec qualified as GraphEmitReproduci
 import Cardano.Tx.Graph.Emit.RequiredSignersSpec qualified as GraphEmitRequiredSignersSpec
 import Cardano.Tx.Graph.Emit.SubjectDeDupSpec qualified as GraphEmitSubjectDeDupSpec
 import Cardano.Tx.Graph.Emit.TotalCollateralSpec qualified as GraphEmitTotalCollateralSpec
+import Cardano.Tx.Graph.Emit.TurtleStringSpec qualified as GraphEmitTurtleStringSpec
 import Cardano.Tx.Graph.Emit.VocabExportSpec qualified as GraphEmitVocabExportSpec
 import Cardano.Tx.Graph.Emit.VocabTraceabilitySpec qualified as GraphEmitVocabTraceabilitySpec
 import Cardano.Tx.Graph.Emit.VoteSpec qualified as GraphEmitVoteSpec
@@ -83,6 +84,7 @@ main = hspec $ do
     GraphEmitRequiredSignersSpec.spec
     GraphEmitSubjectDeDupSpec.spec
     GraphEmitTotalCollateralSpec.spec
+    GraphEmitTurtleStringSpec.spec
     GraphEmitVocabExportSpec.spec
     GraphEmitVocabTraceabilitySpec.spec
     GraphEmitVoteSpec.spec
