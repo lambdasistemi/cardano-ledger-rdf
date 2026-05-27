@@ -15,7 +15,7 @@
 
 ## Finalization
 
-- [ ] T008-F — PR body audit
-- [ ] T008-F — drop `gate.sh` in `chore: drop gate.sh (ready for review)`
+- [X] T008-F — PR body audit
+- [X] T008-F — drop `gate.sh` in `chore: drop gate.sh (ready for review)`
 - [ ] T008-F — `gh pr ready` (REST API — orchestrator)
 - [ ] T008-F — post-merge cleanup: worktree + branch
