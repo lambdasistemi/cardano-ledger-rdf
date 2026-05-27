@@ -398,10 +398,9 @@ intended.
 
 ## Query 10 — Scoop-recipient resolution (blueprint-free workaround)
 
-This is the demo of the documented [tx-lattice limitation
-workaround](tx-lattice.md#known-limitations): follow a swap order
-to its scoop to find the human recipient WITHOUT decoding the
-swap-order datum.
+This is the demo of the documented tx-lattice limitation workaround:
+follow a swap order to its scoop to find the human recipient WITHOUT
+decoding the swap-order datum.
 
 ```sparql
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>

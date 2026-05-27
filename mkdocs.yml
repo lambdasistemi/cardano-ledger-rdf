@@ -57,11 +57,10 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - rules.yaml: rules-yaml.md
-  - tx-graph: tx-graph.md
-  - tx-fetch: tx-fetch.md
-  - tx-view: tx-view.md
-  - tx-lattice: tx-lattice.md
+  - Tools:
+      - tx-graph: tx-graph.md
+      - tx-fetch: tx-fetch.md
+      - rules.yaml: rules-yaml.md
   - "May 2026 lattice demo": may-2026-amaru-lattice.md
   - Case studies:
       - Overview: case-studies/index.md
@@ -87,6 +86,3 @@ nav:
               - Action-type correlation: case-studies/drep-vote-correlations/queries/q4-action-type-correlation.md
               - Anchor coverage: case-studies/drep-vote-correlations/queries/q5-anchor-coverage.md
               - Arrival-time dynamics: case-studies/drep-vote-correlations/queries/q6-arrival-time-dynamics.md
-  - "Prior art": prior-art.md
-  - Operations:
-      - "Repository secrets": operations/secrets.md
