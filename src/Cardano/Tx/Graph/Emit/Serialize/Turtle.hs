@@ -313,19 +313,21 @@ renderObject = \case
     OStringLit s -> text "\"" <> text (escapeTurtleString s) <> text "\""
     OIntLit i -> text (Text.pack (show i))
 
-{- | Escape a Turtle string-literal payload: backslash first (so the
-quote-escape we insert next isn't double-escaped), then double
-quote. Latent on the pre-#50 fixtures (none of their literals
-carry either character), load-bearing on fixture
-@14-blueprint-decode-fail@ whose @cardano:decodeError@ literal
-embeds @show err@ output of the form
-@BlueprintDataTypeMismatch \"bytes\"@.
+{- | Escape a Turtle string-literal payload.
+
+Backslash must be escaped before any escape sequences inserted by
+the serializer. Turtle also rejects raw newline and carriage-return
+characters inside quoted string literals, so keep common control
+characters on their short escaped forms.
 -}
 escapeTurtleString :: Text -> Text
 escapeTurtleString = Text.concatMap escapeChar
   where
     escapeChar '\\' = "\\\\"
     escapeChar '"' = "\\\""
+    escapeChar '\n' = "\\n"
+    escapeChar '\r' = "\\r"
+    escapeChar '\t' = "\\t"
     escapeChar c = Text.singleton c
 
 ----------------------------------------------------------------------

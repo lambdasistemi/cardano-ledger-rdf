@@ -77,6 +77,16 @@ nav:
               - Vote tallies: case-studies/2026-io-budget-vote/queries/q5-vote-tallies.md
               - DRep behaviour: case-studies/2026-io-budget-vote/queries/q6-drep-behaviour.md
               - Anchor host distribution: case-studies/2026-io-budget-vote/queries/q7-anchor-host-distribution.md
+      - "DRep vote correlations":
+          - Presentation: case-studies/drep-vote-correlations/case.md
+          - Dataset selection: case-studies/drep-vote-correlations/selection.md
+          - Queries:
+              - Pairwise agreement: case-studies/drep-vote-correlations/queries/q1-pairwise-agreement.md
+              - Bloc detection: case-studies/drep-vote-correlations/queries/q2-bloc-detection.md
+              - Swing prevalence: case-studies/drep-vote-correlations/queries/q3-swing-prevalence.md
+              - Action-type correlation: case-studies/drep-vote-correlations/queries/q4-action-type-correlation.md
+              - Anchor coverage: case-studies/drep-vote-correlations/queries/q5-anchor-coverage.md
+              - Arrival-time dynamics: case-studies/drep-vote-correlations/queries/q6-arrival-time-dynamics.md
   - "Prior art": prior-art.md
   - Operations:
       - "Repository secrets": operations/secrets.md

@@ -30,3 +30,4 @@ MkDocs navigation.
 ## Existing case studies
 
 - [9-IO 2026 budget vote process](2026-io-budget-vote/case.md)
+- [DRep vote correlations across governance actions](drep-vote-correlations/case.md)
