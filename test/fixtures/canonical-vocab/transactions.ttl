@@ -448,6 +448,12 @@ cardano:TxOutRef a rdfs:Class ;
   rdfs:label "TxOutRef" ;
   dcterms:description "A reference to a specific output of a previously-submitted transaction — the tuple of a transaction id and an output index. Used everywhere an Input names what it spends, references, or holds as collateral. Decomposed into cardano:hasTxId (an Identifier node) + cardano:hasIndex (a non-negative integer)." .
 
+cardano:GovActionId a rdfs:Class , skos:Concept ;
+  skos:inScheme cardano:LeafType ;
+  skos:prefLabel "Governance Action ID" ;
+  rdfs:label "Governance action identifier" ;
+  rdfs:comment "Identifier for a governance action: (txid, index) tuple identifying the proposing transaction and the proposal's position within that transaction." .
+
 cardano:Vote a rdfs:Class ;
   rdfs:label "Vote" ;
   dcterms:description "A single voting-procedure entry: one voter casting one verdict on one governance action. Carries cardano:hasVoter, cardano:hasVotingAction, cardano:hasVerdict, and optional cardano:hasAnchor for justifying metadata." .
@@ -498,15 +504,21 @@ cardano:hasCollateralReturn a rdf:Property ;
 
 cardano:hasTxId a rdf:Property ;
   rdfs:label "hasTxId" ;
-  rdfs:domain cardano:TxOutRef ;
+  rdfs:domain [
+    a owl:Class ;
+    owl:unionOf ( cardano:TxOutRef cardano:GovActionId )
+  ] ;
   rdfs:range  cardano:Identifier ;
-  dcterms:description "Binds a TxOutRef to its transaction-id Identifier (a 32-byte hash carried via cardano:bytesHex)." .
+  dcterms:description "Binds a TxOutRef or GovActionId to its transaction-id Identifier (a 32-byte hash carried via cardano:bytesHex)." .
 
 cardano:hasIndex a rdf:Property ;
   rdfs:label "hasIndex" ;
-  rdfs:domain cardano:TxOutRef ;
+  rdfs:domain [
+    a owl:Class ;
+    owl:unionOf ( cardano:TxOutRef cardano:GovActionId )
+  ] ;
   rdfs:range  xsd:integer ;
-  dcterms:description "The zero-based output index inside the referenced transaction's outputs list." .
+  dcterms:description "The zero-based output index inside a TxOutRef, or proposal index inside a GovActionId." .
 
 cardano:hasAsset a rdf:Property ;
   rdfs:label "hasAsset" ;
@@ -526,8 +538,8 @@ cardano:hasVoter a rdf:Property ;
 cardano:hasVotingAction a rdf:Property ;
   rdfs:label "hasVotingAction" ;
   rdfs:domain cardano:Vote ;
-  rdfs:range  cardano:Identifier ;
-  dcterms:description "Binds a Vote to the governance-action identifier it votes on (a TxOutRef-shaped pair on chain; surfaced as an Identifier node here)." .
+  rdfs:range  cardano:GovActionId ;
+  dcterms:description "Binds a Vote to the governance-action identifier it votes on: a typed (txid, index) tuple using cardano:hasTxId and cardano:hasIndex." .
 
 cardano:hasVerdict a rdf:Property ;
   rdfs:label "hasVerdict" ;

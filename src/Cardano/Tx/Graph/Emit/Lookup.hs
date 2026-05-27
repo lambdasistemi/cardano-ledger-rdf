@@ -169,7 +169,7 @@ rawBytesBnodeName lt bytes =
 {- | The bnode-name family prefix: @"cred"@ for the
 operator-declarable credential leaves (PaymentKey, PoolId, etc.)
 and @"hash"@ for the body-walker-only hash leaves (TxId,
-DatumHash, ScriptHash, ScriptDataHash, AuxiliaryDataHash).
+GovActionId, DatumHash, ScriptHash, ScriptDataHash, AuxiliaryDataHash).
 T122c / S22 introduces the @hash@ family.
 -}
 familyPrefix :: LeafType -> Text
@@ -184,6 +184,7 @@ familyPrefix = \case
     DRepKey -> "cred"
     DRepScript -> "cred"
     LtTxId -> "hash"
+    LtGovActionId -> "hash"
     LtDatumHash -> "hash"
     LtScriptHash -> "hash"
     LtScriptDataHash -> "hash"
@@ -210,6 +211,7 @@ rolePrefix = \case
     DRepKey -> "drepkey"
     DRepScript -> "drepscript"
     LtTxId -> "txid"
+    LtGovActionId -> "govactionid"
     LtDatumHash -> "datum"
     LtScriptHash -> "script"
     LtScriptDataHash -> "scriptdata"

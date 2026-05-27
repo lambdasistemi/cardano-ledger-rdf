@@ -128,7 +128,7 @@ operator-declarable entity-credential leaf types pinned in spec
 FR-013 and the @roleSuffix@ table in plan D2 — they appear in
 operator rules files and the entity-overlay path.
 
-The remaining five (TxId, DatumHash, ScriptHash, ScriptDataHash,
+The remaining six (TxId, GovActionId, DatumHash, ScriptHash, ScriptDataHash,
 AuxiliaryDataHash) are body-walker-only leaf types introduced by
 T122c / S22 for the literal-vs-node consistency audit (A-007):
 any hash with independent identity (txid, datum hash, script
@@ -158,6 +158,7 @@ data LeafType
       -- 'leafTypeText' / 'renderLeafType' tables, not the
       -- constructor name.
       LtTxId
+    | LtGovActionId
     | LtDatumHash
     | LtScriptHash
     | LtScriptDataHash
