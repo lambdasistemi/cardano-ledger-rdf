@@ -88,7 +88,7 @@ contextValue =
         KeyMap.fromList
             [
                 ( Key.fromText "cardano"
-                , String "https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#"
+                , String "https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#"
                 )
             ,
                 ( Key.fromText "rdf"

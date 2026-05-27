@@ -24,13 +24,13 @@ Issue: [#19](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/19)
 
 ## Slice C — re-host vocab IRI
 
-- [ ] T019-S3 — update `cardanoPrefix` constant in `src/Cardano/Tx/Graph/Emit/Vocab.hs` to `https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#`
-- [ ] T019-S3 — sweep remaining source IRI literals: `JsonLd.hs`, `Overlay.hs`, `NoStubViewSpec.hs`, `TurtleShim.hs`, `LoadImportsSpec.hs`, `LoadTurtleSpec.hs`
-- [ ] T019-S3 — regenerate goldens via harness (or `sed` sweep if harness regen produces non-prefix-only diffs); verify the diff is prefix-only
-- [ ] T019-S3 — update `docs/may-2026-amaru-lattice.md` if it cites the IRI inline
-- [ ] T019-S3 — verify `nix build .#checks.x86_64-linux.*` green
-- [ ] T019-S3 — smoke: run `tx-graph` on `test/fixtures/tx-graph/02-alice-bob-ada/cbor` and confirm the prefix in stdout/the file is the new IRI
-- [ ] T019-S3 — commit: `feat(vocab): re-host vocab IRI to cardano-ledger-rdf` with `Tasks: T019-S3`
+- [X] T019-S3 — update `cardanoPrefix` constant in `src/Cardano/Tx/Graph/Emit/Vocab.hs` to `https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#`
+- [X] T019-S3 — sweep remaining source IRI literals: `JsonLd.hs`, `Overlay.hs`, `NoStubViewSpec.hs`, `TurtleShim.hs`, `LoadImportsSpec.hs`, `LoadTurtleSpec.hs`
+- [X] T019-S3 — regenerate goldens via harness (or `sed` sweep if harness regen produces non-prefix-only diffs); verify the diff is prefix-only
+- [X] T019-S3 — update `docs/may-2026-amaru-lattice.md` if it cites the IRI inline
+- [X] T019-S3 — verify `nix build .#checks.x86_64-linux.*` green
+- [X] T019-S3 — smoke: run `tx-graph` on `test/fixtures/tx-graph/02-alice-bob-ada/cbor` and confirm the prefix in stdout/the file is the new IRI
+- [X] T019-S3 — commit: `feat(vocab): re-host vocab IRI to cardano-ledger-rdf` with `Tasks: T019-S3`
 
 ## Companion PR — cardano-knowledge-maps removal
 

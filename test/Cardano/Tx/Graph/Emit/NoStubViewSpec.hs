@@ -6,7 +6,7 @@ License     : Apache-2.0
 CI gate for spec FR-012 / epic #46 "no-stub SPARQL". The canonical
 view lives at @views/no-stub-triples.rq@:
 
-> PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+> PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 > PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 >
 > SELECT ?subj WHERE {

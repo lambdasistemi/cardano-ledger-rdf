@@ -51,7 +51,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
     describe "happy path" $ do
         it "parses a single entity with two identifiers" $ do
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
                     \\n\
@@ -89,7 +89,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
 
         it "parses two entities preserving source order" $ do
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
                     \\n\
@@ -139,7 +139,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
             -- target is NOT followed yet (T007's surface). The
             -- parser must accept the triple shape and continue.
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                     \@prefix owl:     <http://www.w3.org/2002/07/owl#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
@@ -172,7 +172,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
     describe "out-of-scope constructs are rejected (research R1)" $ do
         it "rejects language tags on string literals" $ do
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
                     \\n\
@@ -183,7 +183,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
 
         it "rejects datatype suffixes on string literals" $ do
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                     \@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
@@ -195,7 +195,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
 
         it "rejects collection syntax ( )" $ do
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
                     \\n\
                     \:foo a cardano:Entity ;\n\
@@ -205,7 +205,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
 
         it "rejects blank-node property lists [ ]" $ do
             let ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
                     \\n\
                     \:foo a cardano:Entity ;\n\
@@ -227,7 +227,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
                     -- naming algorithm rebuilds the bnode label so any
                     -- operator-chosen bnode prefix would normalize away.
                     ttl =
-                        "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                        "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                         \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                         \@prefix :        <https://example.com/x#> .\n\
                         \\n\
@@ -252,7 +252,7 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesTurtleText (T006)" $ do
                     \  - name: foo\n\
                     \    script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077\n"
                 ttl =
-                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+                    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
                     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
                     \@prefix :        <https://example.com/x#> .\n\
                     \\n\

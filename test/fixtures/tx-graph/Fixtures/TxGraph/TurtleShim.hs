@@ -41,7 +41,7 @@ inside the @\@prefix cardano:@ declaration line.
 -}
 phaseACardanoIri :: Text
 phaseACardanoIri =
-    "<https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>"
+    "<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>"
 
 {- | Loose syntactic check that the byte payload is well-formed Turtle
 and uses the kmaps#53 Phase A @cardano:@ namespace IRI.

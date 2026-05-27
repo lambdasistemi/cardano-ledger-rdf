@@ -2,7 +2,7 @@
 # Migrated from lambdasistemi/cardano-knowledge-maps@5108855
 # on 2026-05-27 as part of cardano-ledger-rdf#19.
 # See https://github.com/lambdasistemi/cardano-ledger-rdf/issues/19
-@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:     <http://www.w3.org/2002/07/owl#> .
@@ -14,13 +14,13 @@
 # Ontology header
 # ==============================================================================
 
-<https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano/transactions>
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions>
   a owl:Ontology ;
   rdfs:label "Cardano Transaction Vocabulary (Phase A)" ;
   dcterms:description "Class and property declarations for Conway-tx RDF emission. Extends the cardano: namespace defined in cardano.ontology.ttl. Phase A: declarations only; SKOS LeafType ConceptScheme and OWL 2 RL reasoning axioms ship in later commits on the same PR." ;
   owl:versionInfo "0.1.0-phaseA" ;
   owl:imports
-    <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano> .
+    <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano> .
 
 # ==============================================================================
 # Classes

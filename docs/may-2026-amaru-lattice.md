@@ -43,7 +43,7 @@ emitted in seed outputs + total fees. Any non-zero gap is a
 bug in the lattice (missing closure, predicate mismatch, …).
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 
 SELECT ?totalSeedInputLovelace ?totalSeedOutputLovelace ?totalSeedFee
        ((?totalSeedInputLovelace - ?totalSeedOutputLovelace - ?totalSeedFee) AS ?gap)
@@ -77,7 +77,7 @@ WHERE {
 ## Query 1 — Monthly totals
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 SELECT (COUNT(?tx) AS ?seedTxCount)
        (SUM(?fee) AS ?totalFeeLovelace)
        (MIN(?fee) AS ?minFee)
@@ -98,7 +98,7 @@ single-author swap-order opens.
 ## Query 2 — Where did USDM land?
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 SELECT ?destBech32 (SUM(?qty) AS ?usdmReceived)
 WHERE {
@@ -181,7 +181,7 @@ flowchart LR
 ## Query 4 — Multisig shape distribution
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 SELECT ?requiredSigners (COUNT(?seed) AS ?txCount)
 WHERE {
   { SELECT ?seed (COUNT(DISTINCT ?sig) AS ?requiredSigners) WHERE {
@@ -211,7 +211,7 @@ shape covers swap-order opens, swap-cancel, and scoop participation.
 ## Query 5 — Vendor-payment chain (lattice × overlay)
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 PREFIX amaru:   <https://amaru.tech/rdf/>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -261,7 +261,7 @@ flowchart LR
 ## Query 6 — Disbursement detection
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 
 SELECT ?seedTxId ?lovelaceDisbursed
 WHERE {
@@ -331,7 +331,7 @@ of that went to cag-payee (vendor bridge); the 10,057 USDM
 ## Query 8 — Scoop detection
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 
 SELECT ?seedTxId (COUNT(DISTINCT ?parentOut) AS ?swapOrdersConsumed)
 WHERE {
@@ -367,7 +367,7 @@ doesn't pattern-match on tx shape — it pattern-matches on
 ## Query 9 — Reference-script reuse
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 
 SELECT ?parentTxId ?ix (COUNT(DISTINCT ?seed) AS ?usingSeedTxs)
 WHERE {
@@ -404,7 +404,7 @@ to its scoop to find the human recipient WITHOUT decoding the
 swap-order datum.
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#>
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
 SELECT ?scoopTxId ?recipientBech32 ?recipientLovelace ?recipientUsdm

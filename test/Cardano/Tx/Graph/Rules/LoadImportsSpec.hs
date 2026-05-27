@@ -403,7 +403,7 @@ this spec. Matches the byte shape the YAML/Turtle parsers expect.
 -}
 ttlHeader :: ByteString
 ttlHeader =
-    "@prefix cardano: <https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#> .\n\
+    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n\
     \@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n\
     \@prefix owl:     <http://www.w3.org/2002/07/owl#> .\n\
     \@prefix :        <https://example.com/x#> .\n\
