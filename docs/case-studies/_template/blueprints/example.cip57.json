@@ -1,0 +1,32 @@
+{
+  "preamble": {
+    "title": "example.script",
+    "description": "Minimal CIP-57 blueprint placeholder for a case-study template.",
+    "version": "0.1.0",
+    "plutusVersion": "v3",
+    "license": "Apache-2.0"
+  },
+  "validators": [
+    {
+      "title": "example.script.spend",
+      "datum": {
+        "title": "ExampleDatum",
+        "schema": { "$ref": "#/definitions/ExampleDatum" }
+      }
+    }
+  ],
+  "definitions": {
+    "ExampleDatum": {
+      "title": "ExampleDatum",
+      "description": "Single-constructor placeholder datum.",
+      "dataType": "constructor",
+      "index": 0,
+      "fields": [
+        {
+          "title": "owner",
+          "schema": { "dataType": "bytes" }
+        }
+      ]
+    }
+  }
+}

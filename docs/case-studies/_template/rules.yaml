@@ -1,0 +1,35 @@
+# Template entity overlay. The current rules.yaml entity shapes are
+# constrained by src/Cardano/Tx/Graph/Rules/Load/Parse/Yaml.hs::parseShape.
+# Replace these example values with identifiers from the selected dataset.
+entities:
+  - name: example.from-address
+    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz
+
+  - name: example.script
+    script: fa24fb305126805cf2164c161d852a0e7330cf988f1fe558cf7d4a64
+
+  - name: example.asset
+    asset: { policy: c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad, name: USDM }
+
+  - name: example.pool
+    pool: pool1z22x50lqsrwent6en0llzzs32wadml78v300fl6yrqlqqpu2lpz
+
+  - name: example.drep
+    drep: drep1y2v5h0g4qjqj9p6h9rp3z5lyqz3xczvqj5x3z7c7gj7nf2cvcr8xh
+
+  - name: example.cross-leaf-script-policy
+    keys: [PaymentScript, Policy]
+    bytes: c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad
+
+  - name: example.vendor
+    role: off-chain service provider
+    paid-via: example.from-address
+
+blueprints:
+  - script: example.script
+    datum: ./blueprints/example.cip57.json
+
+attestations:
+  - ipfs: ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam
+    label: Example invoice
+    of: example.vendor
