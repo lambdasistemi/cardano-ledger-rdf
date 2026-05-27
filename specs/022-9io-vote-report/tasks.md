@@ -18,12 +18,12 @@
 
 ## Slice B — write the docs page
 
-- [ ] T022-S2 — author `docs/case-studies/2026-io-budget-vote.md` with all sections from FR-1 through FR-7
-- [ ] T022-S2 — externalise queries to `docs/case-studies/2026-io-budget-vote.queries/*.rq` if the page becomes too dense
-- [ ] T022-S2 — register the page in `mkdocs.yml`
-- [ ] T022-S2 — `mkdocs build` clean
-- [ ] T022-S2 — every numeric claim in the page matches the slice A measurements
-- [ ] T022-S2 — commit: `docs(case-study): 9-IO 2026 budget vote process — SPARQL-driven report` with `Tasks: T022-S2`
+- [X] T022-S2 — author `docs/case-studies/2026-io-budget-vote.md` with all sections from FR-1 through FR-7
+- [X] T022-S2 — externalise queries to `docs/case-studies/2026-io-budget-vote.queries/*.rq` if the page becomes too dense
+- [X] T022-S2 — register the page in `mkdocs.yml`
+- [X] T022-S2 — `mkdocs build` clean
+- [X] T022-S2 — every numeric claim in the page matches the slice A measurements
+- [X] T022-S2 — commit: `docs(case-study): 9-IO 2026 budget vote process — SPARQL-driven report` with `Tasks: T022-S2`
 
 ## Finalization
 
