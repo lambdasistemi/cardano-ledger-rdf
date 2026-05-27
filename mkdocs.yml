@@ -64,7 +64,19 @@ nav:
   - tx-lattice: tx-lattice.md
   - "May 2026 lattice demo": may-2026-amaru-lattice.md
   - Case studies:
-      - "9-IO 2026 budget vote": case-studies/2026-io-budget-vote.md
+      - Overview: case-studies/index.md
+      - Template: case-studies/_template/case.md
+      - "9-IO 2026 budget vote":
+          - Presentation: case-studies/2026-io-budget-vote/case.md
+          - Dataset selection: case-studies/2026-io-budget-vote/selection.md
+          - Queries:
+              - Asks per proposal: case-studies/2026-io-budget-vote/queries/q1-asks.md
+              - Single beneficiary: case-studies/2026-io-budget-vote/queries/q2-single-beneficiary.md
+              - Single guard policy: case-studies/2026-io-budget-vote/queries/q3-single-guard-policy.md
+              - Proposer anchors: case-studies/2026-io-budget-vote/queries/q4-proposer-anchors.md
+              - Vote tallies: case-studies/2026-io-budget-vote/queries/q5-vote-tallies.md
+              - DRep behaviour: case-studies/2026-io-budget-vote/queries/q6-drep-behaviour.md
+              - Anchor host distribution: case-studies/2026-io-budget-vote/queries/q7-anchor-host-distribution.md
   - "Prior art": prior-art.md
   - Operations:
       - "Repository secrets": operations/secrets.md
