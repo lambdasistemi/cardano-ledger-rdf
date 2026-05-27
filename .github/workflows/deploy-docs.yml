@@ -29,6 +29,7 @@ concurrency:
 
 jobs:
   build:
+    name: Docs build
     if: github.event.action != 'closed'
     runs-on: nixos
     steps:
@@ -69,6 +70,7 @@ jobs:
           rm -rf site
 
   deploy:
+    name: Docs deploy
     if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: nixos
