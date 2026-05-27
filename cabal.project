@@ -47,5 +47,5 @@ package ouroboros-network
   tests: False
   benchmarks: False
 
-package cardano-rdf
+package cardano-ledger-rdf
   flags: +werror

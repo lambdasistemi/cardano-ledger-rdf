@@ -7,20 +7,20 @@ environment and the release deploy key private half on disk:
 
 ```bash
 gh secret set CACHIX_AUTH_TOKEN \
-  --repo lambdasistemi/cardano-rdf \
+  --repo lambdasistemi/cardano-ledger-rdf \
   --body "$CACHIX_AUTH_TOKEN"
 
 gh secret set TAP_TOKEN \
-  --repo lambdasistemi/cardano-rdf \
+  --repo lambdasistemi/cardano-ledger-rdf \
   --body "$TAP_TOKEN"
 
 gh secret set RELEASE_BOT_SSH_KEY \
-  --repo lambdasistemi/cardano-rdf \
+  --repo lambdasistemi/cardano-ledger-rdf \
   < "$RELEASE_BOT_SSH_KEY_FILE"
 ```
 
 Verify with:
 
 ```bash
-gh secret list --repo lambdasistemi/cardano-rdf
+gh secret list --repo lambdasistemi/cardano-ledger-rdf
 ```

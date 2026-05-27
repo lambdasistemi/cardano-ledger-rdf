@@ -33,7 +33,7 @@ import Data.Text (Text)
 -- | The kmaps Phase A @cardano:@ namespace base.
 cardanoPrefix :: Text
 cardanoPrefix =
-    "https://lambdasistemi.github.io/cardano-knowledge-maps/vocab/cardano#"
+    "https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#"
 
 -- | The RDF Schema namespace.
 rdfsPrefix :: Text

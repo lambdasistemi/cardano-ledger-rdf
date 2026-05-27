@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cabal_file="${1:-cardano-rdf.cabal}"
+cabal_file="${1:-cardano-ledger-rdf.cabal}"
 
 while read -r field version _; do
   if [[ "$field" == "version:" ]]; then

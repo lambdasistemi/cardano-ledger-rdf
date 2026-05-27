@@ -72,7 +72,7 @@ let
       runtimeInputs = lintInputs;
       text = ''
         cd ${src}
-        cabal-fmt -c cardano-rdf.cabal
+        cabal-fmt -c cardano-ledger-rdf.cabal
         find . -type f -name '*.hs' \
           -not -path '*/dist-newstyle/*' \
           -exec fourmolu -m check {} +

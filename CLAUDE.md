@@ -2,7 +2,7 @@
 
 ## What This Repo Is
 
-`cardano-rdf` owns generic Cardano RDF vocabulary, graph extraction,
+`cardano-ledger-rdf` owns generic Cardano RDF vocabulary, graph extraction,
 serialisation, packaged views, and export tooling. Transaction RDF is the
 first surface, but the repository is intentionally broader than transaction
 graphs.

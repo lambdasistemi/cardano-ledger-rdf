@@ -6,7 +6,7 @@
 ## Summary
 
 Additively migrate the transaction RDF surface from `cardano-tx-tools` into
-`cardano-rdf`: source, executables, tests, fixtures, rules, SPARQL views, docs,
+`cardano-ledger-rdf`: source, executables, tests, fixtures, rules, SPARQL views, docs,
 Nix, CI, and operator notes. Verify the new repo works, then stop before any
 old source deletion.
 
@@ -29,7 +29,7 @@ support modules required to build them
 
 ## Constitution Check
 
-- **RDF product boundary**: PASS. The target repo is `cardano-rdf`; tx-tools is
+- **RDF product boundary**: PASS. The target repo is `cardano-ledger-rdf`; tx-tools is
   treated as the old source and future downstream consumer.
 - **Vocabulary stability**: PASS. Existing TTL fixtures and vocab pins move with
   tests; any drift fails goldens.
@@ -98,7 +98,7 @@ passes.
    permissions, docs/secrets note.
 2. Additive migration copy: source, tests, fixtures, docs, rules, views, Nix,
    CI.
-3. Metadata adaptation: README/site/repo references to `cardano-rdf`; retain
+3. Metadata adaptation: README/site/repo references to `cardano-ledger-rdf`; retain
    historical links only where intentional.
 4. Verification: build, tests, docs, cabal check, old-repo no-deletion check.
 5. Stop point: report evidence and do not remove old source.

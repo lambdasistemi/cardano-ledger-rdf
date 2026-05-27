@@ -1,6 +1,6 @@
-# cardano-rdf Specs
+# cardano-ledger-rdf Specs
 
-This directory contains active Spec Kit artifacts for `cardano-rdf`.
+This directory contains active Spec Kit artifacts for `cardano-ledger-rdf`.
 
 The active migration spec is:
 
