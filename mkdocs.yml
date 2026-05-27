@@ -63,6 +63,8 @@ nav:
   - tx-view: tx-view.md
   - tx-lattice: tx-lattice.md
   - "May 2026 lattice demo": may-2026-amaru-lattice.md
+  - Case studies:
+      - "9-IO 2026 budget vote": case-studies/2026-io-budget-vote.md
   - "Prior art": prior-art.md
   - Operations:
       - "Repository secrets": operations/secrets.md
