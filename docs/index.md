@@ -1,19 +1,28 @@
-# cardano-rdf
+# cardano-ledger-rdf
 
-`cardano-rdf` is the graph/RDF backend for Cardano transaction data.
-It owns the tools that fetch transaction CBOR, emit canonical graphs,
-and project those graphs through packaged views.
+`cardano-ledger-rdf` is the graph/RDF backend for Cardano transaction data.
+It owns the `cardano:` ontology and the tools that fetch transaction CBOR,
+emit canonical graphs, and project those graphs through packaged views.
+
+## Vocabulary
+
+The `cardano:` namespace is defined by an ontology hosted from this repo at
+`https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#`. See
+[Vocabulary](vocab.md) for ownership, IRI, and standard SPARQL prefix.
 
 ## Tools
 
 - [**tx-fetch**](tx-fetch.md) fetches seed transaction ids and their
   parent CBOR closure into a local lattice.
 - [**tx-graph**](tx-graph.md) turns Conway transaction CBOR plus
-  operator rules into Turtle or JSON-LD.
+  operator [`rules.yaml`](rules-yaml.md) into Turtle or JSON-LD.
+- [**tx-view**](tx-view.md) projects a generated Turtle graph through
+  packaged views (`cli-tree`, `asset-flow`, `entity-occurrences`,
+  `json-ld`).
 
-Generic transaction tools such as inspect, diff, sign, validate, and
-load generation remain `cardano-tx-tools` applications. They can depend
-on this repository when their backend is a generated graph.
+Generic transaction tools such as inspect, diff, sign, and load
+generation remain `cardano-tx-tools` applications. They can depend on
+this repository when their backend is a generated graph.
 
 ## Pipeline
 
@@ -36,10 +45,10 @@ is the boundary that talks to Blockfrost-compatible chain APIs.
 | `Cardano.Tx.Decode` / `Cardano.Tx.Graph.Resolve` | Shared transaction decoding and resolved-input lookup for RDF tools. |
 
 The repository boundary is graph/RDF. Downstream transaction diffing,
-inspection, validation, signing, and load generation remain
-`cardano-tx-tools` applications.
+inspection, signing, and load generation remain `cardano-tx-tools`
+applications.
 
 ## Release
 
-Release automation packages `tx-graph` and `tx-fetch`. Workflow secrets
-are populated by operators outside agent sessions.
+Release automation packages `tx-graph`, `tx-fetch`, and `tx-view`.
+Workflow secrets are populated by operators outside agent sessions.
