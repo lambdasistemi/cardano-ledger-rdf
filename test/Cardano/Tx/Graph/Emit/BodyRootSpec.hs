@@ -18,10 +18,14 @@ the four Conway body-root predicates iff their corresponding
   @scriptIntegrityHashTxBodyL@ is 'SJust';
 * @cardano:auxiliaryDataHash@ — present iff @auxDataHashTxBodyL@
   is 'SJust'.
+* @cardano:hasCurrentTreasuryValue@ — present iff
+  @currentTreasuryValueTxBodyL@ is 'SJust';
+* @cardano:hasDonation@ — present iff @treasuryDonationTxBodyL@
+  is a positive 'Coin'.
 
-The eleven tx-graph fixtures all leave these four fields
-at @SNothing@; the byte-equal goldens pin the elision branch.
-The populated branches are exercised here via synthetic
+The legacy tx-graph fixtures leave these body-root fields
+at their absent defaults; the byte-equal goldens pin the elision
+branch. The populated branches are exercised here via synthetic
 'ConwayTx' values built by lens-set on the 'mkBasicTxBody' default
 body (no DSL combinator covers the relevant fields).
 -}
@@ -50,9 +54,11 @@ import Cardano.Ledger.Api.Tx (
  )
 import Cardano.Ledger.Api.Tx.Body (
     auxDataHashTxBodyL,
+    currentTreasuryValueTxBodyL,
     mkBasicTxBody,
     networkIdTxBodyL,
     scriptIntegrityHashTxBodyL,
+    treasuryDonationTxBodyL,
     vldtTxBodyL,
  )
 import Cardano.Ledger.BaseTypes (
@@ -61,6 +67,7 @@ import Cardano.Ledger.BaseTypes (
     StrictMaybe (SJust, SNothing),
  )
 import Cardano.Ledger.Binary (serialize')
+import Cardano.Ledger.Coin (Coin (..))
 import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Hashes (HASH, TxAuxDataHash (..), unsafeMakeSafeHash)
 
@@ -84,6 +91,8 @@ spec = describe "Cardano.Tx.Graph.Emit body-root predicates (T107 / S6)" $ do
     scriptDataHashSpecs
     auxiliaryDataHashSpecs
     isValidSpecs
+    currentTreasuryValueSpecs
+    donationSpecs
     auxiliaryDataBodySpecs
 
 ----------------------------------------------------------------------
@@ -212,6 +221,37 @@ isValidSpecs = describe "cardano:isValid" $ do
                 "cardano:isValid \"false\"^^xsd:boolean"
 
 ----------------------------------------------------------------------
+-- cardano:hasCurrentTreasuryValue
+----------------------------------------------------------------------
+
+currentTreasuryValueSpecs :: Spec
+currentTreasuryValueSpecs = describe "cardano:hasCurrentTreasuryValue" $ do
+    it "elides current treasury value when SNothing" $ do
+        let bytes = emitBytes baseTx
+        txBlockOfBytes bytes
+            `shouldSatisfy` (not . BS8.isInfixOf "cardano:hasCurrentTreasuryValue")
+    it "emits current treasury value when SJust" $ do
+        let bytes = emitBytes (baseTx & currentTreasuryValue (SJust (Coin 90_000_000)))
+        txBlockOfBytes bytes
+            `shouldSatisfy` BS8.isInfixOf
+                "cardano:hasCurrentTreasuryValue 90000000"
+
+----------------------------------------------------------------------
+-- cardano:hasDonation
+----------------------------------------------------------------------
+
+donationSpecs :: Spec
+donationSpecs = describe "cardano:hasDonation" $ do
+    it "elides donation when the ledger default is zero" $ do
+        let bytes = emitBytes baseTx
+        txBlockOfBytes bytes
+            `shouldSatisfy` (not . BS8.isInfixOf "cardano:hasDonation")
+    it "emits donation when positive" $ do
+        let bytes = emitBytes (baseTx & donation (Coin 1_000_000))
+        txBlockOfBytes bytes
+            `shouldSatisfy` BS8.isInfixOf "cardano:hasDonation 1000000"
+
+----------------------------------------------------------------------
 -- cardano:hasAuxiliaryData
 ----------------------------------------------------------------------
 
@@ -272,6 +312,15 @@ scriptDataHash h = bodyTxL . scriptIntegrityHashTxBodyL .~ h
 -- | Set the body's @auxDataHashTxBodyL@.
 auxDataHash :: StrictMaybe TxAuxDataHash -> ConwayTx -> ConwayTx
 auxDataHash h = bodyTxL . auxDataHashTxBodyL .~ h
+
+-- | Set the body's @currentTreasuryValueTxBodyL@.
+currentTreasuryValue :: StrictMaybe Coin -> ConwayTx -> ConwayTx
+currentTreasuryValue value =
+    bodyTxL . currentTreasuryValueTxBodyL .~ value
+
+-- | Set the body's @treasuryDonationTxBodyL@.
+donation :: Coin -> ConwayTx -> ConwayTx
+donation value = bodyTxL . treasuryDonationTxBodyL .~ value
 
 {- | A 32-byte 'ScriptIntegrityHash' filled with the given byte
 (0..255). Used to exercise the @cardano:scriptDataHash@ branch

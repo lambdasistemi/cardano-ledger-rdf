@@ -76,6 +76,8 @@ import Fixtures.TxGraph.S23_CertStakeRegistration qualified as S23
 import Fixtures.TxGraph.S24_CertDRepAnchors qualified as S24
 import Fixtures.TxGraph.S25_CertPoolParams qualified as S25
 import Fixtures.TxGraph.S26_CertCommittee qualified as S26
+import Fixtures.TxGraph.S27_CurrentTreasuryValue qualified as S27
+import Fixtures.TxGraph.S28_Donation qualified as S28
 
 import Test.Hspec (
     Spec,
@@ -121,6 +123,8 @@ allFixtures =
     , ("24-cert-drep-anchors", S24.tx)
     , ("25-cert-pool-params", S25.tx)
     , ("26-cert-committee", S26.tx)
+    , ("27-current-treasury-value", S27.tx)
+    , ("28-donation", S28.tx)
     ]
 
 {- | One Hspec @it@ per fixture: byte-diff the emitted Turtle

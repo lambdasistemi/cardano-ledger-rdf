@@ -1,0 +1,23 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/27-current-treasury-value#> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+_:tx a cardano:Transaction ;
+  cardano:hasTxId _:hash_txid_cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9 ;
+  cardano:isValid "true"^^xsd:boolean ;
+  cardano:hasFee 0 ;
+  cardano:hasCurrentTreasuryValue 90000000000000000 .
+
+_:hash_txid_cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9" .
