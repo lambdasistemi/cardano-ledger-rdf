@@ -1,19 +1,33 @@
 # tx-graph
 
 `tx-graph` emits Conway transactions as RDF. It loads an optional
-operator overlay from `rules.yaml`, decodes one transaction CBOR file,
-and writes canonical Turtle or JSON-LD. Multi-transaction lattices are
-ordinary concatenations of one-transaction Turtle streams.
+operator overlay from `rules.yaml`, decodes one transaction CBOR, and
+writes canonical Turtle or JSON-LD. The CBOR comes from a local file
+(the default) or is fetched by txid from an HTTP indexer via
+`--provider`. Multi-transaction lattices are ordinary concatenations of
+one-transaction Turtle streams.
 
 ```text
 tx-graph — pure (rules + cbor) -> ttl transformation
 
-Usage: tx-graph [--rules FILE] [--out FILE] [--format FORMAT] [CBOR]
+Usage: tx-graph [--rules FILE]
+                [--provider PROVIDER [--token TOKEN] [--url URL]]
+                (CBOR-or-TXID)
+                [--in FILE] [--out FILE] [--format FORMAT]
 
 Available options:
   --rules FILE       Operator-authored rules file (.yaml/.yml or .ttl).
                      Used alone, emits overlay-only Turtle to stdout.
-  CBOR               Conway tx CBOR file path. '-' reads one tx from stdin.
+  --provider PROVIDER  CBOR source: file | koios | blockfrost | http
+                     (default: file). With a fetching provider the
+                     positional argument / --in is a 64-hex txid.
+  --token TOKEN      Bearer / API token (blockfrost project_id;
+                     optional koios / http bearer).
+  --url URL          Provider base URL. Required for 'http'; overrides
+                     the default for koios / blockfrost.
+  CBOR               Conway tx CBOR file path (file mode) or a txid
+                     (provider mode). '-' reads one tx from stdin.
+  --in FILE          Read input from FILE instead of the positional.
   --out FILE         Write one graph to FILE instead of stdout.
   --format FORMAT    Output format: 'turtle' or 'json-ld'. Default: turtle.
 ```
@@ -23,8 +37,22 @@ Available options:
 | Input | Output |
 |--|--|
 | `--rules FILE` only | Overlay-only Turtle from the rules file. |
-| One CBOR | One graph on stdout. |
+| One CBOR (file) | One graph on stdout. |
+| `--provider koios <txid>` | Fetched CBOR emitted as one graph on stdout. |
 | One CBOR with `--out FILE` | One graph in `FILE`. |
+
+## Providers
+
+With `--provider`, the positional argument / `--in` is interpreted as a
+64-hex transaction id and `tx-graph` fetches the CBOR before emitting.
+The emitted graph is byte-identical to emitting the same CBOR read from
+a local file, so a fetched lattice composes exactly like an on-disk one.
+
+| Provider | Endpoint | Auth |
+|--|--|--|
+| `koios` | `POST <url>/tx_cbor` (default `https://api.koios.rest/api/v1`) | optional `--token` bearer (free public tier) |
+| `blockfrost` | `GET <url>/txs/<txid>/cbor` (default `https://cardano-mainnet.blockfrost.io/api/v0`) | `--token` sent as `project_id` (required) |
+| `http` | `GET <url>/<txid>` (generic indexer) | optional `--token` bearer; `--url` required |
 
 Each transaction body scopes positional blank nodes with the first eight
 hex characters of that transaction id. Content-addressed identifier IRIs
@@ -46,19 +74,20 @@ Emit one transaction graph to stdout:
 tx-graph --rules rules/amaru-treasury.yaml tx.cbor > tx.ttl
 ```
 
-Emit a fetched closure as one merged Turtle lattice for SPARQL:
+Emit a fetched lattice as one merged Turtle stream for SPARQL, fetching
+each transaction by txid from koios:
 
 ```bash
-tx-fetch --out-dir lattice --depth 1 013329ee... 107e439f...
-for f in lattice/cbor/*.cbor; do
-  tx-graph --rules rules/amaru-treasury.yaml "$f"
-done > lattice.ttl
+tx-graph --rules rules/amaru-treasury.yaml > lattice.ttl
+while read -r txid; do
+  tx-graph --provider koios "$txid"
+done < selections.txt >> lattice.ttl
 ```
 
-The rules overlay is semantically idempotent, so repeating
-`--rules` in the loop does not change SPARQL answers. The recommended
-operator pattern writes the overlay once and emits body graphs without
-rules to keep the Turtle file smaller:
+The rules overlay is semantically idempotent, so writing it once before
+the loop (rather than repeating `--rules` per transaction) keeps the
+Turtle file smaller without changing SPARQL answers. The same pattern
+works against local CBOR files in `--provider file` mode:
 
 ```bash
 tx-graph --rules rules/amaru-treasury.yaml > lattice.ttl
@@ -95,5 +124,4 @@ JSON-LD serializes the same triple set as `@context` plus a flat
 ## See Also
 
 - [rules.yaml](rules-yaml.md) documents the overlay language.
-- [tx-fetch](tx-fetch.md) fetches a CBOR closure for lattice emission.
 - SPARQL engines can consume the emitted Turtle directly.

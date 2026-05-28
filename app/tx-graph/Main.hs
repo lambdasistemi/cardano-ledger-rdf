@@ -11,8 +11,18 @@ CLI surface (see issue #114 — operator-led role audit consolidation):
 * @--rules FILE@ — operator overlay + blueprints + attestations.
   Used alone, emits overlay-only Turtle to stdout. Combined with
   inputs, merged into the joint graph(s).
-* Positional @CBOR@ — one Conway transaction CBOR file.
-* @-@ in the positional slot — read a single Conway tx from stdin.
+* @--provider koios|blockfrost|http@ — fetch the input CBOR from an
+  HTTP indexer instead of reading a file. With a fetching provider the
+  positional argument / @--in@ is a 64-hex txid. Default @file@ keeps
+  the positional as a CBOR path.
+* @--token TOKEN@ — bearer / API token (blockfrost @project_id@;
+  optional koios / http bearer).
+* @--url URL@ — provider base URL (required for @http@; overrides the
+  default for koios / blockfrost).
+* Positional @CBOR@ — one Conway transaction CBOR file (file mode) or a
+  txid (provider mode).
+* @-@ in the positional slot — read a single Conway tx from stdin
+  (file mode only).
 * @--out FILE@ — write one graph to @FILE@ instead of stdout.
 * @--format turtle|json-ld@ — output format (default @turtle@).
 
@@ -68,6 +78,7 @@ import Options.Applicative (
     long,
     many,
     metavar,
+    option,
     optional,
     parserFailure,
     progDesc,
@@ -99,7 +110,17 @@ import Data.Set qualified as Set
 import Data.Text.Encoding qualified as TextEncoding
 import Lens.Micro ((^.))
 
+import Data.Char (isHexDigit)
+import Network.HTTP.Client.TLS (newTlsManager)
+
 import Cardano.Tx.Decode (decodeConwayTxInput)
+import Cardano.Tx.Graph.Provider (
+    CborProvider,
+    ProviderConfig (..),
+    fetchCbor,
+    parseProviderArg,
+    renderProviderError,
+ )
 import Cardano.Tx.Graph.Resolve (Resolver (..), resolveChain)
 import Cardano.Tx.Ledger (ConwayTx)
 
@@ -108,6 +129,9 @@ optional single positional CBOR / stdin, @--out@, and @--format@.
 -}
 data Options = Options
     { optRulesFile :: !(Maybe FilePath)
+    , optProvider :: !(Maybe CborProvider)
+    , optToken :: !(Maybe Text)
+    , optUrl :: !(Maybe Text)
     , optPositional :: ![InputSource]
     , optIn :: !(Maybe FilePath)
     , optOut :: !(Maybe FilePath)
@@ -138,6 +162,42 @@ optionsParser =
                             <> "the graph."
                         )
                 )
+            )
+        <*> option
+            (eitherReader parseProviderArg)
+            ( long "provider"
+                <> metavar "PROVIDER"
+                <> value Nothing
+                <> help
+                    ( "CBOR source: file | koios | blockfrost | "
+                        <> "http (default: file). With a fetching "
+                        <> "provider the positional argument / --in "
+                        <> "is a 64-hex txid, not a CBOR path."
+                    )
+            )
+        <*> optional
+            ( Text.pack
+                <$> strOption
+                    ( long "token"
+                        <> metavar "TOKEN"
+                        <> help
+                            ( "Bearer / API token for the provider "
+                                <> "(blockfrost project_id; optional "
+                                <> "koios / http bearer)."
+                            )
+                    )
+            )
+        <*> optional
+            ( Text.pack
+                <$> strOption
+                    ( long "url"
+                        <> metavar "URL"
+                        <> help
+                            ( "Provider base URL. Required for the "
+                                <> "'http' provider; overrides the "
+                                <> "default for koios / blockfrost."
+                            )
+                    )
             )
         <*> many
             ( argument
@@ -192,9 +252,11 @@ optionsInfo =
                     <> "emitter. Loads operator-authored rules "
                     <> "(overlay-only mode) or emits one graph "
                     <> "from one Conway transaction CBOR "
-                    <> "(positional path or stdin). Output format "
-                    <> "defaults to Turtle; operators compose "
-                    <> "multiple tx graphs by concatenating stdout."
+                    <> "(positional path / stdin, or a txid fetched "
+                    <> "via --provider koios|blockfrost|http). "
+                    <> "Output format defaults to Turtle; operators "
+                    <> "compose multiple tx graphs by concatenating "
+                    <> "stdout."
                 )
         )
 
@@ -286,7 +348,7 @@ emitOne opts source = do
     (entities, blueprints, overlay) <- case optRulesFile opts of
         Nothing -> pure ([], [], BS.empty)
         Just p -> loadOverlayAndEntitiesOrExit p
-    entry@(_, tx) <- loadOne source
+    entry@(_, tx) <- loadTx opts source
     let lattice = Map.singleton (txIdOf tx) tx
     bytes <- renderOne fmtChecked entities blueprints overlay lattice entry
     case optOut opts of
@@ -294,6 +356,69 @@ emitOne opts source = do
             BS.writeFile outPath bytes
         Nothing ->
             BS.hPut stdout bytes
+
+{- | Decode one transaction, dispatching on @--provider@. In file mode
+(no provider, or @--provider file@) the input source is a local CBOR
+path / stdin, handled by 'loadOne'. With a fetching provider the source
+is a 64-hex txid that is fetched over HTTP and then decoded.
+-}
+loadTx :: Options -> InputSource -> IO (String, ConwayTx)
+loadTx opts source =
+    case optProvider opts of
+        Nothing -> loadOne source
+        Just provider -> do
+            txid <- txidFromSource source
+            manager <- newTlsManager
+            let cfg =
+                    ProviderConfig
+                        { providerKind = provider
+                        , providerUrl = optUrl opts
+                        , providerToken = optToken opts
+                        }
+            fetched <- fetchCbor manager cfg txid
+            case fetched of
+                Left err ->
+                    exitOnEmitError
+                        ( Left
+                            ( MalformedTxCbor
+                                (Text.unpack txid)
+                                (renderProviderError err)
+                            )
+                        )
+                Right bytes ->
+                    case decodeConwayTxInput bytes of
+                        Right tx -> pure (Text.unpack txid, tx)
+                        Left decErr ->
+                            exitOnEmitError
+                                ( Left
+                                    ( MalformedTxCbor
+                                        (Text.unpack txid)
+                                        (Text.pack (show decErr))
+                                    )
+                                )
+
+{- | Interpret an 'InputSource' as a lowercase-hex txid for provider
+mode. Rejects stdin and any value that is not exactly 64 hex chars.
+-}
+txidFromSource :: InputSource -> IO Text
+txidFromSource = \case
+    TxFromStdin -> do
+        usageError
+            ( "stdin input is not supported with --provider; "
+                <> "pass a 64-hex txid."
+            )
+        pure Text.empty
+    TxFromFile raw ->
+        let lower = Text.toLower (Text.pack raw)
+         in if Text.length lower == 64 && Text.all isHexDigit lower
+                then pure lower
+                else do
+                    usageError
+                        ( "expected a 64-hex txid with --provider, "
+                            <> "got: "
+                            <> raw
+                        )
+                    pure Text.empty
 
 {- | Decode one input source into @(label, ConwayTx)@. The label
 is the file path (or @\<stdin\>@) and is used in error messages

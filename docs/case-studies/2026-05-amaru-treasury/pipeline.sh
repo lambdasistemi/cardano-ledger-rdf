@@ -1,34 +1,23 @@
 #!/usr/bin/env bash
-# Dev artifact: download CBORs from Blockfrost for the txids in selections.txt,
-# then emit a single SPARQL-queryable lattice.ttl via tx-graph.
-# Usage: BLOCKFROST_PROJECT_ID=mainnet... ./pipeline.sh <out_dir>
+# Dev artifact: emit a single SPARQL-queryable lattice.ttl for the txids in
+# selections.txt by fetching each transaction's CBOR from Koios via
+# `tx-graph --provider koios` — no intermediate cbor/ directory.
+# Usage: [KOIOS_TOKEN=...] ./pipeline.sh <out_dir>
 set -euo pipefail
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 OUT="${1:-./out}"
 SELECTIONS="$SCRIPT_DIR/selections.txt"
-NETWORK="${BLOCKFROST_NETWORK:-mainnet}"
-PROJECT_ID="${BLOCKFROST_PROJECT_ID:?set BLOCKFROST_PROJECT_ID}"
+KOIOS_TOKEN="${KOIOS_TOKEN:-}"
 
-case "$NETWORK" in
-  mainnet) API="https://cardano-mainnet.blockfrost.io/api/v0" ;;
-  preprod) API="https://cardano-preprod.blockfrost.io/api/v0" ;;
-  preview) API="https://cardano-preview.blockfrost.io/api/v0" ;;
-  *) echo "unsupported BLOCKFROST_NETWORK: $NETWORK" >&2; exit 2 ;;
-esac
+mkdir -p "$OUT"
 
-mkdir -p "$OUT/cbor"
-
-while IFS= read -r hash; do
-  [ -n "$hash" ] || continue
-  case "$hash" in \#*) continue ;; esac
-
-  curl -sS "$API/txs/$hash/cbor" \
-    -H "project_id: $PROJECT_ID" \
-    | jq -r '.cbor' > "$OUT/cbor/$hash.cbor"
-done < "$SELECTIONS"
-
+# overlay once
 tx-graph --rules "$SCRIPT_DIR/rules.yaml" > "$OUT/lattice.ttl"
-for f in "$OUT"/cbor/*.cbor; do
-  tx-graph "$f"
-done >> "$OUT/lattice.ttl"
+
+# bodies fetched + emitted in one shot per txid
+while IFS= read -r txid; do
+  [ -n "$txid" ] || continue
+  case "$txid" in \#*) continue ;; esac
+  tx-graph --provider koios ${KOIOS_TOKEN:+--token "$KOIOS_TOKEN"} "$txid"
+done < "$SELECTIONS" >> "$OUT/lattice.ttl"

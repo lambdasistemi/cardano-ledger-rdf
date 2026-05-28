@@ -60,7 +60,6 @@ nav:
   - Vocabulary: vocab.md
   - Tools:
       - tx-graph: tx-graph.md
-      - tx-fetch: tx-fetch.md
       - tx-view: tx-view.md
       - rules.yaml: rules-yaml.md
   - Case studies:

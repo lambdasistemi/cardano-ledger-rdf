@@ -52,11 +52,6 @@ jobs:
             dev-output: tx-graph-linux-dev-release-artifacts
             usage-grep: "operator-entity overlay + body emitter"
             dev-tag: dev-linux-tx-graph
-          - name: tx-fetch
-            release-output: tx-fetch-linux-release-artifacts
-            dev-output: tx-fetch-linux-dev-release-artifacts
-            usage-grep: "closure-walking Conway CBOR fetcher"
-            dev-tag: dev-linux-tx-fetch
           - name: tx-view
             release-output: tx-view-linux-release-artifacts
             dev-output: tx-view-linux-dev-release-artifacts

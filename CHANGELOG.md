@@ -2,10 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+* **tx-graph:** `--provider koios|blockfrost|http` (with `--token` /
+  `--url`) fetches the input CBOR by txid from an HTTP indexer. The
+  default `--provider file` keeps the positional argument as a local
+  CBOR path. Fetched output is byte-identical to the file path, so
+  lattices stay composable.
+
 ### Removed
 
 * **tx-graph:** remove batch-mode `--in-dir` and `--out-dir`; compose
   multi-transaction lattices with shell loops and Turtle concatenation.
+* **tx-fetch:** retire the standalone closure fetcher; its role is now
+  `tx-graph --provider`.
 
 ## [0.2.3.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.2.0...v0.2.3.0) (2026-05-27)
 
