@@ -71,6 +71,7 @@ library
   other-modules:
     Cardano.Tx.Credentials
     Cardano.Tx.Deposits
+    Cardano.Tx.Graph.Emit.Certificate
     Cardano.Tx.Graph.Emit.Lookup
     Cardano.Tx.Graph.Emit.Monad
     Cardano.Tx.Graph.Emit.NativeScript
@@ -128,6 +129,7 @@ library
     , http-types                 >=0.12 && <0.13
     , libyaml                    >=0.1  && <0.2
     , memory                     >=0.18 && <0.19
+    , mempack                    >=0.2  && <0.3
     , microlens                  >=0.4  && <0.5
     , operational                >=0.2  && <0.3
     , optparse-applicative       >=0.19 && <0.20
@@ -283,6 +285,10 @@ test-suite unit-tests
     Fixtures.TxGraph.S19_NativeScriptTimelock
     Fixtures.TxGraph.S21_AuxiliaryData
     Fixtures.TxGraph.S22_IsValidFalse
+    Fixtures.TxGraph.S23_CertStakeRegistration
+    Fixtures.TxGraph.S24_CertDRepAnchors
+    Fixtures.TxGraph.S25_CertPoolParams
+    Fixtures.TxGraph.S26_CertCommittee
     Fixtures.TxGraph.TurtleShim
 
   build-depends:
@@ -310,6 +316,7 @@ test-suite unit-tests
     , directory                  >=1.3  && <1.4
     , filepath                   >=1.5  && <1.6
     , hspec                      >=2.11 && <2.12
+    , mempack                    >=0.2  && <0.3
     , microlens                  >=0.4  && <0.5
     , plutus-core                >=1.60 && <3
     , plutus-tx                  >=1.60 && <3

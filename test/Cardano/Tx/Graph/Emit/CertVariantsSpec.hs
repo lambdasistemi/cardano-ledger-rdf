@@ -61,17 +61,17 @@ spec = describe "Cardano.Tx.Graph.Emit cert variants (T120 / S19)" $ do
     it "RegDepositTxCert emits without PUnsupportedLeafType" $ do
         let bytes = emitBytes (txWithCert regDepositCert)
         bytes `shouldSatisfy` BS8.isInfixOf "_:cert1 a cardano:Certificate"
-    it "RegDepositTxCert emits the cardano:OpaqueLeaf fallback type" $ do
+    it "RegDepositTxCert emits the typed RegDeposit class" $ do
         let bytes = emitBytes (txWithCert regDepositCert)
-        bytes `shouldSatisfy` BS8.isInfixOf "a cardano:OpaqueLeaf"
-    it "RegDepositTxCert emits cardano:leafType \"ConwayRegDeposit\"" $ do
+        bytes `shouldSatisfy` BS8.isInfixOf "a cardano:RegDeposit"
+    it "RegDepositTxCert emits a stake credential edge" $ do
         let bytes = emitBytes (txWithCert regDepositCert)
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                "cardano:leafType \"ConwayRegDeposit\""
-    it "RegDepositTxCert emits cardano:hasRawBytes hex literal" $ do
+                "cardano:hasStakeCredential _:cred_stakekey_7777777777777777"
+    it "RegDepositTxCert emits cardano:hasDeposit" $ do
         let bytes = emitBytes (txWithCert regDepositCert)
-        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasRawBytes \""
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasDeposit 2000000"
 
 ----------------------------------------------------------------------
 -- Synthesis helpers

@@ -810,3 +810,51 @@ cardano:hasVerificationKey a rdf:Property ;
   rdfs:domain cardano:KeyWitness ;
   rdfs:range  cardano:Identifier ;
   dcterms:description "Binds a KeyWitness to its Ed25519 verification-key Identifier. The Identifier's bytesHex is the 28-byte BLAKE2b-224 key hash, sharing bnode identity with any body-level cardano:hasRequiredSigner referencing the same key — so SPARQL views can join witness signatures to required signers without literal comparison." .
+
+# ==============================================================================
+# Phase A.4 — typed Conway certificate coverage
+# ==============================================================================
+
+cardano:AuthCommitteeHotKey a rdfs:Class ; rdfs:label "AuthCommitteeHotKey" .
+cardano:DRepAlwaysAbstain a rdfs:Class ; rdfs:label "DRepAlwaysAbstain" .
+cardano:DRepAlwaysNoConfidence a rdfs:Class ; rdfs:label "DRepAlwaysNoConfidence" .
+cardano:MultiHostName a rdfs:Class ; rdfs:label "MultiHostName" .
+cardano:PoolMetadata a rdfs:Class ; rdfs:label "PoolMetadata" .
+cardano:PoolParams a rdfs:Class ; rdfs:label "PoolParams" .
+cardano:PoolRegistration a rdfs:Class ; rdfs:label "PoolRegistration" .
+cardano:PoolRetirement a rdfs:Class ; rdfs:label "PoolRetirement" .
+cardano:RegDRep a rdfs:Class ; rdfs:label "RegDRep" .
+cardano:RegDeposit a rdfs:Class ; rdfs:label "RegDeposit" .
+cardano:Relay a rdfs:Class ; rdfs:label "Relay" .
+cardano:ResignCommitteeColdKey a rdfs:Class ; rdfs:label "ResignCommitteeColdKey" .
+cardano:SingleHostAddr a rdfs:Class ; rdfs:label "SingleHostAddr" .
+cardano:SingleHostName a rdfs:Class ; rdfs:label "SingleHostName" .
+cardano:StakeRegDeleg a rdfs:Class ; rdfs:label "StakeRegDeleg" .
+cardano:StakeVoteRegDeleg a rdfs:Class ; rdfs:label "StakeVoteRegDeleg" .
+cardano:UnRegDRep a rdfs:Class ; rdfs:label "UnRegDRep" .
+cardano:UnRegDeposit a rdfs:Class ; rdfs:label "UnRegDeposit" .
+cardano:UpdateDRep a rdfs:Class ; rdfs:label "UpdateDRep" .
+cardano:VoteRegDeleg a rdfs:Class ; rdfs:label "VoteRegDeleg" .
+
+cardano:delegatesToDRep a rdf:Property ; rdfs:label "delegatesToDRep" .
+cardano:delegatesToPool a rdf:Property ; rdfs:label "delegatesToPool" .
+cardano:hasCommitteeColdCredential a rdf:Property ; rdfs:label "hasCommitteeColdCredential" .
+cardano:hasCommitteeHotCredential a rdf:Property ; rdfs:label "hasCommitteeHotCredential" .
+cardano:hasCost a rdf:Property ; rdfs:label "hasCost" .
+cardano:hasDRepCredential a rdf:Property ; rdfs:label "hasDRepCredential" .
+cardano:hasDnsName a rdf:Property ; rdfs:label "hasDnsName" .
+cardano:hasIPv4 a rdf:Property ; rdfs:label "hasIPv4" .
+cardano:hasIPv6 a rdf:Property ; rdfs:label "hasIPv6" .
+cardano:hasMargin a rdf:Property ; rdfs:label "hasMargin" .
+cardano:hasOperator a rdf:Property ; rdfs:label "hasOperator" .
+cardano:hasOwner a rdf:Property ; rdfs:label "hasOwner" .
+cardano:hasPledge a rdf:Property ; rdfs:label "hasPledge" .
+cardano:hasPoolMetadata a rdf:Property ; rdfs:label "hasPoolMetadata" .
+cardano:hasPoolOperator a rdf:Property ; rdfs:label "hasPoolOperator" .
+cardano:hasPoolParams a rdf:Property ; rdfs:label "hasPoolParams" .
+cardano:hasPort a rdf:Property ; rdfs:label "hasPort" .
+cardano:hasRelay a rdf:Property ; rdfs:label "hasRelay" .
+cardano:hasRewardAccount a rdf:Property ; rdfs:label "hasRewardAccount" .
+cardano:hasUrl a rdf:Property ; rdfs:label "hasUrl" .
+cardano:hasVrfKeyhash a rdf:Property ; rdfs:label "hasVrfKeyhash" .
+cardano:retireAtEpoch a rdf:Property ; rdfs:label "retireAtEpoch" .

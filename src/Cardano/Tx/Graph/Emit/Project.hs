@@ -282,6 +282,7 @@ import Cardano.Tx.Graph.Emit.Blueprint (
     blueprintFieldPredicate,
     decodeDatumForOutput,
  )
+import Cardano.Tx.Graph.Emit.Certificate (emitTypedCertificateTree)
 import Cardano.Tx.Graph.Emit.Lookup (
     BnodeName (..),
     LookupTable,
@@ -660,12 +661,19 @@ leafTypeText = \case
     PoolId -> "PoolId"
     DRepKey -> "DRepKey"
     DRepScript -> "DRepScript"
+    CommitteeColdKey -> "CommitteeColdKey"
+    CommitteeColdScript -> "CommitteeColdScript"
+    CommitteeHotKey -> "CommitteeHotKey"
+    CommitteeHotScript -> "CommitteeHotScript"
     LtTxId -> "TxId"
     LtGovActionId -> "GovActionId"
     LtDatumHash -> "DatumHash"
     LtScriptHash -> "ScriptHash"
     LtScriptDataHash -> "ScriptDataHash"
     LtAuxiliaryDataHash -> "AuxiliaryDataHash"
+    LtAnchorDataHash -> "AnchorDataHash"
+    LtVrfKeyHash -> "VrfKeyHash"
+    LtPoolMetadataHash -> "PoolMetadataHash"
 
 ----------------------------------------------------------------------
 -- Per-input + per-output traversal
@@ -1481,12 +1489,19 @@ rolePrefixText = \case
     PoolId -> "poolid"
     DRepKey -> "drepkey"
     DRepScript -> "drepscript"
+    CommitteeColdKey -> "committeecoldkey"
+    CommitteeColdScript -> "committeecoldscript"
+    CommitteeHotKey -> "committeehotkey"
+    CommitteeHotScript -> "committeehotscript"
     LtTxId -> "txid"
     LtGovActionId -> "govactionid"
     LtDatumHash -> "datum"
     LtScriptHash -> "script"
     LtScriptDataHash -> "scriptdata"
     LtAuxiliaryDataHash -> "auxiliarydata"
+    LtAnchorDataHash -> "anchordata"
+    LtVrfKeyHash -> "vrfkey"
+    LtPoolMetadataHash -> "poolmetadata"
 
 hexText :: ByteString -> Text
 hexText = TextEncoding.decodeLatin1 . Base16.encode
@@ -2372,6 +2387,14 @@ buildCertCluster ::
     TxCert ConwayEra ->
     [SubjectBlock]
 buildCertCluster lookupTbl k = \case
+    cert
+        | Just action <-
+            emitTypedCertificateTree
+                lookupTbl
+                resolveCredentialAndIntroduceIdent
+                (idCertBnode k)
+                cert ->
+            clusterBlocks action
     DelegTxCert cred (DelegStake (KeyHash poolHash)) ->
         clusterBlocks
             (emitStakeDelegation lookupTbl k cred (hashToBytes poolHash))

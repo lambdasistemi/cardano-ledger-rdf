@@ -995,8 +995,15 @@ parseLeafType = \case
     "PoolId" -> Just PoolId
     "DRepKey" -> Just DRepKey
     "DRepScript" -> Just DRepScript
+    "CommitteeColdKey" -> Just CommitteeColdKey
+    "CommitteeColdScript" -> Just CommitteeColdScript
+    "CommitteeHotKey" -> Just CommitteeHotKey
+    "CommitteeHotScript" -> Just CommitteeHotScript
     "TxId" -> Just LtTxId
     "GovActionId" -> Just LtGovActionId
+    "AnchorDataHash" -> Just LtAnchorDataHash
+    "VrfKeyHash" -> Just LtVrfKeyHash
+    "PoolMetadataHash" -> Just LtPoolMetadataHash
     _ -> Nothing
 
 validateCompoundBytes ::

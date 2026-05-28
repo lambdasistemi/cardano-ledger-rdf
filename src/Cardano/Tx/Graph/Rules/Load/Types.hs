@@ -150,6 +150,10 @@ data LeafType
     | PoolId
     | DRepKey
     | DRepScript
+    | CommitteeColdKey
+    | CommitteeColdScript
+    | CommitteeHotKey
+    | CommitteeHotScript
     | -- Body-walker hash leaves (T122c / S22).
       -- 'Lt' prefix avoids name clashes with the ledger's
       -- 'Cardano.Ledger.Hashes.ScriptHash',
@@ -165,6 +169,9 @@ data LeafType
     | LtScriptHash
     | LtScriptDataHash
     | LtAuxiliaryDataHash
+    | LtAnchorDataHash
+    | LtVrfKeyHash
+    | LtPoolMetadataHash
     deriving stock (Eq, Ord, Show)
 
 {- | Structured errors the loader returns via 'Left'. Each constructor

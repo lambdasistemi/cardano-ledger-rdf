@@ -281,6 +281,10 @@ renderLeafType = \case
     PoolId -> "PoolId"
     DRepKey -> "DRepKey"
     DRepScript -> "DRepScript"
+    CommitteeColdKey -> "CommitteeColdKey"
+    CommitteeColdScript -> "CommitteeColdScript"
+    CommitteeHotKey -> "CommitteeHotKey"
+    CommitteeHotScript -> "CommitteeHotScript"
     -- T122c hash leaves started body-walker-only; TxId and
     -- GovActionId are now also accepted through the operator
     -- keys+bytes overlay path.
@@ -290,3 +294,6 @@ renderLeafType = \case
     LtScriptHash -> "ScriptHash"
     LtScriptDataHash -> "ScriptDataHash"
     LtAuxiliaryDataHash -> "AuxiliaryDataHash"
+    LtAnchorDataHash -> "AnchorDataHash"
+    LtVrfKeyHash -> "VrfKeyHash"
+    LtPoolMetadataHash -> "PoolMetadataHash"
