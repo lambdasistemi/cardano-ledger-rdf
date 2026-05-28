@@ -28,6 +28,12 @@ cardano:BootstrapWitness a rdfs:Class ;
 cardano:Certificate a rdfs:Class ;
   rdfs:label "Certificate" .
 
+cardano:CommitteeAddition a rdfs:Class ;
+  rdfs:label "CommitteeAddition" .
+
+cardano:Constitution a rdfs:Class ;
+  rdfs:label "Constitution" .
+
 cardano:DRep a rdfs:Class ;
   rdfs:label "DRep" .
 
@@ -37,8 +43,14 @@ cardano:DRepAlwaysAbstain a rdfs:Class ;
 cardano:DRepAlwaysNoConfidence a rdfs:Class ;
   rdfs:label "DRepAlwaysNoConfidence" .
 
+cardano:DRepVotingThresholds a rdfs:Class ;
+  rdfs:label "DRepVotingThresholds" .
+
 cardano:Datum a rdfs:Class ;
   rdfs:label "Datum" .
+
+cardano:ExUnitPrices a rdfs:Class ;
+  rdfs:label "ExUnitPrices" .
 
 cardano:ExUnits a rdfs:Class ;
   rdfs:label "ExUnits" .
@@ -48,6 +60,9 @@ cardano:GovAction a rdfs:Class ;
 
 cardano:GovActionId a rdfs:Class ;
   rdfs:label "GovActionId" .
+
+cardano:HardForkInitiation a rdfs:Class ;
+  rdfs:label "HardForkInitiation" .
 
 cardano:Identifier a rdfs:Class ;
   rdfs:label "Identifier" .
@@ -73,11 +88,17 @@ cardano:MultiHostName a rdfs:Class ;
 cardano:NativeScript a rdfs:Class ;
   rdfs:label "NativeScript" .
 
+cardano:NewConstitution a rdfs:Class ;
+  rdfs:label "NewConstitution" .
+
 cardano:OpaqueLeaf a rdfs:Class ;
   rdfs:label "OpaqueLeaf" .
 
 cardano:Output a rdfs:Class ;
   rdfs:label "Output" .
+
+cardano:ParameterChange a rdfs:Class ;
+  rdfs:label "ParameterChange" .
 
 cardano:PaymentCredential a rdfs:Class ;
   rdfs:label "PaymentCredential" .
@@ -103,8 +124,17 @@ cardano:PoolRegistration a rdfs:Class ;
 cardano:PoolRetirement a rdfs:Class ;
   rdfs:label "PoolRetirement" .
 
+cardano:PoolVotingThresholds a rdfs:Class ;
+  rdfs:label "PoolVotingThresholds" .
+
 cardano:Proposal a rdfs:Class ;
   rdfs:label "Proposal" .
+
+cardano:ProtocolParamUpdate a rdfs:Class ;
+  rdfs:label "ProtocolParamUpdate" .
+
+cardano:ProtocolVersion a rdfs:Class ;
+  rdfs:label "ProtocolVersion" .
 
 cardano:Redeemer a rdfs:Class ;
   rdfs:label "Redeemer" .
@@ -166,6 +196,9 @@ cardano:UnRegDRep a rdfs:Class ;
 cardano:UnRegDeposit a rdfs:Class ;
   rdfs:label "UnRegDeposit" .
 
+cardano:UpdateCommittee a rdfs:Class ;
+  rdfs:label "UpdateCommittee" .
+
 cardano:UpdateDRep a rdfs:Class ;
   rdfs:label "UpdateDRep" .
 
@@ -189,6 +222,9 @@ cardano:VoterStakePool a rdfs:Class ;
 
 cardano:Withdrawal a rdfs:Class ;
   rdfs:label "Withdrawal" .
+
+cardano:addsMember a rdf:Property ;
+  rdfs:label "addsMember" .
 
 cardano:anchorHash a rdf:Property ;
   rdfs:label "anchorHash" .
@@ -223,6 +259,9 @@ cardano:delegatesToPool a rdf:Property ;
 cardano:fromTxOutRef a rdf:Property ;
   rdfs:label "fromTxOutRef" .
 
+cardano:hasAdaPerUtxoByte a rdf:Property ;
+  rdfs:label "hasAdaPerUtxoByte" .
+
 cardano:hasAnchor a rdf:Property ;
   rdfs:label "hasAnchor" .
 
@@ -247,6 +286,9 @@ cardano:hasChild a rdf:Property ;
 cardano:hasCollateralInput a rdf:Property ;
   rdfs:label "hasCollateralInput" .
 
+cardano:hasCollateralPercentage a rdf:Property ;
+  rdfs:label "hasCollateralPercentage" .
+
 cardano:hasCollateralReturn a rdf:Property ;
   rdfs:label "hasCollateralReturn" .
 
@@ -256,14 +298,41 @@ cardano:hasCommitteeColdCredential a rdf:Property ;
 cardano:hasCommitteeHotCredential a rdf:Property ;
   rdfs:label "hasCommitteeHotCredential" .
 
+cardano:hasCommitteeMaxTermLength a rdf:Property ;
+  rdfs:label "hasCommitteeMaxTermLength" .
+
+cardano:hasCommitteeMinSize a rdf:Property ;
+  rdfs:label "hasCommitteeMinSize" .
+
+cardano:hasCommitteeNoConfidence a rdf:Property ;
+  rdfs:label "hasCommitteeNoConfidence" .
+
+cardano:hasCommitteeNormal a rdf:Property ;
+  rdfs:label "hasCommitteeNormal" .
+
+cardano:hasConstitution a rdf:Property ;
+  rdfs:label "hasConstitution" .
+
 cardano:hasCost a rdf:Property ;
   rdfs:label "hasCost" .
+
+cardano:hasCostModels a rdf:Property ;
+  rdfs:label "hasCostModels" .
 
 cardano:hasCurrentTreasuryValue a rdf:Property ;
   rdfs:label "hasCurrentTreasuryValue" .
 
+cardano:hasDRepActivity a rdf:Property ;
+  rdfs:label "hasDRepActivity" .
+
 cardano:hasDRepCredential a rdf:Property ;
   rdfs:label "hasDRepCredential" .
+
+cardano:hasDRepDeposit a rdf:Property ;
+  rdfs:label "hasDRepDeposit" .
+
+cardano:hasDRepVotingThresholds a rdf:Property ;
+  rdfs:label "hasDRepVotingThresholds" .
 
 cardano:hasData a rdf:Property ;
   rdfs:label "hasData" .
@@ -286,14 +355,32 @@ cardano:hasDonation a rdf:Property ;
 cardano:hasExUnits a rdf:Property ;
   rdfs:label "hasExUnits" .
 
+cardano:hasExecutionCosts a rdf:Property ;
+  rdfs:label "hasExecutionCosts" .
+
+cardano:hasExpansionRate a rdf:Property ;
+  rdfs:label "hasExpansionRate" .
+
 cardano:hasFee a rdf:Property ;
   rdfs:label "hasFee" .
 
 cardano:hasGovAction a rdf:Property ;
   rdfs:label "hasGovAction" .
 
+cardano:hasGovActionDeposit a rdf:Property ;
+  rdfs:label "hasGovActionDeposit" .
+
+cardano:hasGovActionLifetime a rdf:Property ;
+  rdfs:label "hasGovActionLifetime" .
+
 cardano:hasGuardPolicy a rdf:Property ;
   rdfs:label "hasGuardPolicy" .
+
+cardano:hasGuardrailScript a rdf:Property ;
+  rdfs:label "hasGuardrailScript" .
+
+cardano:hasHardForkInitiation a rdf:Property ;
+  rdfs:label "hasHardForkInitiation" .
 
 cardano:hasHash a rdf:Property ;
   rdfs:label "hasHash" .
@@ -313,17 +400,74 @@ cardano:hasIndex a rdf:Property ;
 cardano:hasInput a rdf:Property ;
   rdfs:label "hasInput" .
 
+cardano:hasKeyDeposit a rdf:Property ;
+  rdfs:label "hasKeyDeposit" .
+
 cardano:hasKeyWitness a rdf:Property ;
   rdfs:label "hasKeyWitness" .
 
 cardano:hasLovelace a rdf:Property ;
   rdfs:label "hasLovelace" .
 
+cardano:hasMajorVersion a rdf:Property ;
+  rdfs:label "hasMajorVersion" .
+
 cardano:hasMargin a rdf:Property ;
   rdfs:label "hasMargin" .
 
+cardano:hasMaxBlockBodySize a rdf:Property ;
+  rdfs:label "hasMaxBlockBodySize" .
+
+cardano:hasMaxBlockExUnits a rdf:Property ;
+  rdfs:label "hasMaxBlockExUnits" .
+
+cardano:hasMaxBlockHeaderSize a rdf:Property ;
+  rdfs:label "hasMaxBlockHeaderSize" .
+
+cardano:hasMaxCollateralInputs a rdf:Property ;
+  rdfs:label "hasMaxCollateralInputs" .
+
+cardano:hasMaxEpoch a rdf:Property ;
+  rdfs:label "hasMaxEpoch" .
+
+cardano:hasMaxTxExUnits a rdf:Property ;
+  rdfs:label "hasMaxTxExUnits" .
+
+cardano:hasMaxTxSize a rdf:Property ;
+  rdfs:label "hasMaxTxSize" .
+
+cardano:hasMaxValueSize a rdf:Property ;
+  rdfs:label "hasMaxValueSize" .
+
+cardano:hasMemory a rdf:Property ;
+  rdfs:label "hasMemory" .
+
+cardano:hasMinFeeA a rdf:Property ;
+  rdfs:label "hasMinFeeA" .
+
+cardano:hasMinFeeB a rdf:Property ;
+  rdfs:label "hasMinFeeB" .
+
+cardano:hasMinFeeRefScriptCoinsPerByte a rdf:Property ;
+  rdfs:label "hasMinFeeRefScriptCoinsPerByte" .
+
+cardano:hasMinPoolCost a rdf:Property ;
+  rdfs:label "hasMinPoolCost" .
+
+cardano:hasMinorVersion a rdf:Property ;
+  rdfs:label "hasMinorVersion" .
+
 cardano:hasMint a rdf:Property ;
   rdfs:label "hasMint" .
+
+cardano:hasMotionNoConfidence a rdf:Property ;
+  rdfs:label "hasMotionNoConfidence" .
+
+cardano:hasNOpt a rdf:Property ;
+  rdfs:label "hasNOpt" .
+
+cardano:hasNewQuorum a rdf:Property ;
+  rdfs:label "hasNewQuorum" .
 
 cardano:hasOperator a rdf:Property ;
   rdfs:label "hasOperator" .
@@ -334,6 +478,21 @@ cardano:hasOutput a rdf:Property ;
 cardano:hasOwner a rdf:Property ;
   rdfs:label "hasOwner" .
 
+cardano:hasPPEconomicGroup a rdf:Property ;
+  rdfs:label "hasPPEconomicGroup" .
+
+cardano:hasPPGovGroup a rdf:Property ;
+  rdfs:label "hasPPGovGroup" .
+
+cardano:hasPPNetworkGroup a rdf:Property ;
+  rdfs:label "hasPPNetworkGroup" .
+
+cardano:hasPPSecurityGroup a rdf:Property ;
+  rdfs:label "hasPPSecurityGroup" .
+
+cardano:hasPPTechnicalGroup a rdf:Property ;
+  rdfs:label "hasPPTechnicalGroup" .
+
 cardano:hasPaymentCredential a rdf:Property ;
   rdfs:label "hasPaymentCredential" .
 
@@ -342,6 +501,9 @@ cardano:hasPledge a rdf:Property ;
 
 cardano:hasPolicy a rdf:Property ;
   rdfs:label "hasPolicy" .
+
+cardano:hasPoolDeposit a rdf:Property ;
+  rdfs:label "hasPoolDeposit" .
 
 cardano:hasPoolMetadata a rdf:Property ;
   rdfs:label "hasPoolMetadata" .
@@ -352,11 +514,32 @@ cardano:hasPoolOperator a rdf:Property ;
 cardano:hasPoolParams a rdf:Property ;
   rdfs:label "hasPoolParams" .
 
+cardano:hasPoolPledgeInfluence a rdf:Property ;
+  rdfs:label "hasPoolPledgeInfluence" .
+
+cardano:hasPoolVotingThresholds a rdf:Property ;
+  rdfs:label "hasPoolVotingThresholds" .
+
 cardano:hasPort a rdf:Property ;
   rdfs:label "hasPort" .
 
+cardano:hasPriceMemory a rdf:Property ;
+  rdfs:label "hasPriceMemory" .
+
+cardano:hasPriceSteps a rdf:Property ;
+  rdfs:label "hasPriceSteps" .
+
+cardano:hasPriorAction a rdf:Property ;
+  rdfs:label "hasPriorAction" .
+
 cardano:hasProposal a rdf:Property ;
   rdfs:label "hasProposal" .
+
+cardano:hasProtocolParamUpdate a rdf:Property ;
+  rdfs:label "hasProtocolParamUpdate" .
+
+cardano:hasProtocolVersion a rdf:Property ;
+  rdfs:label "hasProtocolVersion" .
 
 cardano:hasPurpose a rdf:Property ;
   rdfs:label "hasPurpose" .
@@ -397,8 +580,20 @@ cardano:hasSlot a rdf:Property ;
 cardano:hasStakeCredential a rdf:Property ;
   rdfs:label "hasStakeCredential" .
 
+cardano:hasSteps a rdf:Property ;
+  rdfs:label "hasSteps" .
+
+cardano:hasTreasuryGrowthRate a rdf:Property ;
+  rdfs:label "hasTreasuryGrowthRate" .
+
+cardano:hasTreasuryWithdrawal a rdf:Property ;
+  rdfs:label "hasTreasuryWithdrawal" .
+
 cardano:hasTxId a rdf:Property ;
   rdfs:label "hasTxId" .
+
+cardano:hasUpdateToConstitution a rdf:Property ;
+  rdfs:label "hasUpdateToConstitution" .
 
 cardano:hasUrl a rdf:Property ;
   rdfs:label "hasUrl" .
@@ -460,6 +655,9 @@ cardano:onCredential a rdf:Property ;
 cardano:quantity a rdf:Property ;
   rdfs:label "quantity" .
 
+cardano:removesMember a rdf:Property ;
+  rdfs:label "removesMember" .
+
 cardano:requiredCount a rdf:Property ;
   rdfs:label "requiredCount" .
 
@@ -474,6 +672,9 @@ cardano:retireAtEpoch a rdf:Property ;
 
 cardano:scriptDataHash a rdf:Property ;
   rdfs:label "scriptDataHash" .
+
+cardano:termLimit a rdf:Property ;
+  rdfs:label "termLimit" .
 
 cardano:toDRep a rdf:Property ;
   rdfs:label "toDRep" .

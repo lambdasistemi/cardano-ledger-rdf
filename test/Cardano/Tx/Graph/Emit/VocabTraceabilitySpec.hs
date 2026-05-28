@@ -84,6 +84,10 @@ import Fixtures.TxGraph.S25_CertPoolParams qualified as S25
 import Fixtures.TxGraph.S26_CertCommittee qualified as S26
 import Fixtures.TxGraph.S27_CurrentTreasuryValue qualified as S27
 import Fixtures.TxGraph.S28_Donation qualified as S28
+import Fixtures.TxGraph.S29_GovActionParameterChange qualified as S29
+import Fixtures.TxGraph.S30_GovActionUpdateCommittee qualified as S30
+import Fixtures.TxGraph.S31_GovActionNewConstitution qualified as S31
+import Fixtures.TxGraph.S32_GovActionHardForkInitiation qualified as S32
 
 import Test.Hspec (
     Spec,
@@ -119,6 +123,10 @@ enabledFixtures =
     , ("26-cert-committee", S26.tx)
     , ("27-current-treasury-value", S27.tx)
     , ("28-donation", S28.tx)
+    , ("29-govaction-parameter-change", S29.tx)
+    , ("30-govaction-update-committee", S30.tx)
+    , ("31-govaction-new-constitution", S31.tx)
+    , ("32-govaction-hard-fork-initiation", S32.tx)
     ]
 
 spec :: Spec

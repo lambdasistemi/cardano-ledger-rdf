@@ -108,6 +108,18 @@ data VocabTerm
     | TermProposal
     | TermGovAction
     | TermTreasuryWithdrawals
+    | TermParameterChange
+    | TermProtocolParamUpdate
+    | TermUpdateCommittee
+    | TermCommitteeAddition
+    | TermNewConstitution
+    | TermConstitution
+    | TermHardForkInitiation
+    | TermProtocolVersion
+    | TermPoolVotingThresholds
+    | TermDRepVotingThresholds
+    | TermExUnits
+    | TermExUnitPrices
     | TermAnchor
     | -- Body predicates
       TermHasInput
@@ -161,6 +173,62 @@ data VocabTerm
     | TermToRewardAccount
     | TermHasLovelace
     | TermHasGuardPolicy
+    | TermHasPriorAction
+    | TermHasProtocolParamUpdate
+    | TermHasMinFeeA
+    | TermHasMinFeeB
+    | TermHasMaxBlockBodySize
+    | TermHasMaxTxSize
+    | TermHasMaxBlockHeaderSize
+    | TermHasKeyDeposit
+    | TermHasPoolDeposit
+    | TermHasMaxEpoch
+    | TermHasNOpt
+    | TermHasPoolPledgeInfluence
+    | TermHasExpansionRate
+    | TermHasTreasuryGrowthRate
+    | TermHasMinPoolCost
+    | TermHasAdaPerUtxoByte
+    | TermHasCostModels
+    | TermHasExecutionCosts
+    | TermHasMaxTxExUnits
+    | TermHasMaxBlockExUnits
+    | TermHasMaxValueSize
+    | TermHasCollateralPercentage
+    | TermHasMaxCollateralInputs
+    | TermHasPoolVotingThresholds
+    | TermHasDRepVotingThresholds
+    | TermHasCommitteeMinSize
+    | TermHasCommitteeMaxTermLength
+    | TermHasGovActionLifetime
+    | TermHasGovActionDeposit
+    | TermHasDRepDeposit
+    | TermHasDRepActivity
+    | TermHasMinFeeRefScriptCoinsPerByte
+    | TermHasSteps
+    | TermHasMemory
+    | TermHasPriceMemory
+    | TermHasPriceSteps
+    | TermHasMotionNoConfidence
+    | TermHasCommitteeNormal
+    | TermHasCommitteeNoConfidence
+    | TermHasUpdateToConstitution
+    | TermHasHardForkInitiation
+    | TermHasPPSecurityGroup
+    | TermHasPPNetworkGroup
+    | TermHasPPEconomicGroup
+    | TermHasPPTechnicalGroup
+    | TermHasPPGovGroup
+    | TermHasTreasuryWithdrawal
+    | TermHasNewQuorum
+    | TermRemovesMember
+    | TermAddsMember
+    | TermTermLimit
+    | TermHasConstitution
+    | TermHasGuardrailScript
+    | TermHasProtocolVersion
+    | TermHasMajorVersion
+    | TermHasMinorVersion
     | TermDecodedAs
     | TermFromTxOutRef
     | -- Value semantics (T104 / S3 — output ADA + multi-asset)
@@ -254,7 +322,6 @@ data VocabTerm
       TermRedeemer
     | TermKeyWitness
     | TermBootstrapWitness
-    | TermExUnits
     | TermHasRedeemer
     | TermHasKeyWitness
     | TermHasDatumWitness
@@ -316,6 +383,18 @@ vocabIri = \case
     TermProposal -> cardanoPrefix <> "Proposal"
     TermGovAction -> cardanoPrefix <> "GovAction"
     TermTreasuryWithdrawals -> cardanoPrefix <> "TreasuryWithdrawals"
+    TermParameterChange -> cardanoPrefix <> "ParameterChange"
+    TermProtocolParamUpdate -> cardanoPrefix <> "ProtocolParamUpdate"
+    TermUpdateCommittee -> cardanoPrefix <> "UpdateCommittee"
+    TermCommitteeAddition -> cardanoPrefix <> "CommitteeAddition"
+    TermNewConstitution -> cardanoPrefix <> "NewConstitution"
+    TermConstitution -> cardanoPrefix <> "Constitution"
+    TermHardForkInitiation -> cardanoPrefix <> "HardForkInitiation"
+    TermProtocolVersion -> cardanoPrefix <> "ProtocolVersion"
+    TermPoolVotingThresholds -> cardanoPrefix <> "PoolVotingThresholds"
+    TermDRepVotingThresholds -> cardanoPrefix <> "DRepVotingThresholds"
+    TermExUnits -> cardanoPrefix <> "ExUnits"
+    TermExUnitPrices -> cardanoPrefix <> "ExUnitPrices"
     TermAnchor -> cardanoPrefix <> "Anchor"
     TermHasInput -> cardanoPrefix <> "hasInput"
     TermHasOutput -> cardanoPrefix <> "hasOutput"
@@ -368,6 +447,62 @@ vocabIri = \case
     TermToRewardAccount -> cardanoPrefix <> "toRewardAccount"
     TermHasLovelace -> cardanoPrefix <> "hasLovelace"
     TermHasGuardPolicy -> cardanoPrefix <> "hasGuardPolicy"
+    TermHasPriorAction -> cardanoPrefix <> "hasPriorAction"
+    TermHasProtocolParamUpdate -> cardanoPrefix <> "hasProtocolParamUpdate"
+    TermHasMinFeeA -> cardanoPrefix <> "hasMinFeeA"
+    TermHasMinFeeB -> cardanoPrefix <> "hasMinFeeB"
+    TermHasMaxBlockBodySize -> cardanoPrefix <> "hasMaxBlockBodySize"
+    TermHasMaxTxSize -> cardanoPrefix <> "hasMaxTxSize"
+    TermHasMaxBlockHeaderSize -> cardanoPrefix <> "hasMaxBlockHeaderSize"
+    TermHasKeyDeposit -> cardanoPrefix <> "hasKeyDeposit"
+    TermHasPoolDeposit -> cardanoPrefix <> "hasPoolDeposit"
+    TermHasMaxEpoch -> cardanoPrefix <> "hasMaxEpoch"
+    TermHasNOpt -> cardanoPrefix <> "hasNOpt"
+    TermHasPoolPledgeInfluence -> cardanoPrefix <> "hasPoolPledgeInfluence"
+    TermHasExpansionRate -> cardanoPrefix <> "hasExpansionRate"
+    TermHasTreasuryGrowthRate -> cardanoPrefix <> "hasTreasuryGrowthRate"
+    TermHasMinPoolCost -> cardanoPrefix <> "hasMinPoolCost"
+    TermHasAdaPerUtxoByte -> cardanoPrefix <> "hasAdaPerUtxoByte"
+    TermHasCostModels -> cardanoPrefix <> "hasCostModels"
+    TermHasExecutionCosts -> cardanoPrefix <> "hasExecutionCosts"
+    TermHasMaxTxExUnits -> cardanoPrefix <> "hasMaxTxExUnits"
+    TermHasMaxBlockExUnits -> cardanoPrefix <> "hasMaxBlockExUnits"
+    TermHasMaxValueSize -> cardanoPrefix <> "hasMaxValueSize"
+    TermHasCollateralPercentage -> cardanoPrefix <> "hasCollateralPercentage"
+    TermHasMaxCollateralInputs -> cardanoPrefix <> "hasMaxCollateralInputs"
+    TermHasPoolVotingThresholds -> cardanoPrefix <> "hasPoolVotingThresholds"
+    TermHasDRepVotingThresholds -> cardanoPrefix <> "hasDRepVotingThresholds"
+    TermHasCommitteeMinSize -> cardanoPrefix <> "hasCommitteeMinSize"
+    TermHasCommitteeMaxTermLength -> cardanoPrefix <> "hasCommitteeMaxTermLength"
+    TermHasGovActionLifetime -> cardanoPrefix <> "hasGovActionLifetime"
+    TermHasGovActionDeposit -> cardanoPrefix <> "hasGovActionDeposit"
+    TermHasDRepDeposit -> cardanoPrefix <> "hasDRepDeposit"
+    TermHasDRepActivity -> cardanoPrefix <> "hasDRepActivity"
+    TermHasMinFeeRefScriptCoinsPerByte -> cardanoPrefix <> "hasMinFeeRefScriptCoinsPerByte"
+    TermHasSteps -> cardanoPrefix <> "hasSteps"
+    TermHasMemory -> cardanoPrefix <> "hasMemory"
+    TermHasPriceMemory -> cardanoPrefix <> "hasPriceMemory"
+    TermHasPriceSteps -> cardanoPrefix <> "hasPriceSteps"
+    TermHasMotionNoConfidence -> cardanoPrefix <> "hasMotionNoConfidence"
+    TermHasCommitteeNormal -> cardanoPrefix <> "hasCommitteeNormal"
+    TermHasCommitteeNoConfidence -> cardanoPrefix <> "hasCommitteeNoConfidence"
+    TermHasUpdateToConstitution -> cardanoPrefix <> "hasUpdateToConstitution"
+    TermHasHardForkInitiation -> cardanoPrefix <> "hasHardForkInitiation"
+    TermHasPPSecurityGroup -> cardanoPrefix <> "hasPPSecurityGroup"
+    TermHasPPNetworkGroup -> cardanoPrefix <> "hasPPNetworkGroup"
+    TermHasPPEconomicGroup -> cardanoPrefix <> "hasPPEconomicGroup"
+    TermHasPPTechnicalGroup -> cardanoPrefix <> "hasPPTechnicalGroup"
+    TermHasPPGovGroup -> cardanoPrefix <> "hasPPGovGroup"
+    TermHasTreasuryWithdrawal -> cardanoPrefix <> "hasTreasuryWithdrawal"
+    TermHasNewQuorum -> cardanoPrefix <> "hasNewQuorum"
+    TermRemovesMember -> cardanoPrefix <> "removesMember"
+    TermAddsMember -> cardanoPrefix <> "addsMember"
+    TermTermLimit -> cardanoPrefix <> "termLimit"
+    TermHasConstitution -> cardanoPrefix <> "hasConstitution"
+    TermHasGuardrailScript -> cardanoPrefix <> "hasGuardrailScript"
+    TermHasProtocolVersion -> cardanoPrefix <> "hasProtocolVersion"
+    TermHasMajorVersion -> cardanoPrefix <> "hasMajorVersion"
+    TermHasMinorVersion -> cardanoPrefix <> "hasMinorVersion"
     TermDecodedAs -> cardanoPrefix <> "decodedAs"
     TermFromTxOutRef -> cardanoPrefix <> "fromTxOutRef"
     TermLovelace -> cardanoPrefix <> "lovelace"
@@ -424,7 +559,6 @@ vocabIri = \case
     TermRedeemer -> cardanoPrefix <> "Redeemer"
     TermKeyWitness -> cardanoPrefix <> "KeyWitness"
     TermBootstrapWitness -> cardanoPrefix <> "BootstrapWitness"
-    TermExUnits -> cardanoPrefix <> "ExUnits"
     TermHasRedeemer -> cardanoPrefix <> "hasRedeemer"
     TermHasKeyWitness -> cardanoPrefix <> "hasKeyWitness"
     TermHasDatumWitness -> cardanoPrefix <> "hasDatumWitness"
@@ -485,6 +619,18 @@ vocabCurie = \case
     TermProposal -> "cardano:Proposal"
     TermGovAction -> "cardano:GovAction"
     TermTreasuryWithdrawals -> "cardano:TreasuryWithdrawals"
+    TermParameterChange -> "cardano:ParameterChange"
+    TermProtocolParamUpdate -> "cardano:ProtocolParamUpdate"
+    TermUpdateCommittee -> "cardano:UpdateCommittee"
+    TermCommitteeAddition -> "cardano:CommitteeAddition"
+    TermNewConstitution -> "cardano:NewConstitution"
+    TermConstitution -> "cardano:Constitution"
+    TermHardForkInitiation -> "cardano:HardForkInitiation"
+    TermProtocolVersion -> "cardano:ProtocolVersion"
+    TermPoolVotingThresholds -> "cardano:PoolVotingThresholds"
+    TermDRepVotingThresholds -> "cardano:DRepVotingThresholds"
+    TermExUnits -> "cardano:ExUnits"
+    TermExUnitPrices -> "cardano:ExUnitPrices"
     TermAnchor -> "cardano:Anchor"
     TermHasInput -> "cardano:hasInput"
     TermHasOutput -> "cardano:hasOutput"
@@ -537,6 +683,62 @@ vocabCurie = \case
     TermToRewardAccount -> "cardano:toRewardAccount"
     TermHasLovelace -> "cardano:hasLovelace"
     TermHasGuardPolicy -> "cardano:hasGuardPolicy"
+    TermHasPriorAction -> "cardano:hasPriorAction"
+    TermHasProtocolParamUpdate -> "cardano:hasProtocolParamUpdate"
+    TermHasMinFeeA -> "cardano:hasMinFeeA"
+    TermHasMinFeeB -> "cardano:hasMinFeeB"
+    TermHasMaxBlockBodySize -> "cardano:hasMaxBlockBodySize"
+    TermHasMaxTxSize -> "cardano:hasMaxTxSize"
+    TermHasMaxBlockHeaderSize -> "cardano:hasMaxBlockHeaderSize"
+    TermHasKeyDeposit -> "cardano:hasKeyDeposit"
+    TermHasPoolDeposit -> "cardano:hasPoolDeposit"
+    TermHasMaxEpoch -> "cardano:hasMaxEpoch"
+    TermHasNOpt -> "cardano:hasNOpt"
+    TermHasPoolPledgeInfluence -> "cardano:hasPoolPledgeInfluence"
+    TermHasExpansionRate -> "cardano:hasExpansionRate"
+    TermHasTreasuryGrowthRate -> "cardano:hasTreasuryGrowthRate"
+    TermHasMinPoolCost -> "cardano:hasMinPoolCost"
+    TermHasAdaPerUtxoByte -> "cardano:hasAdaPerUtxoByte"
+    TermHasCostModels -> "cardano:hasCostModels"
+    TermHasExecutionCosts -> "cardano:hasExecutionCosts"
+    TermHasMaxTxExUnits -> "cardano:hasMaxTxExUnits"
+    TermHasMaxBlockExUnits -> "cardano:hasMaxBlockExUnits"
+    TermHasMaxValueSize -> "cardano:hasMaxValueSize"
+    TermHasCollateralPercentage -> "cardano:hasCollateralPercentage"
+    TermHasMaxCollateralInputs -> "cardano:hasMaxCollateralInputs"
+    TermHasPoolVotingThresholds -> "cardano:hasPoolVotingThresholds"
+    TermHasDRepVotingThresholds -> "cardano:hasDRepVotingThresholds"
+    TermHasCommitteeMinSize -> "cardano:hasCommitteeMinSize"
+    TermHasCommitteeMaxTermLength -> "cardano:hasCommitteeMaxTermLength"
+    TermHasGovActionLifetime -> "cardano:hasGovActionLifetime"
+    TermHasGovActionDeposit -> "cardano:hasGovActionDeposit"
+    TermHasDRepDeposit -> "cardano:hasDRepDeposit"
+    TermHasDRepActivity -> "cardano:hasDRepActivity"
+    TermHasMinFeeRefScriptCoinsPerByte -> "cardano:hasMinFeeRefScriptCoinsPerByte"
+    TermHasSteps -> "cardano:hasSteps"
+    TermHasMemory -> "cardano:hasMemory"
+    TermHasPriceMemory -> "cardano:hasPriceMemory"
+    TermHasPriceSteps -> "cardano:hasPriceSteps"
+    TermHasMotionNoConfidence -> "cardano:hasMotionNoConfidence"
+    TermHasCommitteeNormal -> "cardano:hasCommitteeNormal"
+    TermHasCommitteeNoConfidence -> "cardano:hasCommitteeNoConfidence"
+    TermHasUpdateToConstitution -> "cardano:hasUpdateToConstitution"
+    TermHasHardForkInitiation -> "cardano:hasHardForkInitiation"
+    TermHasPPSecurityGroup -> "cardano:hasPPSecurityGroup"
+    TermHasPPNetworkGroup -> "cardano:hasPPNetworkGroup"
+    TermHasPPEconomicGroup -> "cardano:hasPPEconomicGroup"
+    TermHasPPTechnicalGroup -> "cardano:hasPPTechnicalGroup"
+    TermHasPPGovGroup -> "cardano:hasPPGovGroup"
+    TermHasTreasuryWithdrawal -> "cardano:hasTreasuryWithdrawal"
+    TermHasNewQuorum -> "cardano:hasNewQuorum"
+    TermRemovesMember -> "cardano:removesMember"
+    TermAddsMember -> "cardano:addsMember"
+    TermTermLimit -> "cardano:termLimit"
+    TermHasConstitution -> "cardano:hasConstitution"
+    TermHasGuardrailScript -> "cardano:hasGuardrailScript"
+    TermHasProtocolVersion -> "cardano:hasProtocolVersion"
+    TermHasMajorVersion -> "cardano:hasMajorVersion"
+    TermHasMinorVersion -> "cardano:hasMinorVersion"
     TermDecodedAs -> "cardano:decodedAs"
     TermFromTxOutRef -> "cardano:fromTxOutRef"
     TermLovelace -> "cardano:lovelace"
@@ -593,7 +795,6 @@ vocabCurie = \case
     TermRedeemer -> "cardano:Redeemer"
     TermKeyWitness -> "cardano:KeyWitness"
     TermBootstrapWitness -> "cardano:BootstrapWitness"
-    TermExUnits -> "cardano:ExUnits"
     TermHasRedeemer -> "cardano:hasRedeemer"
     TermHasKeyWitness -> "cardano:hasKeyWitness"
     TermHasDatumWitness -> "cardano:hasDatumWitness"
