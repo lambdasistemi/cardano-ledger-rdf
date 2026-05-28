@@ -22,7 +22,10 @@ import Data.Map.Strict qualified as Map
 import Lens.Micro ((&), (.~))
 import PlutusCore.Data qualified as PLC
 
-import Cardano.Ledger.Alonzo.Scripts (AsIx (..))
+import Cardano.Ledger.Alonzo.Scripts (
+    AlonzoScript (NativeScript),
+    AsIx (..),
+ )
 import Cardano.Ledger.Alonzo.TxWits (Redeemers (..), TxDats (..))
 import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx, witsTxL)
 import Cardano.Ledger.Api.Tx.Body (
@@ -43,9 +46,14 @@ import Cardano.Ledger.Plutus.Data (Data (..), hashData)
 import Cardano.Ledger.Plutus.ExUnits (ExUnits (..))
 
 import Data.Maybe (fromJust)
+import Data.Sequence.Strict qualified as StrictSeq
 import Data.Set qualified as Set
 
 import Cardano.Crypto.Hash (hashFromStringAsHex)
+import Cardano.Ledger.Shelley.Scripts (
+    pattern RequireMOf,
+    pattern RequireSignature,
+ )
 
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
@@ -54,8 +62,6 @@ import Cardano.Tx.Graph.Emit (
     serialize,
  )
 import Cardano.Tx.Ledger (ConwayTx)
-
-import Fixtures.TxGraph.Helpers (stubRefScript)
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 
@@ -110,9 +116,19 @@ spec = describe "Cardano.Tx.Graph.Emit witness set (T128b / S31)" $ do
             bytes
                 `shouldSatisfy` BS8.isInfixOf
                     "_:scriptWitness1 a cardano:NativeScript"
-        it "carries hasHash (shared ScriptHash identifier) + hasRawBytes" $ do
+        it "carries hasHash and typed native-script leaves, not hasRawBytes" $ do
             bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasHash _:hash_script_"
-            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasRawBytes"
+            sliceSubjectBlock "scriptWitness1" bytes
+                `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptNofK"
+            sliceSubjectBlock "scriptWitness1" bytes
+                `shouldSatisfy` BS8.isInfixOf "cardano:requiredCount 1"
+            sliceSubjectBlock "scriptWitness1_c1" bytes
+                `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptPubkey"
+            sliceSubjectBlock "scriptWitness1_c1" bytes
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:requiresSigner _:cred_paymentkey_"
+            sliceSubjectBlock "scriptWitness1" bytes
+                `shouldSatisfy` not . BS8.isInfixOf "cardano:hasRawBytes"
     describe "shared verification-key bnode (T128b shared-identity)" $ do
         let bytes = emitBytes txWithSharedSignerAndKeyWit
         -- The body-side hasRequiredSigner and the (synthetic but
@@ -158,7 +174,22 @@ stubRedeemerPurpose :: ConwayPlutusPurpose AsIx ConwayEra
 stubRedeemerPurpose = ConwaySpending (AsIx 0)
 
 stubScriptHash :: ScriptHash
-stubScriptHash = hashScript (stubRefScript :: Script ConwayEra)
+stubScriptHash = hashScript (nativeWitnessScript :: Script ConwayEra)
+
+nativeWitnessScript :: Script ConwayEra
+nativeWitnessScript =
+    NativeScript $
+        RequireMOf
+            1
+            ( StrictSeq.fromList
+                [ RequireSignature (witnessScriptKeyHash 'b')
+                , RequireSignature (witnessScriptKeyHash 'c')
+                ]
+            )
+
+witnessScriptKeyHash :: Char -> KeyHash Witness
+witnessScriptKeyHash c =
+    KeyHash (fromJust (hashFromStringAsHex (replicate 56 c)))
 
 stubKeyHash :: KeyHash Guard
 stubKeyHash =
@@ -184,7 +215,7 @@ txWithScriptWitness :: ConwayTx
 txWithScriptWitness =
     baseTx
         & witsTxL . scriptTxWitsL
-            .~ Map.singleton stubScriptHash stubRefScript
+            .~ Map.singleton stubScriptHash nativeWitnessScript
 
 {- | A tx whose body declares a required signer; the SPARQL-join
 invariant for the witness-set walker is that any key-witness
@@ -199,3 +230,14 @@ txWithSharedSignerAndKeyWit :: ConwayTx
 txWithSharedSignerAndKeyWit =
     baseTx
         & bodyTxL . reqSignerHashesTxBodyL .~ Set.singleton stubKeyHash
+
+-- | Slice the bytes between a bnode subject anchor and the next blank line.
+sliceSubjectBlock :: ByteString -> ByteString -> ByteString
+sliceSubjectBlock subject bs =
+    let needle = "\n_:" <> subject <> " "
+     in case BS8.breakSubstring needle ("\n" <> bs) of
+            (_, suf)
+                | BS8.null suf -> ""
+                | otherwise ->
+                    let (block, _) = BS8.breakSubstring "\n\n" (BS8.drop 1 suf)
+                     in block

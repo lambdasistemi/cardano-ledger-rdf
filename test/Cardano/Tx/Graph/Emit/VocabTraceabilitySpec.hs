@@ -73,6 +73,8 @@ import Fixtures.TxGraph.S09_MpfsFactsRequest qualified as S09
 import Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal qualified as S10
 import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
 import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
+import Fixtures.TxGraph.S18_NativeScriptNested qualified as S18
+import Fixtures.TxGraph.S19_NativeScriptTimelock qualified as S19
 
 import Test.Hspec (
     Spec,
@@ -98,6 +100,8 @@ enabledFixtures =
     , ("10-governance-treasury-withdrawal", S10.tx)
     , ("11-amaru-treasury-swap-real", S11.tx)
     , ("14-blueprint-decode-fail", S14.tx)
+    , ("18-native-script-nested", S18.tx)
+    , ("19-native-script-timelock", S19.tx)
     ]
 
 spec :: Spec

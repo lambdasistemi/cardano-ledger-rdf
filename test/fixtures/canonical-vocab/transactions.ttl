@@ -404,7 +404,7 @@ cardano:intervalEnd a rdf:Property ;
 # authored by kmaps maintainers. Terms duplicated from Phase A.1 are omitted.
 # ==============================================================================
 
-# ----- Classes (17) ---------------------------------------------------------
+# ----- Classes (23) ---------------------------------------------------------
 
 cardano:Script a rdfs:Class ;
   rdfs:label "Script" ;
@@ -429,7 +429,37 @@ cardano:Mint a rdfs:Class ;
 cardano:NativeScript a rdfs:Class ;
   rdfs:label "NativeScript" ;
   rdfs:subClassOf cardano:Script ;
-  dcterms:description "A reference script whose language is native Cardano multi-sig (timelock + key combinators). Distinct from Plutus scripts; carries the raw script body as CBOR." .
+  dcterms:description "A native Cardano multi-sig / timelock script. Native scripts are emitted as recursive trees of ScriptPubkey, ScriptAll, ScriptAny, ScriptNofK, InvalidBefore, and InvalidHereafter nodes." .
+
+cardano:ScriptPubkey a rdfs:Class ;
+  rdfs:label "ScriptPubkey" ;
+  rdfs:subClassOf cardano:NativeScript ;
+  dcterms:description "A native-script leaf requiring a payment-key signature. Carries cardano:requiresSigner to the signer Identifier." .
+
+cardano:ScriptAll a rdfs:Class ;
+  rdfs:label "ScriptAll" ;
+  rdfs:subClassOf cardano:NativeScript ;
+  dcterms:description "A native-script internal node requiring every child script to validate. Children are linked with cardano:hasChild." .
+
+cardano:ScriptAny a rdfs:Class ;
+  rdfs:label "ScriptAny" ;
+  rdfs:subClassOf cardano:NativeScript ;
+  dcterms:description "A native-script internal node requiring at least one child script to validate. Children are linked with cardano:hasChild." .
+
+cardano:ScriptNofK a rdfs:Class ;
+  rdfs:label "ScriptNofK" ;
+  rdfs:subClassOf cardano:NativeScript ;
+  dcterms:description "A native-script threshold node requiring cardano:requiredCount of its child scripts to validate." .
+
+cardano:InvalidBefore a rdfs:Class ;
+  rdfs:label "InvalidBefore" ;
+  rdfs:subClassOf cardano:NativeScript ;
+  dcterms:description "A native-script timelock leaf corresponding to invalid_before. Carries cardano:hasSlot with the lower slot bound." .
+
+cardano:InvalidHereafter a rdfs:Class ;
+  rdfs:label "InvalidHereafter" ;
+  rdfs:subClassOf cardano:NativeScript ;
+  dcterms:description "A native-script timelock leaf corresponding to invalid_hereafter. Carries cardano:hasSlot with the upper slot bound." .
 
 cardano:OpaqueLeaf a rdfs:Class ;
   rdfs:label "OpaqueLeaf" ;
@@ -504,13 +534,43 @@ cardano:Withdrawal a rdfs:Class ;
   rdfs:label "Withdrawal" ;
   dcterms:description "A single withdrawal entry — taking accumulated rewards out of a reward account or naming a treasury withdrawal recipient. Body-level withdrawals carry cardano:withdrawalAccount + cardano:lovelace; TreasuryWithdrawals actions carry cardano:toRewardAccount + cardano:hasLovelace." .
 
-# ----- Properties (16) ------------------------------------------------------
+# ----- Properties (20) ------------------------------------------------------
 
 cardano:hasRequiredSigner a rdf:Property ;
   rdfs:label "hasRequiredSigner" ;
   rdfs:domain cardano:Transaction ;
   rdfs:range  cardano:Identifier ;
   dcterms:description "Binds a transaction to a payment-key Identifier whose signature the script-validation phase requires. One triple per entry in the body's required-signers Set. Object is an Identifier node (sharing identity with any other position naming the same key) — never a literal." .
+
+cardano:hasChild a rdf:Property ;
+  rdfs:label "hasChild" ;
+  rdfs:domain [
+    a owl:Class ;
+    owl:unionOf ( cardano:ScriptAll cardano:ScriptAny cardano:ScriptNofK )
+  ] ;
+  rdfs:range  cardano:NativeScript ;
+  dcterms:description "Binds a composite native-script node to one child native-script node. Child bnodes are derived from the parent bnode and one-based child position." .
+
+cardano:requiresSigner a rdf:Property ;
+  rdfs:label "requiresSigner" ;
+  rdfs:domain cardano:ScriptPubkey ;
+  rdfs:range  cardano:Identifier ;
+  dcterms:description "Binds a ScriptPubkey native-script leaf to the payment-key Identifier whose witness is required." .
+
+cardano:requiredCount a rdf:Property ;
+  rdfs:label "requiredCount" ;
+  rdfs:domain cardano:ScriptNofK ;
+  rdfs:range  xsd:integer ;
+  dcterms:description "The threshold count for a ScriptNofK native-script node." .
+
+cardano:hasSlot a rdf:Property ;
+  rdfs:label "hasSlot" ;
+  rdfs:domain [
+    a owl:Class ;
+    owl:unionOf ( cardano:InvalidBefore cardano:InvalidHereafter )
+  ] ;
+  rdfs:range  xsd:integer ;
+  dcterms:description "The slot number carried by a native-script timelock leaf." .
 
 cardano:totalCollateral a rdf:Property ;
   rdfs:label "totalCollateral" ;

@@ -150,8 +150,8 @@ import Cardano.Ledger.Address (
  )
 import Cardano.Ledger.Allegra.Scripts (ValidityInterval (..))
 import Cardano.Ledger.Alonzo.Scripts (
+    AlonzoScript (NativeScript, PlutusScript),
     plutusScriptLanguage,
-    toPlutusScript,
  )
 import Cardano.Ledger.Alonzo.TxBody (ScriptIntegrityHash)
 import Cardano.Ledger.Alonzo.TxWits (Redeemers (..), TxDats (..))
@@ -294,6 +294,7 @@ import Cardano.Tx.Graph.Emit.Monad (
     runEmit,
     tellTriple,
  )
+import Cardano.Tx.Graph.Emit.NativeScript (emitNativeScriptTree)
 import Cardano.Tx.Graph.Emit.Triple (
     BodySection (..),
     Object (..),
@@ -2038,47 +2039,49 @@ emitOutputReferenceScript lookupTbl k outSubj (SJust script) = do
         scriptSubj = SBnode scriptBnode
         ScriptHash hh = hashScript script
         hashBytes = hashToBytes hh
-        rawBytes = originalBytes script
-        (classTerm, mVersion) = case toPlutusScript script of
-            Just ps ->
-                ( TermPlutusScript
-                , Just (plutusVersionInt (plutusScriptLanguage ps))
-                )
-            Nothing -> (TermNativeScript, Nothing)
     tellTriple
         ( Triple
             outSubj
             (PIri (vocabCurie TermHasReferenceScript))
             (OBnode scriptBnode)
         )
-    tellTriple (Triple scriptSubj PRdfType (OIri (vocabCurie classTerm)))
-    -- T122c / S22: cardano:hasHash on a reference script now
-    -- binds to an Identifier-typed bnode (ScriptHash leaf type)
-    -- so the same script hash referenced from a payment-script
-    -- credential or the witness-set's script bag joins on bnode
-    -- equality (operator A-007).
-    hashBnode <-
-        resolveCredentialAndIntroduceIdent lookupTbl LtScriptHash hashBytes
-    tellTriple
-        ( Triple
-            scriptSubj
-            (PIri (vocabCurie TermHasHash))
-            (OBnode hashBnode)
-        )
-    tellTriple
-        ( Triple
-            scriptSubj
-            (PIri (vocabCurie TermHasRawBytes))
-            (OStringLit (hexText rawBytes))
-        )
-    case mVersion of
-        Nothing -> pure ()
-        Just v ->
+    case script of
+        NativeScript native ->
+            emitNativeScriptTree
+                lookupTbl
+                resolveCredentialAndIntroduceIdent
+                scriptBnode
+                hashBytes
+                native
+        PlutusScript ps -> do
+            let rawBytes = originalBytes script
+                version = plutusVersionInt (plutusScriptLanguage ps)
+            tellTriple
+                (Triple scriptSubj PRdfType (OIri (vocabCurie TermPlutusScript)))
+            -- T122c / S22: cardano:hasHash on a reference script now
+            -- binds to an Identifier-typed bnode (ScriptHash leaf type)
+            -- so the same script hash referenced from a payment-script
+            -- credential or the witness-set's script bag joins on bnode
+            -- equality (operator A-007).
+            hashBnode <-
+                resolveCredentialAndIntroduceIdent lookupTbl LtScriptHash hashBytes
+            tellTriple
+                ( Triple
+                    scriptSubj
+                    (PIri (vocabCurie TermHasHash))
+                    (OBnode hashBnode)
+                )
+            tellTriple
+                ( Triple
+                    scriptSubj
+                    (PIri (vocabCurie TermHasRawBytes))
+                    (OStringLit (hexText rawBytes))
+                )
             tellTriple
                 ( Triple
                     scriptSubj
                     (PIri (vocabCurie TermHasVersion))
-                    (OIntLit (fromIntegral v))
+                    (OIntLit (fromIntegral version))
                 )
 
 -- | Map ledger 'Language' to its Plutus version integer.

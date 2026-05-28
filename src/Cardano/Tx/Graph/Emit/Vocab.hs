@@ -142,7 +142,17 @@ data VocabTerm
       -- locally per A-006 and get exported upstream via T122b.
       TermPlutusScript
     | TermNativeScript
+    | TermScriptPubkey
+    | TermScriptAll
+    | TermScriptAny
+    | TermScriptNofK
+    | TermInvalidBefore
+    | TermInvalidHereafter
     | TermHasVersion
+    | TermHasChild
+    | TermRequiresSigner
+    | TermRequiredCount
+    | TermHasSlot
     | -- Voting procedures (T119 / S18). All terms invented
       -- locally per A-006; exported upstream via T122b.
       TermVote
@@ -282,7 +292,17 @@ vocabIri = \case
     TermHasCollateralReturn -> cardanoPrefix <> "hasCollateralReturn"
     TermPlutusScript -> cardanoPrefix <> "PlutusScript"
     TermNativeScript -> cardanoPrefix <> "NativeScript"
+    TermScriptPubkey -> cardanoPrefix <> "ScriptPubkey"
+    TermScriptAll -> cardanoPrefix <> "ScriptAll"
+    TermScriptAny -> cardanoPrefix <> "ScriptAny"
+    TermScriptNofK -> cardanoPrefix <> "ScriptNofK"
+    TermInvalidBefore -> cardanoPrefix <> "InvalidBefore"
+    TermInvalidHereafter -> cardanoPrefix <> "InvalidHereafter"
     TermHasVersion -> cardanoPrefix <> "hasVersion"
+    TermHasChild -> cardanoPrefix <> "hasChild"
+    TermRequiresSigner -> cardanoPrefix <> "requiresSigner"
+    TermRequiredCount -> cardanoPrefix <> "requiredCount"
+    TermHasSlot -> cardanoPrefix <> "hasSlot"
     TermVote -> cardanoPrefix <> "Vote"
     TermHasVote -> cardanoPrefix <> "hasVote"
     TermHasVoter -> cardanoPrefix <> "hasVoter"
@@ -394,7 +414,17 @@ vocabCurie = \case
     TermHasCollateralReturn -> "cardano:hasCollateralReturn"
     TermPlutusScript -> "cardano:PlutusScript"
     TermNativeScript -> "cardano:NativeScript"
+    TermScriptPubkey -> "cardano:ScriptPubkey"
+    TermScriptAll -> "cardano:ScriptAll"
+    TermScriptAny -> "cardano:ScriptAny"
+    TermScriptNofK -> "cardano:ScriptNofK"
+    TermInvalidBefore -> "cardano:InvalidBefore"
+    TermInvalidHereafter -> "cardano:InvalidHereafter"
     TermHasVersion -> "cardano:hasVersion"
+    TermHasChild -> "cardano:hasChild"
+    TermRequiresSigner -> "cardano:requiresSigner"
+    TermRequiredCount -> "cardano:requiredCount"
+    TermHasSlot -> "cardano:hasSlot"
     TermVote -> "cardano:Vote"
     TermHasVote -> "cardano:hasVote"
     TermHasVoter -> "cardano:hasVoter"

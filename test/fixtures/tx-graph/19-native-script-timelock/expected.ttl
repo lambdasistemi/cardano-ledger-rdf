@@ -1,0 +1,64 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/19-native-script-timelock#> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+_:tx a cardano:Transaction ;
+  cardano:hasTxId _:hash_txid_5499a9fc868b83151cd4e1635ce17d58e8c3f836f374b35b2023124b61b1e001 ;
+  cardano:hasOutput _:output1 ;
+  cardano:hasFee 0 .
+
+_:hash_txid_5499a9fc868b83151cd4e1635ce17d58e8c3f836f374b35b2023124b61b1e001 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "5499a9fc868b83151cd4e1635ce17d58e8c3f836f374b35b2023124b61b1e001" .
+
+#
+# Output 1
+#
+
+_:output1 a cardano:Output ;
+  cardano:hasIndex 0 ;
+  cardano:atAddress _:cred_paymentkey_66666666666666666666666666666666666666666666666666666666Addr ;
+  cardano:lovelace 3000000 ;
+  cardano:hasReferenceScript _:outputRefScript1 .
+
+_:hash_script_e46a7967fcdd484ccf9f3f38b043376178c86fb0c09760d9cef4c6a6 a cardano:Identifier ;
+  cardano:leafType "ScriptHash" ;
+  cardano:bytesHex "e46a7967fcdd484ccf9f3f38b043376178c86fb0c09760d9cef4c6a6" .
+
+_:outputRefScript1 a cardano:NativeScript ;
+  a cardano:ScriptAll ;
+  cardano:hasChild _:outputRefScript1_c1 ;
+  cardano:hasChild _:outputRefScript1_c2 ;
+  cardano:hasHash _:hash_script_e46a7967fcdd484ccf9f3f38b043376178c86fb0c09760d9cef4c6a6 .
+
+_:outputRefScript1_c1 a cardano:NativeScript ;
+  a cardano:InvalidBefore ;
+  cardano:hasSlot 145000000 .
+
+_:outputRefScript1_c2 a cardano:NativeScript ;
+  a cardano:InvalidHereafter ;
+  cardano:hasSlot 146000000 .
+
+#
+# Address decompositions — payment + stake credential per leaf.
+#
+
+_:cred_paymentkey_66666666666666666666666666666666666666666666666666666666Addr a cardano:Address ;
+  cardano:bech32 "addr_test1vpnxvenxvenxvenxvenxvenxvenxvenxvenxvenxvenxvesh4lx63" ;
+  cardano:hasPaymentCredential _:cred_paymentkey_66666666666666666666666666666666666666666666666666666666CredPayment .
+
+_:cred_paymentkey_66666666666666666666666666666666666666666666666666666666 a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "66666666666666666666666666666666666666666666666666666666" .
+
+_:cred_paymentkey_66666666666666666666666666666666666666666666666666666666CredPayment a cardano:PaymentCredential ;
+  cardano:hasIdentifier _:cred_paymentkey_66666666666666666666666666666666666666666666666666666666 .
