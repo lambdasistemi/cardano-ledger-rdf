@@ -259,6 +259,9 @@ cardano:hasCommitteeHotCredential a rdf:Property ;
 cardano:hasCost a rdf:Property ;
   rdfs:label "hasCost" .
 
+cardano:hasCurrentTreasuryValue a rdf:Property ;
+  rdfs:label "hasCurrentTreasuryValue" .
+
 cardano:hasDRepCredential a rdf:Property ;
   rdfs:label "hasDRepCredential" .
 
@@ -276,6 +279,9 @@ cardano:hasDeposit a rdf:Property ;
 
 cardano:hasDnsName a rdf:Property ;
   rdfs:label "hasDnsName" .
+
+cardano:hasDonation a rdf:Property ;
+  rdfs:label "hasDonation" .
 
 cardano:hasExUnits a rdf:Property ;
   rdfs:label "hasExUnits" .

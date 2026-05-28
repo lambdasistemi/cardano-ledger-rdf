@@ -113,6 +113,8 @@ data VocabTerm
       TermHasInput
     | TermHasOutput
     | TermHasFee
+    | TermHasCurrentTreasuryValue
+    | TermHasDonation
     | TermResolvedTo
     | TermAtAddress
     | TermBech32
@@ -318,6 +320,8 @@ vocabIri = \case
     TermHasInput -> cardanoPrefix <> "hasInput"
     TermHasOutput -> cardanoPrefix <> "hasOutput"
     TermHasFee -> cardanoPrefix <> "hasFee"
+    TermHasCurrentTreasuryValue -> cardanoPrefix <> "hasCurrentTreasuryValue"
+    TermHasDonation -> cardanoPrefix <> "hasDonation"
     TermResolvedTo -> cardanoPrefix <> "resolvedTo"
     TermAtAddress -> cardanoPrefix <> "atAddress"
     TermBech32 -> cardanoPrefix <> "bech32"
@@ -485,6 +489,8 @@ vocabCurie = \case
     TermHasInput -> "cardano:hasInput"
     TermHasOutput -> "cardano:hasOutput"
     TermHasFee -> "cardano:hasFee"
+    TermHasCurrentTreasuryValue -> "cardano:hasCurrentTreasuryValue"
+    TermHasDonation -> "cardano:hasDonation"
     TermResolvedTo -> "cardano:resolvedTo"
     TermAtAddress -> "cardano:atAddress"
     TermBech32 -> "cardano:bech32"

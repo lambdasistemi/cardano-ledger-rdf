@@ -96,6 +96,18 @@ cardano:hasFee a rdf:Property ;
   rdfs:label "hasFee" ;
   dcterms:description "The fee paid by a transaction, in lovelace." .
 
+cardano:hasCurrentTreasuryValue a rdf:Property ;
+  rdfs:label "hasCurrentTreasuryValue" ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range  xsd:integer ;
+  dcterms:description "The optional Conway transaction body field 21 current_treasury_value, in lovelace." .
+
+cardano:hasDonation a rdf:Property ;
+  rdfs:label "hasDonation" ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range  xsd:integer ;
+  dcterms:description "The optional Conway transaction body field 22 treasury donation, in lovelace." .
+
 cardano:isValid a rdf:Property ;
   rdfs:label "isValid" ;
   rdfs:domain cardano:Transaction ;

@@ -175,6 +175,7 @@ import Cardano.Ledger.Api.Tx.Body (
     certsTxBodyL,
     collateralInputsTxBodyL,
     collateralReturnTxBodyL,
+    currentTreasuryValueTxBodyL,
     feeTxBodyL,
     inputsTxBodyL,
     mintTxBodyL,
@@ -185,6 +186,7 @@ import Cardano.Ledger.Api.Tx.Body (
     reqSignerHashesTxBodyL,
     scriptIntegrityHashTxBodyL,
     totalCollateralTxBodyL,
+    treasuryDonationTxBodyL,
     vldtTxBodyL,
     votingProceduresTxBodyL,
     withdrawalsTxBodyL,
@@ -367,6 +369,8 @@ projectBody entities lookupTbl blueprints tx utxo =
             Set.toAscList (body ^. reqSignerHashesTxBodyL)
         totalCollateral = body ^. totalCollateralTxBodyL
         collateralReturn = body ^. collateralReturnTxBodyL
+        currentTreasuryValue = body ^. currentTreasuryValueTxBodyL
+        treasuryDonation = body ^. treasuryDonationTxBodyL
         votes = flattenVotingProcedures (body ^. votingProceduresTxBodyL)
         -- Witness-set cardinalities (T128b / S31). Read on the
         -- @_:tx@ block so the typed @hasRedeemer@ / @hasKeyWitness@
@@ -443,6 +447,8 @@ projectBody entities lookupTbl blueprints tx utxo =
                     (length collateralData)
                     (length proposals)
                     feeLovelace
+                    currentTreasuryValue
+                    treasuryDonation
                     validity
                     networkId
                     scriptDataHash
@@ -1002,10 +1008,9 @@ emitAssetListCell lookupTbl va total (m, (policy, assetName, qty)) = do
 
 {- | Emit the @_:tx@ subject block. Predicate order is fixed
 (see the module-header note): the per-leaf @hasX@ edges first,
-then @hasFee@, then the optional body-root predicates T107
-introduced (validity interval, network id, script-data hash,
-auxiliary-data hash). Each of the four optional fields is
-elided when its body field is @SNothing@; the validity interval
+then @hasFee@, then the optional body-root predicates T107 and
+T014 introduced. Optional fields are elided when their body field
+is @SNothing@ or, for donation, @Coin 0@; the validity interval
 also emits a separate @_:interval1@ sub-block carrying
 @cardano:intervalStart@ and\/or @cardano:intervalEnd@.
 -}
@@ -1021,6 +1026,8 @@ emitTxBlock ::
     Int ->
     Int ->
     Integer ->
+    StrictMaybe Coin ->
+    Coin ->
     ValidityInterval ->
     StrictMaybe Network ->
     StrictMaybe ScriptIntegrityHash ->
@@ -1049,6 +1056,8 @@ emitTxBlock
     nCollaterals
     nProposals
     feeLovelace
+    currentTreasuryValue
+    treasuryDonation
     validity
     networkId
     scriptDataHash
@@ -1095,6 +1104,8 @@ emitTxBlock
         tt
             (PIri (vocabCurie TermHasFee))
             (OIntLit (fromIntegral feeLovelace))
+        emitCurrentTreasuryValue txSubj currentTreasuryValue
+        emitDonation txSubj treasuryDonation
         emitValidityInterval txSubj validity
         emitNetworkId txSubj networkId
         emitScriptDataHash lookupTbl txSubj scriptDataHash
@@ -1114,6 +1125,38 @@ emitTxBlock
             TermHasBootstrapWitness
             idBootstrapWitnessBnode
             nBootstrapWitnesses
+
+{- | Emit @cardano:hasCurrentTreasuryValue N@ when Conway body
+field 21 is present.
+
+T014 / S1.
+-}
+emitCurrentTreasuryValue :: Subject -> StrictMaybe Coin -> Emit ()
+emitCurrentTreasuryValue _ SNothing = pure ()
+emitCurrentTreasuryValue txSubj (SJust (Coin n)) =
+    tellTriple
+        ( Triple
+            txSubj
+            (PIri (vocabCurie TermHasCurrentTreasuryValue))
+            (OIntLit (fromIntegral n))
+        )
+
+{- | Emit @cardano:hasDonation N@ when Conway body field 22 carries
+a positive treasury donation. The ledger lens defaults absent
+donations to @Coin 0@, matching the sparse CBOR-map elision rule.
+
+T014 / S1.
+-}
+emitDonation :: Subject -> Coin -> Emit ()
+emitDonation _ (Coin n)
+    | n <= 0 = pure ()
+emitDonation txSubj (Coin n) =
+    tellTriple
+        ( Triple
+            txSubj
+            (PIri (vocabCurie TermHasDonation))
+            (OIntLit (fromIntegral n))
+        )
 
 {- | Emit @cardano:totalCollateral N@ when the body's total
 collateral is @SJust@ (Conway's pre-declared collateral total in
