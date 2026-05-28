@@ -635,13 +635,18 @@ _:hash_datum_9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b a 
   cardano:leafType "DatumHash" ;
   cardano:bytesHex "9e1199a988ba72ffd6e9c269cadb3b53b5f360ff99f112d9b2ee30c4d74ad88b" .
 
-_:outputRefScript1 a cardano:NativeScript ;
-  cardano:hasHash _:hash_script_5334c8c55ec6518f2e262da617d3170bf0722f43813d64dbaf0ff0b9 ;
-  cardano:hasRawBytes "8200581c11111111111111111111111111111111111111111111111111111111" .
-
 _:hash_script_5334c8c55ec6518f2e262da617d3170bf0722f43813d64dbaf0ff0b9 a cardano:Identifier ;
   cardano:leafType "ScriptHash" ;
   cardano:bytesHex "5334c8c55ec6518f2e262da617d3170bf0722f43813d64dbaf0ff0b9" .
+
+_:outputRefScript1 a cardano:NativeScript ;
+  a cardano:ScriptPubkey ;
+  cardano:requiresSigner _:cred_paymentkey_11111111111111111111111111111111111111111111111111111111 ;
+  cardano:hasHash _:hash_script_5334c8c55ec6518f2e262da617d3170bf0722f43813d64dbaf0ff0b9 .
+
+_:cred_paymentkey_11111111111111111111111111111111111111111111111111111111 a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "11111111111111111111111111111111111111111111111111111111" .
 
 #
 # Output 2

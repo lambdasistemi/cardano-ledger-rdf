@@ -67,9 +67,9 @@ import Cardano.Crypto.DSIGN.Class (rawSerialiseSigDSIGN)
 import Cardano.Crypto.Hash (hashToBytes)
 import Cardano.Ledger.Address (Addr (..))
 import Cardano.Ledger.Alonzo.Scripts (
+    AlonzoScript (NativeScript, PlutusScript),
     AsIx (..),
     plutusScriptLanguage,
-    toPlutusScript,
  )
 import Cardano.Ledger.Alonzo.TxWits (Redeemers (..), TxDats (..))
 import Cardano.Ledger.Api.Era (eraProtVerLow)
@@ -125,6 +125,7 @@ import Cardano.Tx.Graph.Emit.Blueprint (
  )
 import Cardano.Tx.Graph.Emit.Lookup (BnodeName (..), LookupTable)
 import Cardano.Tx.Graph.Emit.Monad (Emit, tellTriple)
+import Cardano.Tx.Graph.Emit.NativeScript (emitNativeScriptTree)
 import Cardano.Tx.Graph.Emit.Project (
     clusterBlocks,
     datumValidatorPick,
@@ -567,40 +568,41 @@ emitScriptWitnessEntry lookupTbl k (_, script) = do
     let scriptSubj = SBnode (idScriptWitnessBnode k)
         ScriptHash hh = hashScript script
         hashBytes = hashToBytes hh
-        rawBytes = scriptRawBytes script
-        (classTerm, mVersion) = case toPlutusScript script of
-            Just ps ->
-                ( TermPlutusScript
-                , Just (plutusVersionInt (plutusScriptLanguage ps))
+    case script of
+        NativeScript native ->
+            emitNativeScriptTree
+                lookupTbl
+                resolveCredentialAndIntroduceIdent
+                (idScriptWitnessBnode k)
+                hashBytes
+                native
+        PlutusScript ps -> do
+            let rawBytes = scriptRawBytes script
+                version = plutusVersionInt (plutusScriptLanguage ps)
+            tellTriple
+                (Triple scriptSubj PRdfType (OIri (vocabCurie TermPlutusScript)))
+            hashBnode <-
+                resolveCredentialAndIntroduceIdent
+                    lookupTbl
+                    LtScriptHash
+                    hashBytes
+            tellTriple
+                ( Triple
+                    scriptSubj
+                    (PIri (vocabCurie TermHasHash))
+                    (OBnode hashBnode)
                 )
-            Nothing -> (TermNativeScript, Nothing)
-    tellTriple
-        (Triple scriptSubj PRdfType (OIri (vocabCurie classTerm)))
-    hashBnode <-
-        resolveCredentialAndIntroduceIdent
-            lookupTbl
-            LtScriptHash
-            hashBytes
-    tellTriple
-        ( Triple
-            scriptSubj
-            (PIri (vocabCurie TermHasHash))
-            (OBnode hashBnode)
-        )
-    tellTriple
-        ( Triple
-            scriptSubj
-            (PIri (vocabCurie TermHasRawBytes))
-            (OStringLit (hexText rawBytes))
-        )
-    case mVersion of
-        Nothing -> pure ()
-        Just v ->
+            tellTriple
+                ( Triple
+                    scriptSubj
+                    (PIri (vocabCurie TermHasRawBytes))
+                    (OStringLit (hexText rawBytes))
+                )
             tellTriple
                 ( Triple
                     scriptSubj
                     (PIri (vocabCurie TermHasVersion))
-                    (OIntLit (fromIntegral v))
+                    (OIntLit (fromIntegral version))
                 )
 
 scriptRawBytes :: Script ConwayEra -> ByteString

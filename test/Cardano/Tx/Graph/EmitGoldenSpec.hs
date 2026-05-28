@@ -68,6 +68,8 @@ import Fixtures.TxGraph.S13BlueprintPassthrough qualified as S13
 import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
 import Fixtures.TxGraph.S15_AmaruDisburseNetworkCompliance qualified as S15
 import Fixtures.TxGraph.S17_AmaruDisburseContingency qualified as S17
+import Fixtures.TxGraph.S18_NativeScriptNested qualified as S18
+import Fixtures.TxGraph.S19_NativeScriptTimelock qualified as S19
 
 import Test.Hspec (
     Spec,
@@ -105,6 +107,8 @@ allFixtures =
     , ("14-blueprint-decode-fail", S14.tx)
     , ("15-amaru-disburse-network-compliance", S15.tx)
     , ("17-amaru-disburse-contingency", S17.tx)
+    , ("18-native-script-nested", S18.tx)
+    , ("19-native-script-timelock", S19.tx)
     ]
 
 {- | One Hspec @it@ per fixture: byte-diff the emitted Turtle

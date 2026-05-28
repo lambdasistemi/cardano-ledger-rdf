@@ -3,13 +3,13 @@ Module      : Cardano.Tx.Graph.Emit.OutputScriptRefSpec
 Description : Per-output reference-script sub-block invariant (T105 / S4).
 License     : Apache-2.0
 
-Asserts the T105 / S4 invariant: every body output whose
+Asserts the reference-script invariant: every body output whose
 @referenceScriptTxOutL@ surfaces an @SJust script@ emits a
 @cardano:hasReferenceScript _:outputRefScriptN@ edge plus a
-sub-block carrying @cardano:hasHash "\<hex\>"@ +
-@cardano:hasRawBytes "\<cbor-hex\>"@ literals. Outputs whose
-@referenceScriptTxOutL@ is @SNothing@ MUST NOT carry the
-@cardano:hasReferenceScript@ edge.
+sub-block carrying @cardano:hasHash@. Plutus scripts keep
+@cardano:hasRawBytes@; native scripts use the recursive typed tree
+introduced by issue #13. Outputs whose @referenceScriptTxOutL@ is
+@SNothing@ MUST NOT carry the @cardano:hasReferenceScript@ edge.
 
 The spec runs the body emitter against every tx-graph
 fixture, then enumerates each fixture's body outputs, and
@@ -129,7 +129,21 @@ assertRefScriptShape bytes k refScript =
             refScriptBlockOfBytes bytes k
                 `shouldSatisfy` BS8.isInfixOf "cardano:hasHash"
             refScriptBlockOfBytes bytes k
-                `shouldSatisfy` BS8.isInfixOf "cardano:hasRawBytes"
+                `shouldSatisfy` ( \block ->
+                                    if BS8.isInfixOf
+                                        "a cardano:PlutusScript"
+                                        block
+                                        then
+                                            BS8.isInfixOf
+                                                "cardano:hasRawBytes"
+                                                block
+                                        else
+                                            not
+                                                ( BS8.isInfixOf
+                                                    "cardano:hasRawBytes"
+                                                    block
+                                                )
+                                )
 
 ----------------------------------------------------------------------
 -- Helpers

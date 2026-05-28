@@ -43,6 +43,12 @@ cardano:Identifier a rdfs:Class ;
 cardano:Input a rdfs:Class ;
   rdfs:label "Input" .
 
+cardano:InvalidBefore a rdfs:Class ;
+  rdfs:label "InvalidBefore" .
+
+cardano:InvalidHereafter a rdfs:Class ;
+  rdfs:label "InvalidHereafter" .
+
 cardano:KeyWitness a rdfs:Class ;
   rdfs:label "KeyWitness" .
 
@@ -75,6 +81,18 @@ cardano:Proposal a rdfs:Class ;
 
 cardano:Redeemer a rdfs:Class ;
   rdfs:label "Redeemer" .
+
+cardano:ScriptAll a rdfs:Class ;
+  rdfs:label "ScriptAll" .
+
+cardano:ScriptAny a rdfs:Class ;
+  rdfs:label "ScriptAny" .
+
+cardano:ScriptNofK a rdfs:Class ;
+  rdfs:label "ScriptNofK" .
+
+cardano:ScriptPubkey a rdfs:Class ;
+  rdfs:label "ScriptPubkey" .
 
 cardano:StakeCredential a rdfs:Class ;
   rdfs:label "StakeCredential" .
@@ -150,6 +168,9 @@ cardano:hasBootstrapWitness a rdf:Property ;
 
 cardano:hasCertificate a rdf:Property ;
   rdfs:label "hasCertificate" .
+
+cardano:hasChild a rdf:Property ;
+  rdfs:label "hasChild" .
 
 cardano:hasCollateralInput a rdf:Property ;
   rdfs:label "hasCollateralInput" .
@@ -241,6 +262,9 @@ cardano:hasScriptWitness a rdf:Property ;
 cardano:hasSignature a rdf:Property ;
   rdfs:label "hasSignature" .
 
+cardano:hasSlot a rdf:Property ;
+  rdfs:label "hasSlot" .
+
 cardano:hasStakeCredential a rdf:Property ;
   rdfs:label "hasStakeCredential" .
 
@@ -297,6 +321,12 @@ cardano:onCredential a rdf:Property ;
 
 cardano:quantity a rdf:Property ;
   rdfs:label "quantity" .
+
+cardano:requiredCount a rdf:Property ;
+  rdfs:label "requiredCount" .
+
+cardano:requiresSigner a rdf:Property ;
+  rdfs:label "requiresSigner" .
 
 cardano:resolvedTo a rdf:Property ;
   rdfs:label "resolvedTo" .

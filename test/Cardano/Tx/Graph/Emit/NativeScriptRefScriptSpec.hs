@@ -1,23 +1,12 @@
 {- |
 Module      : Cardano.Tx.Graph.Emit.NativeScriptRefScriptSpec
-Description : Reference-script script-language discrimination (T118 / S17).
+Description : Reference-script native-script typed tree shape.
 License     : Apache-2.0
 
-Asserts the T118 / S17 invariant: every reference-script
-sub-block carries a discriminating @rdf:type@ — either
-@cardano:NativeScript@ (when the ledger script is a Conway
-@TimelockScript@) or @cardano:PlutusScript@ (when it's a Plutus
-script). The Plutus branch additionally carries
-@cardano:hasVersion N@ where N is the Plutus version (1/2/3/4).
-
-The fixture-driven path is covered by
-'Cardano.Tx.Graph.Emit.OutputScriptRefSpec' against the 11
-tx-graph fixtures (fixture 01's @stubRefScript@ is a
-@TimelockScript@). This spec is the synthetic Path-A complement —
-it exercises the native-script discrimination in isolation,
-anchored on a minimal 'ConwayTx' witness so the
-@cardano:NativeScript@ type triple is independently testable
-without fixture churn.
+Asserts issue #13's native-script walker contract on reference
+scripts: a Conway @TimelockScript@ emits a recursive typed tree
+instead of opaque CBOR bytes, while retaining the root script-hash
+join.
 -}
 module Cardano.Tx.Graph.Emit.NativeScriptRefScriptSpec (spec) where
 
@@ -31,7 +20,10 @@ import Lens.Micro ((&), (.~))
 
 import Cardano.Crypto.Hash (hashFromStringAsHex)
 import Cardano.Ledger.Address (Addr (..))
-import Cardano.Ledger.Allegra.Scripts (mkRequireSignatureTimelock)
+import Cardano.Ledger.Allegra.Scripts (
+    pattern RequireTimeExpire,
+    pattern RequireTimeStart,
+ )
 import Cardano.Ledger.Alonzo.Scripts (AlonzoScript (NativeScript))
 import Cardano.Ledger.Api.Scripts (Script)
 import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx)
@@ -39,6 +31,7 @@ import Cardano.Ledger.Api.Tx.Body (mkBasicTxBody, outputsTxBodyL)
 import Cardano.Ledger.Api.Tx.Out (mkBasicTxOut, referenceScriptTxOutL)
 import Cardano.Ledger.BaseTypes (
     Network (Testnet),
+    SlotNo (..),
     StrictMaybe (SJust),
  )
 import Cardano.Ledger.Coin (Coin (..))
@@ -50,6 +43,12 @@ import Cardano.Ledger.Credential (
 import Cardano.Ledger.Hashes (KeyHash (..))
 import Cardano.Ledger.Keys (KeyRole (..))
 import Cardano.Ledger.Mary.Value (MaryValue (..), MultiAsset (..))
+import Cardano.Ledger.Shelley.Scripts (
+    pattern RequireAllOf,
+    pattern RequireAnyOf,
+    pattern RequireMOf,
+    pattern RequireSignature,
+ )
 
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
@@ -63,26 +62,43 @@ import Test.Hspec (Spec, describe, it, shouldSatisfy)
 
 spec :: Spec
 spec =
-    describe
-        "Cardano.Tx.Graph.Emit reference-script language discrimination (T118)"
-        $ do
-            it "types a TimelockScript ref-script as cardano:NativeScript" $ do
-                let bytes = emitBytes (txWithRefScript nativeRefScript)
-                bytes
-                    `shouldSatisfy` BS8.isInfixOf
-                        "_:outputRefScript1 a cardano:NativeScript"
-            it "TimelockScript ref-script has no cardano:hasVersion" $ do
-                let bytes = emitBytes (txWithRefScript nativeRefScript)
-                bytes
-                    `shouldSatisfy` ( \b ->
-                                        let refBlock = sliceRefBlock 1 b
-                                         in not (BS8.isInfixOf "cardano:hasVersion" refBlock)
-                                    )
-            it "TimelockScript ref-script emits hasHash + hasRawBytes" $ do
-                let bytes = emitBytes (txWithRefScript nativeRefScript)
-                    refBlock = sliceRefBlock 1 bytes
-                refBlock `shouldSatisfy` BS8.isInfixOf "cardano:hasHash"
-                refBlock `shouldSatisfy` BS8.isInfixOf "cardano:hasRawBytes"
+    describe "Cardano.Tx.Graph.Emit native reference-script tree (#13)" $ do
+        it "emits a nested ScriptAll + ScriptNofK tree with signer leaves" $ do
+            let bytes = emitBytes (txWithRefScript nestedNativeRefScript)
+                root = sliceSubjectBlock "outputRefScript1" bytes
+                threshold = sliceSubjectBlock "outputRefScript1_c2" bytes
+            root `shouldSatisfy` BS8.isInfixOf "a cardano:NativeScript"
+            root `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptAll"
+            root `shouldSatisfy` BS8.isInfixOf "cardano:hasHash _:hash_script_"
+            root
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:hasChild _:outputRefScript1_c1"
+            root
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:hasChild _:outputRefScript1_c2"
+            root
+                `shouldSatisfy` not . BS8.isInfixOf "cardano:hasRawBytes"
+            sliceSubjectBlock "outputRefScript1_c1" bytes
+                `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptPubkey"
+            sliceSubjectBlock "outputRefScript1_c1" bytes
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:requiresSigner _:cred_paymentkey_"
+            threshold `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptNofK"
+            threshold `shouldSatisfy` BS8.isInfixOf "cardano:requiredCount 2"
+            threshold
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:hasChild _:outputRefScript1_c2_c1"
+            threshold
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:hasChild _:outputRefScript1_c2_c3"
+        it "emits InvalidBefore and InvalidHereafter leaves with slots" $ do
+            let bytes = emitBytes (txWithRefScript timelockNativeRefScript)
+                before = sliceSubjectBlock "outputRefScript1_c1" bytes
+                after = sliceSubjectBlock "outputRefScript1_c2" bytes
+            before `shouldSatisfy` BS8.isInfixOf "a cardano:InvalidBefore"
+            before `shouldSatisfy` BS8.isInfixOf "cardano:hasSlot 42"
+            after `shouldSatisfy` BS8.isInfixOf "a cardano:InvalidHereafter"
+            after `shouldSatisfy` BS8.isInfixOf "cardano:hasSlot 1000"
 
 ----------------------------------------------------------------------
 -- Synthesis helpers
@@ -100,17 +116,38 @@ txWithRefScript script =
                     & referenceScriptTxOutL .~ SJust script
                 ]
 
-{- | A deterministic Conway native script: a single
-'RequireSignature' timelock requiring a 28-byte witness
-key-hash filled with @0x22@.
--}
-nativeRefScript :: Script ConwayEra
-nativeRefScript =
-    NativeScript (mkRequireSignatureTimelock keyHash)
-  where
-    keyHash :: KeyHash Witness
-    keyHash =
-        KeyHash (fromJust (hashFromStringAsHex (replicate 56 '2')))
+nestedNativeRefScript :: Script ConwayEra
+nestedNativeRefScript =
+    NativeScript $
+        RequireAllOf $
+            StrictSeq.fromList
+                [ RequireSignature (keyHash '2')
+                , RequireMOf
+                    2
+                    ( StrictSeq.fromList
+                        [ RequireSignature (keyHash '3')
+                        , RequireSignature (keyHash '4')
+                        , RequireAnyOf $
+                            StrictSeq.fromList
+                                [ RequireSignature (keyHash '5')
+                                , RequireSignature (keyHash '6')
+                                ]
+                        ]
+                    )
+                ]
+
+timelockNativeRefScript :: Script ConwayEra
+timelockNativeRefScript =
+    NativeScript $
+        RequireAllOf $
+            StrictSeq.fromList
+                [ RequireTimeStart (SlotNo 42)
+                , RequireTimeExpire (SlotNo 1000)
+                ]
+
+keyHash :: Char -> KeyHash Witness
+keyHash c =
+    KeyHash (fromJust (hashFromStringAsHex (replicate 56 c)))
 
 stubAddr :: Addr
 stubAddr =
@@ -128,13 +165,13 @@ emitBytes tx =
 emptyUtxo :: ResolvedUTxO
 emptyUtxo = Map.empty
 
--- | Slice the bytes between @_:outputRefScriptK a@ and the next blank line.
-sliceRefBlock :: Int -> ByteString -> ByteString
-sliceRefBlock k bs =
-    let needle =
-            "_:outputRefScript"
-                <> BS8.pack (show k)
-                <> " a "
-        (_, suf) = BS8.breakSubstring needle bs
-        (block, _) = BS8.breakSubstring "\n\n" suf
-     in block
+-- | Slice the bytes between a bnode subject anchor and the next blank line.
+sliceSubjectBlock :: ByteString -> ByteString -> ByteString
+sliceSubjectBlock subject bs =
+    let needle = "\n_:" <> subject <> " "
+     in case BS8.breakSubstring needle ("\n" <> bs) of
+            (_, suf)
+                | BS8.null suf -> ""
+                | otherwise ->
+                    let (block, _) = BS8.breakSubstring "\n\n" (BS8.drop 1 suf)
+                     in block

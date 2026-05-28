@@ -73,6 +73,7 @@ library
     Cardano.Tx.Deposits
     Cardano.Tx.Graph.Emit.Lookup
     Cardano.Tx.Graph.Emit.Monad
+    Cardano.Tx.Graph.Emit.NativeScript
     Cardano.Tx.Graph.Emit.Serialize.JsonLd
     Cardano.Tx.Graph.Emit.Serialize.Turtle
     Cardano.Tx.Graph.Emit.Triple
@@ -278,6 +279,8 @@ test-suite unit-tests
     Fixtures.TxGraph.S14BlueprintDecodeFail
     Fixtures.TxGraph.S15_AmaruDisburseNetworkCompliance
     Fixtures.TxGraph.S17_AmaruDisburseContingency
+    Fixtures.TxGraph.S18_NativeScriptNested
+    Fixtures.TxGraph.S19_NativeScriptTimelock
     Fixtures.TxGraph.TurtleShim
 
   build-depends:
