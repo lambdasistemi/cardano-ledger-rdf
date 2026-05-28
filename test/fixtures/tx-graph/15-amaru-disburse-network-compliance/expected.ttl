@@ -1,6 +1,7 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/15-amaru-disburse-network-compliance#> .
 
 #
@@ -55,6 +56,7 @@ _:amaru_network_wallet_stakeKey a cardano:Identifier ;
 
 _:tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_119cf80e078c58ec3e725bb3450a64bc477b40b3d5f11bff87bfbdd04e46c98b ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasInput _:input1 ;
   cardano:hasInput _:input2 ;
   cardano:hasInput _:input3 ;

@@ -1,6 +1,7 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/07-vote-delegation#> .
 
 #
@@ -35,6 +36,7 @@ _:cardano_foundation_drep_dRepKey a cardano:Identifier ;
 
 _:tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_797e7ee707fee17eb902fc93b23b14c36906a592ef9d4a51101db7a5104754e9 ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasInput _:input1 ;
   cardano:hasOutput _:output1 ;
   cardano:hasCertificate _:cert1 ;

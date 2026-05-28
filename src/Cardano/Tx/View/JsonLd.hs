@@ -99,6 +99,10 @@ contextValue =
                 , String "http://www.w3.org/2000/01/rdf-schema#"
                 )
             ,
+                ( Key.fromText "xsd"
+                , String "http://www.w3.org/2001/XMLSchema#"
+                )
+            ,
                 ( Key.fromText ""
                 , String "https://lambdasistemi.github.io/cardano-rdf/fixtures/view#"
                 )
@@ -161,6 +165,7 @@ objectValue = \case
                 [(Key.fromText "@id", String name)]
     OStringLit value -> String value
     OIntLit value -> Number (fromInteger value)
+    OBoolLit value -> Bool value
 
 objectTypeText :: Object -> Text
 objectTypeText = \case
@@ -168,6 +173,7 @@ objectTypeText = \case
     OIri name -> name
     OStringLit value -> value
     OIntLit value -> Text.pack (show value)
+    OBoolLit value -> if value then "true" else "false"
 
 subjectText :: Subject -> Text
 subjectText = \case

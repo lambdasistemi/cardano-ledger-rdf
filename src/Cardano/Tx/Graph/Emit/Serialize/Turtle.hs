@@ -50,6 +50,7 @@ import Cardano.Tx.Graph.Emit.Vocab (
     fixturePrefixBase,
     rdfPrefix,
     rdfsPrefix,
+    xsdPrefix,
  )
 
 {- | Render the joint Turtle output for a fixture slug + the
@@ -180,6 +181,7 @@ scopeBodyBnodes txid =
         OIri iri -> OIri iri
         OStringLit lit -> OStringLit lit
         OIntLit i -> OIntLit i
+        OBoolLit b -> OBoolLit b
 
 renameBnode :: Text -> BnodeName -> BnodeName
 renameBnode txTag bn@(BnodeName name)
@@ -228,6 +230,7 @@ renderPrefixes slug =
         [ prefixLine "cardano:" cardanoPrefix
         , prefixLine "rdf:    " rdfPrefix
         , prefixLine "rdfs:   " rdfsPrefix
+        , prefixLine "xsd:    " xsdPrefix
         , prefixLine ":       " (fixturePrefixBase <> slug <> "#")
         , newline
         ]
@@ -312,6 +315,10 @@ renderObject = \case
     OIri t -> text t
     OStringLit s -> text "\"" <> text (escapeTurtleString s) <> text "\""
     OIntLit i -> text (Text.pack (show i))
+    OBoolLit b ->
+        text "\""
+            <> text (if b then "true" else "false")
+            <> text "\"^^xsd:boolean"
 
 {- | Escape a Turtle string-literal payload.
 

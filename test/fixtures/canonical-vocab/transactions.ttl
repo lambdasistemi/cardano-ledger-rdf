@@ -68,6 +68,10 @@ cardano:Datum a rdfs:Class ;
   rdfs:label "Datum" ;
   dcterms:description "A datum attached to a script-locked output, by hash or inline." .
 
+cardano:AuxiliaryData a rdfs:Class ;
+  rdfs:label "AuxiliaryData" ;
+  dcterms:description "Auxiliary transaction data carried in the fourth Conway transaction tuple slot, including metadata and auxiliary scripts. Emitted as an opaque raw-CBOR leaf until a typed auxiliary-data vocabulary is introduced." .
+
 cardano:Redeemer a rdfs:Class ;
   rdfs:label "Redeemer" ;
   dcterms:description "The redeemer fed into a Plutus script during transaction validation." .
@@ -91,6 +95,18 @@ cardano:hasOutput a rdf:Property ;
 cardano:hasFee a rdf:Property ;
   rdfs:label "hasFee" ;
   dcterms:description "The fee paid by a transaction, in lovelace." .
+
+cardano:isValid a rdf:Property ;
+  rdfs:label "isValid" ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range  xsd:boolean ;
+  dcterms:description "The Conway transaction validation flag from isValidTxL. True means phase-2 scripts are expected to validate; false marks scripts-failed/collateral-paid transactions." .
+
+cardano:hasAuxiliaryData a rdf:Property ;
+  rdfs:label "hasAuxiliaryData" ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range  cardano:AuxiliaryData ;
+  dcterms:description "Relates a transaction to its auxiliary data body when the fourth Conway transaction tuple slot is non-null. The target currently carries cardano:hasRawBytes with canonical auxiliary-data CBOR." .
 
 cardano:hasValidityInterval a rdf:Property ;
   rdfs:label "hasValidityInterval" ;

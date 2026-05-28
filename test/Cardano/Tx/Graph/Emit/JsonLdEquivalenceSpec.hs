@@ -175,6 +175,7 @@ data ParsedObject
     = PObjRef !Text
     | PObjString !Text
     | PObjInt !Integer
+    | PObjBool !Bool
     deriving stock (Eq, Ord, Show)
 
 -- | A parsed triple: subject token, predicate token, object value.
@@ -223,6 +224,7 @@ data TTok
     | TtKwA
     | TtString !Text
     | TtInt !Integer
+    | TtBool !Bool
     | TtSemi
     | TtDot
     deriving stock (Eq, Show)
@@ -247,7 +249,19 @@ lexTurtleTokens = goT
                  in (TtCurie (":" <> local) :) <$> goT after
             | c == '"' -> case lexTurtleString rest of
                 Left err -> Left err
-                Right (str, after) -> (TtString str :) <$> goT after
+                Right (str, after) ->
+                    let after' = Text.dropWhile isSpace after
+                     in case Text.stripPrefix "^^xsd:boolean" after' of
+                            Just afterBool
+                                | str == "true" ->
+                                    (TtBool True :) <$> goT afterBool
+                                | str == "false" ->
+                                    (TtBool False :) <$> goT afterBool
+                                | otherwise ->
+                                    Left $
+                                        "turtle-lex: bad xsd:boolean literal: "
+                                            <> str
+                            Nothing -> (TtString str :) <$> goT after
             | c == ';' -> (TtSemi :) <$> goT rest
             | c == '.' -> (TtDot :) <$> goT rest
             | isDigit c ->
@@ -372,6 +386,7 @@ parseTurtleObject = \case
     (TtCurie c : rest) -> Right (PObjRef c, rest)
     (TtString s : rest) -> Right (PObjString s, rest)
     (TtInt i : rest) -> Right (PObjInt i, rest)
+    (TtBool b : rest) -> Right (PObjBool b, rest)
     other ->
         Left $
             "turtle-parse: expected object; saw "
@@ -483,6 +498,7 @@ parseSingleObject v = case v of
             Left $
                 "json-ld-parse: non-integer number literal: "
                     <> Text.pack e
+    Bool b -> Right (PObjBool b)
     Object km -> case KeyMap.lookup (Key.fromText "@id") km of
         Just (String s) -> Right (PObjRef s)
         Just _ -> Left "json-ld-parse: '@id' is not a string"

@@ -281,6 +281,8 @@ test-suite unit-tests
     Fixtures.TxGraph.S17_AmaruDisburseContingency
     Fixtures.TxGraph.S18_NativeScriptNested
     Fixtures.TxGraph.S19_NativeScriptTimelock
+    Fixtures.TxGraph.S21_AuxiliaryData
+    Fixtures.TxGraph.S22_IsValidFalse
     Fixtures.TxGraph.TurtleShim
 
   build-depends:

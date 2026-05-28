@@ -70,6 +70,8 @@ import Fixtures.TxGraph.S15_AmaruDisburseNetworkCompliance qualified as S15
 import Fixtures.TxGraph.S17_AmaruDisburseContingency qualified as S17
 import Fixtures.TxGraph.S18_NativeScriptNested qualified as S18
 import Fixtures.TxGraph.S19_NativeScriptTimelock qualified as S19
+import Fixtures.TxGraph.S21_AuxiliaryData qualified as S21
+import Fixtures.TxGraph.S22_IsValidFalse qualified as S22
 
 import Test.Hspec (
     Spec,
@@ -109,6 +111,8 @@ allFixtures =
     , ("17-amaru-disburse-contingency", S17.tx)
     , ("18-native-script-nested", S18.tx)
     , ("19-native-script-timelock", S19.tx)
+    , ("21-auxiliary-data", S21.tx)
+    , ("22-isvalid-false", S22.tx)
     ]
 
 {- | One Hspec @it@ per fixture: byte-diff the emitted Turtle
