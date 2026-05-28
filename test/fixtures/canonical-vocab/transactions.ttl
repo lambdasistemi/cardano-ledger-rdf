@@ -506,6 +506,54 @@ cardano:TreasuryWithdrawals a rdfs:Class ;
   rdfs:subClassOf cardano:GovAction ;
   dcterms:description "A Conway governance action withdrawing lovelace from the treasury to one or more reward accounts, optionally guarded by a policy script hash." .
 
+cardano:ParameterChange a rdfs:Class ;
+  rdfs:label "ParameterChange" ;
+  rdfs:subClassOf cardano:GovAction ;
+  dcterms:description "A Conway governance action changing protocol parameters, with an optional prior action and optional guard policy." .
+
+cardano:ProtocolParamUpdate a rdfs:Class ;
+  rdfs:label "ProtocolParamUpdate" ;
+  dcterms:description "The typed protocol-parameter update payload carried by a ParameterChange governance action." .
+
+cardano:UpdateCommittee a rdfs:Class ;
+  rdfs:label "UpdateCommittee" ;
+  rdfs:subClassOf cardano:GovAction ;
+  dcterms:description "A Conway governance action updating the constitutional committee membership and quorum." .
+
+cardano:CommitteeAddition a rdfs:Class ;
+  rdfs:label "CommitteeAddition" ;
+  dcterms:description "A committee member addition paired with the term-limit epoch for the added cold credential." .
+
+cardano:NewConstitution a rdfs:Class ;
+  rdfs:label "NewConstitution" ;
+  rdfs:subClassOf cardano:GovAction ;
+  dcterms:description "A Conway governance action adopting a new constitution document and optional guardrail script." .
+
+cardano:Constitution a rdfs:Class ;
+  rdfs:label "Constitution" ;
+  dcterms:description "A proposed constitution payload: anchor metadata plus an optional guardrail script hash." .
+
+cardano:HardForkInitiation a rdfs:Class ;
+  rdfs:label "HardForkInitiation" ;
+  rdfs:subClassOf cardano:GovAction ;
+  dcterms:description "A Conway governance action initiating a hard fork to a target protocol version." .
+
+cardano:ProtocolVersion a rdfs:Class ;
+  rdfs:label "ProtocolVersion" ;
+  dcterms:description "A Cardano protocol version decomposed into major and minor version numbers." .
+
+cardano:PoolVotingThresholds a rdfs:Class ;
+  rdfs:label "PoolVotingThresholds" ;
+  dcterms:description "Pool voting thresholds inside a typed protocol-parameter update." .
+
+cardano:DRepVotingThresholds a rdfs:Class ;
+  rdfs:label "DRepVotingThresholds" ;
+  dcterms:description "DRep voting thresholds inside a typed protocol-parameter update." .
+
+cardano:ExUnitPrices a rdfs:Class ;
+  rdfs:label "ExUnitPrices" ;
+  dcterms:description "Protocol-parameter prices for execution memory and CPU steps." .
+
 cardano:Anchor a rdfs:Class ;
   rdfs:label "Anchor" ;
   dcterms:description "An off-chain pointer to governance metadata, decomposed into a URL and content hash." .
@@ -669,6 +717,72 @@ cardano:hasGuardPolicy a rdf:Property ;
   rdfs:domain cardano:TreasuryWithdrawals ;
   rdfs:range  cardano:Identifier ;
   dcterms:description "Optional policy script hash that guards a TreasuryWithdrawals governance action." .
+
+cardano:hasPriorAction a rdf:Property ;
+  rdfs:label "hasPriorAction" ;
+  rdfs:range  cardano:GovActionId ;
+  dcterms:description "Binds a governance action to the prior action it follows, when the ledger constructor carries one." .
+
+cardano:hasProtocolParamUpdate a rdf:Property ;
+  rdfs:label "hasProtocolParamUpdate" ;
+  rdfs:domain cardano:ParameterChange ;
+  rdfs:range  cardano:ProtocolParamUpdate ;
+  dcterms:description "Binds a ParameterChange governance action to its protocol-parameter update payload." .
+
+cardano:hasMinFeeA a rdf:Property ; rdfs:label "hasMinFeeA" .
+cardano:hasMinFeeB a rdf:Property ; rdfs:label "hasMinFeeB" .
+cardano:hasMaxBlockBodySize a rdf:Property ; rdfs:label "hasMaxBlockBodySize" .
+cardano:hasMaxTxSize a rdf:Property ; rdfs:label "hasMaxTxSize" .
+cardano:hasMaxBlockHeaderSize a rdf:Property ; rdfs:label "hasMaxBlockHeaderSize" .
+cardano:hasKeyDeposit a rdf:Property ; rdfs:label "hasKeyDeposit" .
+cardano:hasPoolDeposit a rdf:Property ; rdfs:label "hasPoolDeposit" .
+cardano:hasMaxEpoch a rdf:Property ; rdfs:label "hasMaxEpoch" .
+cardano:hasNOpt a rdf:Property ; rdfs:label "hasNOpt" .
+cardano:hasPoolPledgeInfluence a rdf:Property ; rdfs:label "hasPoolPledgeInfluence" .
+cardano:hasExpansionRate a rdf:Property ; rdfs:label "hasExpansionRate" .
+cardano:hasTreasuryGrowthRate a rdf:Property ; rdfs:label "hasTreasuryGrowthRate" .
+cardano:hasMinPoolCost a rdf:Property ; rdfs:label "hasMinPoolCost" .
+cardano:hasAdaPerUtxoByte a rdf:Property ; rdfs:label "hasAdaPerUtxoByte" .
+cardano:hasCostModels a rdf:Property ; rdfs:label "hasCostModels" .
+cardano:hasExecutionCosts a rdf:Property ; rdfs:label "hasExecutionCosts" .
+cardano:hasMaxTxExUnits a rdf:Property ; rdfs:label "hasMaxTxExUnits" .
+cardano:hasMaxBlockExUnits a rdf:Property ; rdfs:label "hasMaxBlockExUnits" .
+cardano:hasMaxValueSize a rdf:Property ; rdfs:label "hasMaxValueSize" .
+cardano:hasCollateralPercentage a rdf:Property ; rdfs:label "hasCollateralPercentage" .
+cardano:hasMaxCollateralInputs a rdf:Property ; rdfs:label "hasMaxCollateralInputs" .
+cardano:hasPoolVotingThresholds a rdf:Property ; rdfs:label "hasPoolVotingThresholds" .
+cardano:hasDRepVotingThresholds a rdf:Property ; rdfs:label "hasDRepVotingThresholds" .
+cardano:hasCommitteeMinSize a rdf:Property ; rdfs:label "hasCommitteeMinSize" .
+cardano:hasCommitteeMaxTermLength a rdf:Property ; rdfs:label "hasCommitteeMaxTermLength" .
+cardano:hasGovActionLifetime a rdf:Property ; rdfs:label "hasGovActionLifetime" .
+cardano:hasGovActionDeposit a rdf:Property ; rdfs:label "hasGovActionDeposit" .
+cardano:hasDRepDeposit a rdf:Property ; rdfs:label "hasDRepDeposit" .
+cardano:hasDRepActivity a rdf:Property ; rdfs:label "hasDRepActivity" .
+cardano:hasMinFeeRefScriptCoinsPerByte a rdf:Property ; rdfs:label "hasMinFeeRefScriptCoinsPerByte" .
+cardano:hasSteps a rdf:Property ; rdfs:label "hasSteps" .
+cardano:hasMemory a rdf:Property ; rdfs:label "hasMemory" .
+cardano:hasPriceMemory a rdf:Property ; rdfs:label "hasPriceMemory" .
+cardano:hasPriceSteps a rdf:Property ; rdfs:label "hasPriceSteps" .
+cardano:hasMotionNoConfidence a rdf:Property ; rdfs:label "hasMotionNoConfidence" .
+cardano:hasCommitteeNormal a rdf:Property ; rdfs:label "hasCommitteeNormal" .
+cardano:hasCommitteeNoConfidence a rdf:Property ; rdfs:label "hasCommitteeNoConfidence" .
+cardano:hasUpdateToConstitution a rdf:Property ; rdfs:label "hasUpdateToConstitution" .
+cardano:hasHardForkInitiation a rdf:Property ; rdfs:label "hasHardForkInitiation" .
+cardano:hasPPSecurityGroup a rdf:Property ; rdfs:label "hasPPSecurityGroup" .
+cardano:hasPPNetworkGroup a rdf:Property ; rdfs:label "hasPPNetworkGroup" .
+cardano:hasPPEconomicGroup a rdf:Property ; rdfs:label "hasPPEconomicGroup" .
+cardano:hasPPTechnicalGroup a rdf:Property ; rdfs:label "hasPPTechnicalGroup" .
+cardano:hasPPGovGroup a rdf:Property ; rdfs:label "hasPPGovGroup" .
+cardano:hasTreasuryWithdrawal a rdf:Property ; rdfs:label "hasTreasuryWithdrawal" .
+cardano:hasNewQuorum a rdf:Property ; rdfs:label "hasNewQuorum" .
+cardano:removesMember a rdf:Property ; rdfs:label "removesMember" .
+cardano:addsMember a rdf:Property ; rdfs:label "addsMember" .
+cardano:termLimit a rdf:Property ; rdfs:label "termLimit" .
+cardano:hasConstitution a rdf:Property ; rdfs:label "hasConstitution" .
+cardano:hasGuardrailScript a rdf:Property ; rdfs:label "hasGuardrailScript" .
+cardano:hasProtocolVersion a rdf:Property ; rdfs:label "hasProtocolVersion" .
+cardano:hasMajorVersion a rdf:Property ; rdfs:label "hasMajorVersion" .
+cardano:hasMinorVersion a rdf:Property ; rdfs:label "hasMinorVersion" .
 
 cardano:hasVote a rdf:Property ;
   rdfs:label "hasVote" ;

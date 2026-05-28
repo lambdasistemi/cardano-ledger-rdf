@@ -72,6 +72,7 @@ library
     Cardano.Tx.Credentials
     Cardano.Tx.Deposits
     Cardano.Tx.Graph.Emit.Certificate
+    Cardano.Tx.Graph.Emit.GovAction
     Cardano.Tx.Graph.Emit.Lookup
     Cardano.Tx.Graph.Emit.Monad
     Cardano.Tx.Graph.Emit.NativeScript
@@ -291,6 +292,10 @@ test-suite unit-tests
     Fixtures.TxGraph.S26_CertCommittee
     Fixtures.TxGraph.S27_CurrentTreasuryValue
     Fixtures.TxGraph.S28_Donation
+    Fixtures.TxGraph.S29_GovActionParameterChange
+    Fixtures.TxGraph.S30_GovActionUpdateCommittee
+    Fixtures.TxGraph.S31_GovActionNewConstitution
+    Fixtures.TxGraph.S32_GovActionHardForkInitiation
     Fixtures.TxGraph.TurtleShim
 
   build-depends:

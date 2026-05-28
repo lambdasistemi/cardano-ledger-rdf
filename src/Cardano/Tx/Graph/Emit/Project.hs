@@ -285,6 +285,7 @@ import Cardano.Tx.Graph.Emit.Blueprint (
     decodeDatumForOutput,
  )
 import Cardano.Tx.Graph.Emit.Certificate (emitTypedCertificateTree)
+import Cardano.Tx.Graph.Emit.GovAction (emitTypedGovActionTree)
 import Cardano.Tx.Graph.Emit.Lookup (
     BnodeName (..),
     LookupTable,
@@ -2875,7 +2876,14 @@ buildProposalCluster lookupTbl k proposal@(ProposalProcedure _ _ action _) =
                     k
                     withdrawals
                     guardPolicy
-            _ -> pure ()
+            _ ->
+                Maybe.fromMaybe (pure ()) $
+                    emitTypedGovActionTree
+                        lookupTbl
+                        resolveCredentialAndIntroduceIdent
+                        (idProposalBnode k)
+                        (idProposalGovActionBnode k)
+                        action
         emitProposalDatumFallback k (govActionTag action) proposal
 
 {- | Stable variety-tag string for any Conway 'GovAction'
