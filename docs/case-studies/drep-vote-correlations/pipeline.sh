@@ -28,3 +28,45 @@ for chunk in "$TMP"/chunk-*; do
 done
 
 tx-graph --rules "$SCRIPT_DIR/rules.yaml" --in-dir "$OUT/cbor" --out "$OUT/lattice.ttl"
+
+python3 - "$OUT/lattice.ttl" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+
+
+def hex_if_needed(value):
+    if re.fullmatch(r"[0-9a-f]+(?::[0-9]+)?", value):
+        return value
+    if ":" in value:
+        raw, index = value.rsplit(":", 1)
+        return f"{raw.encode('latin-1').hex()}:{index}"
+    return value.encode("latin-1").hex()
+
+
+def bytes_hex_repl(match):
+    return f'{match.group(1)}"{hex_if_needed(match.group(2))}"'
+
+
+def gov_action_bnode_repl(match):
+    token = match.group(2)
+    if re.fullmatch(r"[0-9a-f]+", token):
+        return match.group(0)
+    return f"{match.group(1)}{token.encode('latin-1').hex()}{match.group(3)}"
+
+
+text = re.sub(
+    r'(cardano:bytesHex )"([^"]*)"',
+    bytes_hex_repl,
+    text,
+)
+text = re.sub(
+    r"(_:hash_govactionid_)(.*?)(_[0-9]+)",
+    gov_action_bnode_repl,
+    text,
+)
+path.write_text(text, encoding="utf-8")
+PY
