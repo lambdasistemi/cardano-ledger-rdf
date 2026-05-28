@@ -186,6 +186,8 @@ scopeBodyBnodes txid =
 renameBnode :: Text -> BnodeName -> BnodeName
 renameBnode txTag bn@(BnodeName name)
     | isContentAddressedBnodeName name = bn
+    | isAddressDecompositionBnodeName name = bn
+    | (txTag <> "_") `Text.isPrefixOf` name = bn
     | otherwise = BnodeName (txTag <> "_" <> name)
 
 {- TECH-DEBT(#26 follow-up): the current IR stores bnode family as
@@ -198,6 +200,12 @@ an explicit family tag.
 isContentAddressedBnodeName :: Text -> Bool
 isContentAddressedBnodeName name =
     "hash_" `Text.isPrefixOf` name || "cred_" `Text.isPrefixOf` name
+
+isAddressDecompositionBnodeName :: Text -> Bool
+isAddressDecompositionBnodeName name =
+    any
+        (`Text.isSuffixOf` name)
+        ["Addr", "CredPayment", "CredStake"]
 
 {- | Strip the leading @\@prefix …@ block (plus the trailing
 blank line) from an overlay byte stream. The loader's overlay
@@ -302,7 +310,7 @@ renderPredicateObject p o =
 renderSubject :: Subject -> Builder
 renderSubject = \case
     SBnode (BnodeName n) -> text "_:" <> text n
-    SIri t -> text t
+    SIri t -> renderIriToken t
 
 renderPredicate :: Predicate -> Builder
 renderPredicate = \case
@@ -312,13 +320,24 @@ renderPredicate = \case
 renderObject :: Object -> Builder
 renderObject = \case
     OBnode (BnodeName n) -> text "_:" <> text n
-    OIri t -> text t
+    OIri t -> renderIriToken t
     OStringLit s -> text "\"" <> text (escapeTurtleString s) <> text "\""
     OIntLit i -> text (Text.pack (show i))
     OBoolLit b ->
         text "\""
             <> text (if b then "true" else "false")
             <> text "\"^^xsd:boolean"
+
+renderIriToken :: Text -> Builder
+renderIriToken t
+    | isAbsoluteIri t = text "<" <> text t <> text ">"
+    | otherwise = text t
+
+isAbsoluteIri :: Text -> Bool
+isAbsoluteIri t =
+    "urn:" `Text.isPrefixOf` t
+        || "http://" `Text.isPrefixOf` t
+        || "https://" `Text.isPrefixOf` t
 
 {- | Escape a Turtle string-literal payload.
 

@@ -113,7 +113,10 @@ assertDatumShape bytes k datum =
         DatumHash _ -> do
             outputBlockOfBytes bytes k
                 `shouldSatisfy` BS8.isInfixOf
-                    (BS8.pack ("cardano:hasDatum _:outputDatum" <> show k))
+                    (BS8.pack "cardano:hasDatum _:")
+            outputBlockOfBytes bytes k
+                `shouldSatisfy` BS8.isInfixOf
+                    (BS8.pack ("_outputDatum" <> show k))
             datumBlockOfBytes bytes k
                 `shouldSatisfy` BS8.isInfixOf "cardano:hasHash"
             -- Hash-only datums MUST NOT carry hasRawBytes.
@@ -122,7 +125,10 @@ assertDatumShape bytes k datum =
         Datum _ -> do
             outputBlockOfBytes bytes k
                 `shouldSatisfy` BS8.isInfixOf
-                    (BS8.pack ("cardano:hasDatum _:outputDatum" <> show k))
+                    (BS8.pack "cardano:hasDatum _:")
+            outputBlockOfBytes bytes k
+                `shouldSatisfy` BS8.isInfixOf
+                    (BS8.pack ("_outputDatum" <> show k))
             datumBlockOfBytes bytes k
                 `shouldSatisfy` BS8.isInfixOf "cardano:hasHash"
             -- Inline datums MUST carry hasRawBytes.
@@ -164,12 +170,12 @@ Returns empty if no such sub-block exists.
 datumBlockOfBytes :: ByteString -> Int -> ByteString
 datumBlockOfBytes bs k =
     let needle =
-            "_:outputDatum" <> BS8.pack (show k) <> " a cardano:Datum"
+            "_outputDatum" <> BS8.pack (show k) <> " a cardano:Datum"
      in case BS8.breakSubstring needle bs of
             (_, suf)
                 | BS.null suf -> ""
                 | otherwise ->
-                    let (block, _) = BS8.breakSubstring "\n\n" suf
+                    let (block, _) = BS8.breakSubstring "\n\n" ("_:" <> suf)
                      in block
 
 {- | Extract the bytes between a section header line (e.g.

@@ -93,6 +93,9 @@
                 lintPkgs.haskellPackages.fourmolu
                 lintPkgs.haskellPackages.hlint
                 pkgs.just
+                pkgs.apache-jena
+                pkgs.jre_headless
+                pkgs.which
                 pkgs.curl
                 pkgs.cacert
                 pkgs.lmdb

@@ -11,36 +11,36 @@
 :mpfs_oracle a cardano:Entity ;
   rdfs:label "mpfs.oracle" ;
   cardano:bech32 "addr1zx4c4tn2l5efcxs8zxrft28kc8uhykwt5h3ar3z9qh7tgh6avaqcquvquw4pmrz7xz3dj237afxu75hh6n5fhngxeywsvp6mlq" ;
-  cardano:hasIdentifier _:mpfs_oracle_paymentScript ;
-  cardano:hasIdentifier _:mpfs_oracle_stakeKey .
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:ab8aae6afd329c1a07118695a8f6c1f97259cba5e3d1c44505fcb45f> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeKey:5d6741807180e3aa1d8c5e30a2d92a3eea4dcf52f7d4e89bcd06c91d> .
 
-_:mpfs_oracle_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:ab8aae6afd329c1a07118695a8f6c1f97259cba5e3d1c44505fcb45f> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "ab8aae6afd329c1a07118695a8f6c1f97259cba5e3d1c44505fcb45f" .
 
-_:mpfs_oracle_stakeKey a cardano:Identifier ;
+<urn:cardano:id:StakeKey:5d6741807180e3aa1d8c5e30a2d92a3eea4dcf52f7d4e89bcd06c91d> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "5d6741807180e3aa1d8c5e30a2d92a3eea4dcf52f7d4e89bcd06c91d" .
 
 :mpfs_oracle_script a cardano:Entity ;
   rdfs:label "mpfs.oracle.script" ;
-  cardano:hasIdentifier _:mpfs_oracle_script_paymentScript .
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:aa11bb22cc33dd44ee55ff6677889900112233445566778899aabbcc> .
 
-_:mpfs_oracle_script_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:aa11bb22cc33dd44ee55ff6677889900112233445566778899aabbcc> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "aa11bb22cc33dd44ee55ff6677889900112233445566778899aabbcc" .
 
 :operator a cardano:Entity ;
   rdfs:label "operator" ;
   cardano:bech32 "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz" ;
-  cardano:hasIdentifier _:operator_paymentKey ;
-  cardano:hasIdentifier _:operator_stakeKey .
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> .
 
-_:operator_paymentKey a cardano:Identifier ;
+<urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> a cardano:Identifier ;
   cardano:leafType "PaymentKey" ;
   cardano:bytesHex "8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1" .
 
-_:operator_stakeKey a cardano:Identifier ;
+<urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3" .
 
@@ -48,24 +48,24 @@ _:operator_stakeKey a cardano:Identifier ;
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b ;
+<urn:cardano:tx:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasInput _:input1 ;
-  cardano:hasOutput _:output1 ;
-  cardano:hasOutput _:output2 ;
-  cardano:hasOutput _:output3 ;
-  cardano:hasOutput _:output4 ;
-  cardano:hasOutput _:output5 ;
-  cardano:hasOutput _:output6 ;
-  cardano:hasOutput _:output7 ;
-  cardano:hasOutput _:output8 ;
-  cardano:hasOutput _:output9 ;
-  cardano:hasOutput _:output10 ;
-  cardano:hasOutput _:output11 ;
+  cardano:hasInput _:99c9ab59_input1 ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:0> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:1> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:2> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:3> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:4> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:5> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:6> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:7> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:8> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:9> ;
+  cardano:hasOutput <urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:10> ;
   cardano:hasFee 0 .
 
-_:hash_txid_99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b a cardano:Identifier ;
+<urn:cardano:id:TxId:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b" .
 
@@ -73,14 +73,14 @@ _:hash_txid_99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b a c
 # Input 1
 #
 
-_:input1 a cardano:Input ;
-  cardano:fromTxOutRef _:inputTxOutRef1 .
+_:99c9ab59_input1 a cardano:Input ;
+  cardano:fromTxOutRef _:99c9ab59_inputTxOutRef1 .
 
-_:inputTxOutRef1 a cardano:TxOutRef ;
-  cardano:hasTxId _:hash_txid_0000000000000000000000000000000000000000000000000000000000000001 ;
+_:99c9ab59_inputTxOutRef1 a cardano:TxOutRef ;
+  cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000001> ;
   cardano:hasIndex 0 .
 
-_:hash_txid_0000000000000000000000000000000000000000000000000000000000000001 a cardano:Identifier ;
+<urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000001> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000001" .
 
@@ -88,112 +88,112 @@ _:hash_txid_0000000000000000000000000000000000000000000000000000000000000001 a c
 # Output 1
 #
 
-_:output1 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:0> a cardano:Output ;
   cardano:hasIndex 0 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 2
 #
 
-_:output2 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:1> a cardano:Output ;
   cardano:hasIndex 1 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 3
 #
 
-_:output3 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:2> a cardano:Output ;
   cardano:hasIndex 2 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 4
 #
 
-_:output4 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:3> a cardano:Output ;
   cardano:hasIndex 3 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 5
 #
 
-_:output5 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:4> a cardano:Output ;
   cardano:hasIndex 4 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 6
 #
 
-_:output6 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:5> a cardano:Output ;
   cardano:hasIndex 5 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 7
 #
 
-_:output7 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:6> a cardano:Output ;
   cardano:hasIndex 6 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 8
 #
 
-_:output8 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:7> a cardano:Output ;
   cardano:hasIndex 7 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 9
 #
 
-_:output9 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:8> a cardano:Output ;
   cardano:hasIndex 8 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 10
 #
 
-_:output10 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:9> a cardano:Output ;
   cardano:hasIndex 9 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 1500000 .
 
 #
 # Output 11
 #
 
-_:output11 a cardano:Output ;
+<urn:cardano:utxo:99c9ab5906f5099d13ae4cd61803b5f78abaa69272c90731887c09399bda5e1b:10> a cardano:Output ;
   cardano:hasIndex 10 ;
-  cardano:atAddress _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
   cardano:lovelace 19825000 .
 
 #
 # Address decompositions — payment + stake credential per leaf.
 #
 
-_:cred_paymentkey_00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
+_:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
   cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
-  cardano:hasPaymentCredential _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000CredPayment .
+  cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
 
-_:cred_paymentkey_00000000000000000000000000000000000000000000000000000000 a cardano:Identifier ;
+<urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;
   cardano:leafType "PaymentKey" ;
   cardano:bytesHex "00000000000000000000000000000000000000000000000000000000" .
 
-_:cred_paymentkey_00000000000000000000000000000000000000000000000000000000CredPayment a cardano:PaymentCredential ;
-  cardano:hasIdentifier _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000 .
+_:00000000000000000000000000000000000000000000000000000000CredPayment a cardano:PaymentCredential ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> .

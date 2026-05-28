@@ -113,7 +113,10 @@ assertProposalShape bytes k = do
     -- The proposal subject carries a hasDatum edge to its sub-block.
     proposalBlockOfBytes bytes k
         `shouldSatisfy` BS8.isInfixOf
-            (BS8.pack ("cardano:hasDatum _:proposalDatum" <> show k))
+            (BS8.pack "cardano:hasDatum _:")
+    proposalBlockOfBytes bytes k
+        `shouldSatisfy` BS8.isInfixOf
+            (BS8.pack ("_proposalDatum" <> show k))
     -- The proposal subject MUST NOT carry the pre-D-006 shape.
     proposalBlockOfBytes bytes k
         `shouldSatisfy` not . BS8.isInfixOf "a cardano:Datum"
@@ -151,12 +154,12 @@ between the @# Proposal k@ section header and the next blank line
 -}
 proposalBlockOfBytes :: ByteString -> Int -> ByteString
 proposalBlockOfBytes bs k =
-    let needle = "_:proposal" <> BS8.pack (show k) <> " "
+    let needle = "_proposal" <> BS8.pack (show k) <> " "
      in case BS8.breakSubstring needle (sectionBlock bs ("# Proposal " <> BS8.pack (show k))) of
             (_, suf)
                 | BS.null suf -> ""
                 | otherwise ->
-                    let (block, _) = BS8.breakSubstring "\n\n" suf
+                    let (block, _) = BS8.breakSubstring "\n\n" ("_:" <> suf)
                      in block
 
 {- | The proposal-datum sub-block at position @k@ (1-based) — the
@@ -167,12 +170,12 @@ exists.
 proposalDatumBlockOfBytes :: ByteString -> Int -> ByteString
 proposalDatumBlockOfBytes bs k =
     let needle =
-            "_:proposalDatum" <> BS8.pack (show k) <> " a cardano:Datum"
+            "_proposalDatum" <> BS8.pack (show k) <> " a cardano:Datum"
      in case BS8.breakSubstring needle bs of
             (_, suf)
                 | BS.null suf -> ""
                 | otherwise ->
-                    let (block, _) = BS8.breakSubstring "\n\n" suf
+                    let (block, _) = BS8.breakSubstring "\n\n" ("_:" <> suf)
                      in block
 
 {- | Extract the bytes between a section header line (e.g.

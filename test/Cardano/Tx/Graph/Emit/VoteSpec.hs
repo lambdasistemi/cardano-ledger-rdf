@@ -93,23 +93,24 @@ drepSpec = describe "DRep voter" $
     it "types voter as cardano:VoterDRep with hasIdentifier" $ do
         let voter = DRepVoter (KeyHashObj (drepKeyHash 0xaa))
             bytes = emitBytes (txWithSingleVote voter VoteYes SNothing)
-        bytes `shouldSatisfy` BS8.isInfixOf "_:vote1 a cardano:Vote"
-        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasVoter _:voter1"
+        bytes `shouldSatisfy` BS8.isInfixOf "_vote1 a cardano:Vote"
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasVoter _:"
+        bytes `shouldSatisfy` BS8.isInfixOf "_voter1"
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ( "cardano:hasVotingAction _:hash_govactionid_"
+                ( "cardano:hasVotingAction <urn:cardano:id:GovActionId:"
                     <> govActionHashHex
-                    <> "_0"
+                    <> ":0>"
                 )
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ( "_:hash_govactionid_"
+                ( "<urn:cardano:id:GovActionId:"
                     <> govActionHashHex
-                    <> "_0 a cardano:GovActionId"
+                    <> ":0> a cardano:GovActionId"
                 )
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasTxId _:hash_txid_" <> govActionHashHex)
+                ("cardano:hasTxId <urn:cardano:id:TxId:" <> govActionHashHex)
         bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasIndex 0"
         bytes
             `shouldSatisfy` BS8.isInfixOf
@@ -122,7 +123,7 @@ drepSpec = describe "DRep voter" $
                 ("cardano:bytesHex \"" <> govActionHashHex <> ":0\"")
         bytes
             `shouldSatisfy` (not . BS8.isInfixOf (govActionHashHex <> "#0"))
-        bytes `shouldSatisfy` BS8.isInfixOf "_:voter1 a cardano:VoterDRep"
+        bytes `shouldSatisfy` BS8.isInfixOf "_voter1 a cardano:VoterDRep"
         bytes
             `shouldSatisfy` BS8.isInfixOf
                 ("cardano:hasIdentifier \"" <> BS8.replicate 56 'a' <> "\"")
@@ -132,7 +133,7 @@ stakePoolSpec = describe "stake-pool voter" $
     it "types voter as cardano:VoterStakePool with hasIdentifier" $ do
         let voter = StakePoolVoter (poolKeyHash 0xbb)
             bytes = emitBytes (txWithSingleVote voter VoteNo SNothing)
-        bytes `shouldSatisfy` BS8.isInfixOf "_:voter1 a cardano:VoterStakePool"
+        bytes `shouldSatisfy` BS8.isInfixOf "_voter1 a cardano:VoterStakePool"
         bytes
             `shouldSatisfy` BS8.isInfixOf
                 ("cardano:hasIdentifier \"" <> BS8.replicate 56 'b' <> "\"")
@@ -143,7 +144,7 @@ committeeSpec = describe "constitutional-committee voter" $
         let voter = CommitteeVoter (KeyHashObj (committeeKeyHash 0xcc))
             bytes = emitBytes (txWithSingleVote voter Abstain SNothing)
         bytes
-            `shouldSatisfy` BS8.isInfixOf "_:voter1 a cardano:VoterCommitteeCold"
+            `shouldSatisfy` BS8.isInfixOf "_voter1 a cardano:VoterCommitteeCold"
         bytes
             `shouldSatisfy` BS8.isInfixOf
                 ("cardano:hasIdentifier \"" <> BS8.replicate 56 'c' <> "\"")
@@ -174,7 +175,8 @@ anchorSpec = describe "anchor sub-block" $
                         (fromJust (hashFromStringAsHex (replicate 64 '0')))
                     )
             bytes = emitBytes (txWithSingleVote voter VoteYes (SJust anchor))
-        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasAnchor _:voteAnchor1"
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasAnchor _:"
+        bytes `shouldSatisfy` BS8.isInfixOf "_voteAnchor1"
         bytes
             `shouldSatisfy` BS8.isInfixOf
                 "cardano:anchorUrl \"https://example.invalid/anchor\""
@@ -192,9 +194,7 @@ operatorNamedGovActionSpec = describe "operator-named GovActionId" $
                     (txWithSingleVote voter VoteYes SNothing)
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ( "cardano:hasVotingAction "
-                    <> "_:io_proposal_developer_experience_govActionId"
-                )
+                ("cardano:hasVotingAction <urn:cardano:id:GovActionId:" <> govActionHashHex <> ":0>")
 
 ----------------------------------------------------------------------
 -- Synthesis helpers

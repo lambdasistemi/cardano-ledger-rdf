@@ -12,15 +12,15 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4 ;
+<urn:cardano:tx:aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasCertificate _:cert1 ;
-  cardano:hasCertificate _:cert2 ;
-  cardano:hasCertificate _:cert3 ;
+  cardano:hasCertificate _:aad743a0_cert1 ;
+  cardano:hasCertificate _:aad743a0_cert2 ;
+  cardano:hasCertificate _:aad743a0_cert3 ;
   cardano:hasFee 0 .
 
-_:hash_txid_aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4 a cardano:Identifier ;
+<urn:cardano:id:TxId:aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4" .
 
@@ -28,34 +28,34 @@ _:hash_txid_aad743a0366dfdb0824be1de5409dfdd0df29329757ad28a01b26c9bc8434bb4 a c
 # Certificate 1
 #
 
-_:cert1 a cardano:Certificate ;
+_:aad743a0_cert1 a cardano:Certificate ;
   a cardano:RegDRep ;
-  cardano:hasDRepCredential _:cred_drepkey_44444444444444444444444444444444444444444444444444444444 ;
+  cardano:hasDRepCredential <urn:cardano:id:DRepKey:44444444444444444444444444444444444444444444444444444444> ;
   cardano:hasDeposit 500000000 ;
-  cardano:hasAnchor _:cert1Anchor .
+  cardano:hasAnchor _:aad743a0_cert1Anchor .
 
-_:cred_drepkey_44444444444444444444444444444444444444444444444444444444 a cardano:Identifier ;
+<urn:cardano:id:DRepKey:44444444444444444444444444444444444444444444444444444444> a cardano:Identifier ;
   cardano:leafType "DRepKey" ;
   cardano:bytesHex "44444444444444444444444444444444444444444444444444444444" .
 
-_:hash_anchordata_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa a cardano:Identifier ;
+<urn:cardano:id:AnchorDataHash:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> a cardano:Identifier ;
   cardano:leafType "AnchorDataHash" ;
   cardano:bytesHex "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" .
 
-_:cert1Anchor a cardano:Anchor ;
+_:aad743a0_cert1Anchor a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/drep-registration" ;
-  cardano:anchorHash _:hash_anchordata_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa .
+  cardano:anchorHash <urn:cardano:id:AnchorDataHash:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> .
 
 #
 # Certificate 2
 #
 
-_:cert2 a cardano:Certificate ;
+_:aad743a0_cert2 a cardano:Certificate ;
   a cardano:UnRegDRep ;
-  cardano:hasDRepCredential _:cred_drepkey_44444444444444444444444444444444444444444444444444444444 ;
+  cardano:hasDRepCredential <urn:cardano:id:DRepKey:44444444444444444444444444444444444444444444444444444444> ;
   cardano:hasDeposit 500000000 .
 
-_:cred_drepkey_44444444444444444444444444444444444444444444444444444444 a cardano:Identifier ;
+<urn:cardano:id:DRepKey:44444444444444444444444444444444444444444444444444444444> a cardano:Identifier ;
   cardano:leafType "DRepKey" ;
   cardano:bytesHex "44444444444444444444444444444444444444444444444444444444" .
 
@@ -63,19 +63,19 @@ _:cred_drepkey_44444444444444444444444444444444444444444444444444444444 a cardan
 # Certificate 3
 #
 
-_:cert3 a cardano:Certificate ;
+_:aad743a0_cert3 a cardano:Certificate ;
   a cardano:UpdateDRep ;
-  cardano:hasDRepCredential _:cred_drepkey_44444444444444444444444444444444444444444444444444444444 ;
-  cardano:hasAnchor _:cert3Anchor .
+  cardano:hasDRepCredential <urn:cardano:id:DRepKey:44444444444444444444444444444444444444444444444444444444> ;
+  cardano:hasAnchor _:aad743a0_cert3Anchor .
 
-_:cred_drepkey_44444444444444444444444444444444444444444444444444444444 a cardano:Identifier ;
+<urn:cardano:id:DRepKey:44444444444444444444444444444444444444444444444444444444> a cardano:Identifier ;
   cardano:leafType "DRepKey" ;
   cardano:bytesHex "44444444444444444444444444444444444444444444444444444444" .
 
-_:hash_anchordata_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb a cardano:Identifier ;
+<urn:cardano:id:AnchorDataHash:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> a cardano:Identifier ;
   cardano:leafType "AnchorDataHash" ;
   cardano:bytesHex "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" .
 
-_:cert3Anchor a cardano:Anchor ;
+_:aad743a0_cert3Anchor a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/drep-update" ;
-  cardano:anchorHash _:hash_anchordata_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb .
+  cardano:anchorHash <urn:cardano:id:AnchorDataHash:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> .

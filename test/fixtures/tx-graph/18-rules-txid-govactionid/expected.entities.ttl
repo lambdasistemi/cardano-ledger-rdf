@@ -8,17 +8,17 @@
 
 :io_submission_tx a cardano:Entity ;
   rdfs:label "io.submission-tx" ;
-  cardano:hasIdentifier _:io_submission_tx_txId .
+  cardano:hasIdentifier <urn:cardano:id:TxId:73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762> .
 
-_:io_submission_tx_txId a cardano:Identifier ;
+<urn:cardano:id:TxId:73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762" .
 
 :io_proposal_developer_experience a cardano:Entity ;
   rdfs:label "io.proposal.developer-experience" ;
-  cardano:hasIdentifier _:io_proposal_developer_experience_govActionId .
+  cardano:hasIdentifier <urn:cardano:id:GovActionId:73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0> .
 
-_:io_proposal_developer_experience_govActionId a cardano:Identifier ;
+<urn:cardano:id:GovActionId:73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0> a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
   cardano:bytesHex "73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762:0" .
 

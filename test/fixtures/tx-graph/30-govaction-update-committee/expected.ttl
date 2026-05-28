@@ -12,13 +12,13 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939 ;
+<urn:cardano:tx:ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasProposal _:proposal1 ;
+  cardano:hasProposal _:ae53040f_proposal1 ;
   cardano:hasFee 0 .
 
-_:hash_txid_ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939 a cardano:Identifier ;
+<urn:cardano:id:TxId:ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939" .
 
@@ -26,50 +26,50 @@ _:hash_txid_ae53040fc4bdb7a6d768812486a03f98ab88323f621018495b1d9e81c4e2c939 a c
 # Proposal 1
 #
 
-_:cred_stakekey_0000000000000000000000000000000000000000000000000000001c a cardano:Identifier ;
+<urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001c> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "0000000000000000000000000000000000000000000000000000001c" .
 
-_:proposal1 a cardano:Proposal ;
+_:ae53040f_proposal1 a cardano:Proposal ;
   cardano:hasDeposit 100000000000 ;
-  cardano:hasReturnAddress _:cred_stakekey_0000000000000000000000000000000000000000000000000000001c ;
-  cardano:hasAnchor _:proposalAnchor1 ;
-  cardano:hasGovAction _:govAction1 ;
-  cardano:hasDatum _:proposalDatum1 .
+  cardano:hasReturnAddress <urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001c> ;
+  cardano:hasAnchor _:ae53040f_proposalAnchor1 ;
+  cardano:hasGovAction _:ae53040f_govAction1 ;
+  cardano:hasDatum _:ae53040f_proposalDatum1 .
 
-_:proposalAnchor1 a cardano:Anchor ;
+_:ae53040f_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/update-committee" ;
   cardano:anchorHash "3333333333333333333333333333333333333333333333333333333333333333" .
 
-_:govAction1 a cardano:UpdateCommittee ;
-  cardano:hasPriorAction _:hash_govactionid_""""""""""""""""""""""""""""""""_7 ;
+_:ae53040f_govAction1 a cardano:UpdateCommittee ;
+  cardano:hasPriorAction <urn:cardano:id:GovActionId:"""""""""""""""""""""""""""""""":7> ;
   cardano:hasNewQuorum "2/3" ;
-  cardano:removesMember _:cred_committeecoldkey_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ;
-  cardano:addsMember _:govAction1CommitteeAddition1 .
+  cardano:removesMember <urn:cardano:id:CommitteeColdKey:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> ;
+  cardano:addsMember _:ae53040f_govAction1CommitteeAddition1 .
 
-_:hash_txid_2222222222222222222222222222222222222222222222222222222222222222 a cardano:Identifier ;
+<urn:cardano:id:TxId:2222222222222222222222222222222222222222222222222222222222222222> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"" .
 
-_:hash_govactionid_""""""""""""""""""""""""""""""""_7 a cardano:GovActionId ;
+<urn:cardano:id:GovActionId:"""""""""""""""""""""""""""""""":7> a cardano:GovActionId ;
   a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
   cardano:bytesHex "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\":7" ;
-  cardano:hasTxId _:hash_txid_2222222222222222222222222222222222222222222222222222222222222222 ;
+  cardano:hasTxId <urn:cardano:id:TxId:2222222222222222222222222222222222222222222222222222222222222222> ;
   cardano:hasIndex 7 .
 
-_:cred_committeecoldkey_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb a cardano:Identifier ;
+<urn:cardano:id:CommitteeColdKey:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> a cardano:Identifier ;
   cardano:leafType "CommitteeColdKey" ;
   cardano:bytesHex "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" .
 
-_:cred_committeecoldkey_cccccccccccccccccccccccccccccccccccccccccccccccccccccccc a cardano:Identifier ;
+<urn:cardano:id:CommitteeColdKey:cccccccccccccccccccccccccccccccccccccccccccccccccccccccc> a cardano:Identifier ;
   cardano:leafType "CommitteeColdKey" ;
   cardano:bytesHex "cccccccccccccccccccccccccccccccccccccccccccccccccccccccc" .
 
-_:govAction1CommitteeAddition1 a cardano:CommitteeAddition ;
-  cardano:hasIdentifier _:cred_committeecoldkey_cccccccccccccccccccccccccccccccccccccccccccccccccccccccc ;
+_:ae53040f_govAction1CommitteeAddition1 a cardano:CommitteeAddition ;
+  cardano:hasIdentifier <urn:cardano:id:CommitteeColdKey:cccccccccccccccccccccccccccccccccccccccccccccccccccccccc> ;
   cardano:termLimit 1234 .
 
-_:proposalDatum1 a cardano:Datum ;
+_:ae53040f_proposalDatum1 a cardano:Datum ;
   cardano:decodedAs "UpdateCommittee" ;
   cardano:hasRawBytes "841b000000174876e800581de00000000000000000000000000000000000000000000000000000001c8504825820222222222222222222222222222222222222222222222222222222222222222207d90102818200581cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba18200581ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc1904d2d81e82020382782868747470733a2f2f6578616d706c652e696e76616c69642f7570646174652d636f6d6d697474656558203333333333333333333333333333333333333333333333333333333333333333" .

@@ -63,14 +63,15 @@ spec :: Spec
 spec = describe "Cardano.Tx.Graph.Emit proposal variants (T121 / S20)" $ do
     it "InfoAction proposal emits without PUnsupportedLeafType" $ do
         let bytes = emitBytes (txWithProposal infoActionProposal)
-        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasProposal _:proposal1"
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasProposal _:"
+        bytes `shouldSatisfy` BS8.isInfixOf "_proposal1"
     it "InfoAction proposal datum sub-block carries decodedAs \"InfoAction\"" $ do
         let bytes = emitBytes (txWithProposal infoActionProposal)
         bytes `shouldSatisfy` BS8.isInfixOf "cardano:decodedAs \"InfoAction\""
     it "InfoAction proposal datum sub-block carries hasRawBytes literal" $ do
         let bytes = emitBytes (txWithProposal infoActionProposal)
         bytes
-            `shouldSatisfy` BS8.isInfixOf "_:proposalDatum1 a cardano:Datum"
+            `shouldSatisfy` BS8.isInfixOf "_proposalDatum1 a cardano:Datum"
         bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasRawBytes \""
 
 ----------------------------------------------------------------------

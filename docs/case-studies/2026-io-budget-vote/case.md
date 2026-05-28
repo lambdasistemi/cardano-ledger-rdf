@@ -104,10 +104,10 @@ arq --data lattice.ttl --query q1-asks.rq
 In `lattice.ttl`, every per-transaction-position blank node is namespaced
 by its short transaction id, so positional bnodes such as `_:input1`,
 `_:vote1`, and `_:proposal1` do not collide across the 1,688
-transactions. Content-addressed identifier bnodes such as `_:hash_*` and
-`_:cred_*` keep their canonical names, so cross-transaction joins still
-work. The reader does not need to apply this renaming rule; `tx-graph`
-handles it.
+transactions. Content-addressed identifiers are emitted as stable
+`urn:cardano:id:*` IRIs, so cross-transaction joins work without depending
+on blank-node labels. The reader does not need to apply this naming rule;
+`tx-graph` handles it.
 
 Use the submission transaction id
 `73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762`

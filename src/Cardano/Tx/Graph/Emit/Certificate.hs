@@ -84,7 +84,7 @@ import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
 import Cardano.Tx.Graph.Rules.Load (LeafType (..))
 
 type ResolveIdent =
-    LookupTable -> LeafType -> ByteString -> Emit BnodeName
+    LookupTable -> LeafType -> ByteString -> Emit Object
 
 {- | Emit a typed certificate tree when the certificate is one of
 the Conway variants covered by the typed certificate slice.
@@ -278,7 +278,7 @@ emitPoolRegistration
         } = do
         let paramsBnode = childBnode rootBnode "PoolParams"
         certHeader rootBnode TermPoolRegistration
-        tellObj rootBnode TermHasPoolParams paramsBnode
+        tellObj rootBnode TermHasPoolParams (OBnode paramsBnode)
         tellType paramsBnode TermPoolParams
         operatorBnode <-
             resolveIdent lookupTbl PoolId (keyHashBytes operator)
@@ -365,7 +365,7 @@ emitDRepTarget ::
     ResolveIdent ->
     BnodeName ->
     DRep ->
-    Emit BnodeName
+    Emit Object
 emitDRepTarget lookupTbl resolveIdent rootBnode = \case
     DRepKeyHash h -> resolveIdent lookupTbl DRepKey (keyHashBytes h)
     DRepScriptHash h -> resolveIdent lookupTbl DRepScript (scriptHashBytes h)
@@ -373,12 +373,12 @@ emitDRepTarget lookupTbl resolveIdent rootBnode = \case
         let drepBnode = childBnode rootBnode "DRepAlwaysAbstain"
         tellType drepBnode TermDRep
         tellType drepBnode TermDRepAlwaysAbstain
-        pure drepBnode
+        pure (OBnode drepBnode)
     DRepAlwaysNoConfidence -> do
         let drepBnode = childBnode rootBnode "DRepAlwaysNoConfidence"
         tellType drepBnode TermDRep
         tellType drepBnode TermDRepAlwaysNoConfidence
-        pure drepBnode
+        pure (OBnode drepBnode)
 
 emitOwner ::
     LookupTable ->
@@ -393,7 +393,7 @@ emitOwner lookupTbl resolveIdent paramsBnode owner = do
 emitRelay :: BnodeName -> (Int, StakePoolRelay) -> Emit ()
 emitRelay paramsBnode (relayIx, relay) = do
     let relayBnode = childBnode paramsBnode ("Relay" <> Text.pack (show relayIx))
-    tellObj paramsBnode TermHasRelay relayBnode
+    tellObj paramsBnode TermHasRelay (OBnode relayBnode)
     tellType relayBnode TermRelay
     case relay of
         SingleHostAddr mPort mIpv4 mIpv6 -> do
@@ -420,7 +420,7 @@ emitPoolMetadata lookupTbl resolveIdent paramsBnode (SJust (PoolMetadata url has
     let metadataBnode = childBnode paramsBnode "Metadata"
         hashBytes = SBS.fromShort (byteArrayToShortByteString hash)
     hashBnode <- resolveIdent lookupTbl LtPoolMetadataHash hashBytes
-    tellObj paramsBnode TermHasPoolMetadata metadataBnode
+    tellObj paramsBnode TermHasPoolMetadata (OBnode metadataBnode)
     tellType metadataBnode TermPoolMetadata
     tellText metadataBnode TermHasUrl (urlToText url)
     tellObj metadataBnode TermHasHash hashBnode
@@ -449,7 +449,7 @@ emitAnchor lookupTbl resolveIdent parentBnode anchorBnode (Anchor url dataHash) 
             lookupTbl
             LtAnchorDataHash
             (hashToBytes (extractHash dataHash))
-    tellObj parentBnode TermHasAnchor anchorBnode
+    tellObj parentBnode TermHasAnchor (OBnode anchorBnode)
     tellType anchorBnode TermAnchor
     tellText anchorBnode TermAnchorUrl (urlToText url)
     tellObj anchorBnode TermAnchorHash hashBnode
@@ -458,7 +458,7 @@ resolveStakeCredential ::
     LookupTable ->
     ResolveIdent ->
     Credential Staking ->
-    Emit BnodeName
+    Emit Object
 resolveStakeCredential lookupTbl resolveIdent =
     resolveCredential lookupTbl resolveIdent StakeKey StakeScript
 
@@ -466,7 +466,7 @@ resolveRewardAccount ::
     LookupTable ->
     ResolveIdent ->
     AccountAddress ->
-    Emit BnodeName
+    Emit Object
 resolveRewardAccount lookupTbl resolveIdent (AccountAddress _ accountId) =
     case accountId of
         AccountId cred -> resolveStakeCredential lookupTbl resolveIdent cred
@@ -477,7 +477,7 @@ resolveCredential ::
     LeafType ->
     LeafType ->
     Credential kr ->
-    Emit BnodeName
+    Emit Object
 resolveCredential lookupTbl resolveIdent keyLeaf scriptLeaf = \case
     KeyHashObj h -> resolveIdent lookupTbl keyLeaf (keyHashBytes h)
     ScriptHashObj h -> resolveIdent lookupTbl scriptLeaf (scriptHashBytes h)
@@ -491,13 +491,13 @@ tellType :: BnodeName -> VocabTerm -> Emit ()
 tellType bnode term =
     tellTriple (Triple (SBnode bnode) PRdfType (OIri (vocabCurie term)))
 
-tellObj :: BnodeName -> VocabTerm -> BnodeName -> Emit ()
+tellObj :: BnodeName -> VocabTerm -> Object -> Emit ()
 tellObj subj term obj =
     tellTriple
         ( Triple
             (SBnode subj)
             (PIri (vocabCurie term))
-            (OBnode obj)
+            obj
         )
 
 tellText :: BnodeName -> VocabTerm -> Text.Text -> Emit ()

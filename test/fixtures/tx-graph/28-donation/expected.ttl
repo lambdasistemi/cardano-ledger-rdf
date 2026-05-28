@@ -12,12 +12,12 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_131cae6964a2f32295d2b4c59258df71e6899d841b85fe8bbfe081b98aa8b63a ;
+<urn:cardano:tx:131cae6964a2f32295d2b4c59258df71e6899d841b85fe8bbfe081b98aa8b63a> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:131cae6964a2f32295d2b4c59258df71e6899d841b85fe8bbfe081b98aa8b63a> ;
   cardano:isValid "true"^^xsd:boolean ;
   cardano:hasFee 0 ;
   cardano:hasDonation 1000000 .
 
-_:hash_txid_131cae6964a2f32295d2b4c59258df71e6899d841b85fe8bbfe081b98aa8b63a a cardano:Identifier ;
+<urn:cardano:id:TxId:131cae6964a2f32295d2b4c59258df71e6899d841b85fe8bbfe081b98aa8b63a> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "131cae6964a2f32295d2b4c59258df71e6899d841b85fe8bbfe081b98aa8b63a" .

@@ -247,6 +247,9 @@ lexTurtleTokens = goT
             | c == ':' ->
                 let (local, after) = Text.span isLocalChar rest
                  in (TtCurie (":" <> local) :) <$> goT after
+            | c == '<' -> case lexTurtleBracketIri rest of
+                Left err -> Left err
+                Right (iri, after) -> (TtCurie iri :) <$> goT after
             | c == '"' -> case lexTurtleString rest of
                 Left err -> Left err
                 Right (str, after) ->
@@ -325,6 +328,13 @@ lexTurtleString = goS Text.empty
                 Just (e, rest') -> goS (Text.snoc acc e) rest'
                 Nothing -> Left "turtle-lex: dangling backslash"
             | otherwise -> goS (Text.snoc acc c) rest
+
+lexTurtleBracketIri :: Text -> Either Text (Text, Text)
+lexTurtleBracketIri t =
+    let (iri, after) = Text.breakOn ">" t
+     in case Text.uncons after of
+            Just ('>', rest) -> Right (iri, rest)
+            _ -> Left "turtle-lex: unterminated IRI"
 
 ----------------------------------------------------------------------
 -- Turtle parser → [TurtleBlock]

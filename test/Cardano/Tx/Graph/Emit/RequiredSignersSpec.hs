@@ -52,13 +52,12 @@ spec = describe "Cardano.Tx.Graph.Emit required signers (T116 / S15)" $ do
     it "emits cardano:hasRequiredSigner as Identifier bnode (single, T122c)" $ do
         let bytes = emitBytes (baseTx & requiredSigners [stubKeyHash 0xaa])
             hex = BS8.replicate 56 'a'
-        -- T122c / S22: predicate binds to a PaymentKey
-        -- Identifier bnode under the @_:cred_paymentkey_…@
-        -- name. The full 56-hex bytes literal is carried by
-        -- the bnode's @cardano:bytesHex@ triple.
+        -- T122c / #56: predicate binds to a PaymentKey
+        -- Identifier IRI. The full 56-hex bytes literal is
+        -- carried by the identifier's @cardano:bytesHex@ triple.
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                "cardano:hasRequiredSigner _:cred_paymentkey_"
+                "cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:"
         bytes `shouldSatisfy` BS8.isInfixOf "a cardano:Identifier"
         bytes `shouldSatisfy` BS8.isInfixOf "cardano:leafType \"PaymentKey\""
         bytes
@@ -73,22 +72,21 @@ spec = describe "Cardano.Tx.Graph.Emit required signers (T116 / S15)" $ do
             hexA = BS8.replicate 56 'a'
             hexB = BS8.replicate 56 'b'
             hexC = BS8.replicate 56 'c'
-        -- All three emit as bnode references (the prefix
-        -- truncates the hex to 16 chars).
+        -- All three emit as full PaymentKey IRI references.
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasRequiredSigner _:cred_paymentkey_" <> BS8.take 16 hexA)
+                ("cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:" <> hexA)
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasRequiredSigner _:cred_paymentkey_" <> BS8.take 16 hexB)
+                ("cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:" <> hexB)
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasRequiredSigner _:cred_paymentkey_" <> BS8.take 16 hexC)
+                ("cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:" <> hexC)
         -- Ascending byte order: 'a' < 'b' < 'c' on the
         -- @hasRequiredSigner@ predicate position.
-        let needleA = "cardano:hasRequiredSigner _:cred_paymentkey_" <> BS8.take 16 hexA
-            needleB = "cardano:hasRequiredSigner _:cred_paymentkey_" <> BS8.take 16 hexB
-            needleC = "cardano:hasRequiredSigner _:cred_paymentkey_" <> BS8.take 16 hexC
+        let needleA = "cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:" <> hexA
+            needleB = "cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:" <> hexB
+            needleC = "cardano:hasRequiredSigner <urn:cardano:id:PaymentKey:" <> hexC
             posA = BS8.length (fst (BS8.breakSubstring needleA bytes))
             posB = BS8.length (fst (BS8.breakSubstring needleB bytes))
             posC = BS8.length (fst (BS8.breakSubstring needleC bytes))

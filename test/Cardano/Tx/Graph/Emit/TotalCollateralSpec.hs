@@ -87,7 +87,7 @@ collateralReturnSpec = describe "cardano:hasCollateralReturn" $ do
         let bytes = emitBytes baseTx
         bytes
             `shouldSatisfy` (not . BS8.isInfixOf "cardano:hasCollateralReturn")
-        bytes `shouldSatisfy` (not . BS8.isInfixOf "_:collateralReturn1")
+        bytes `shouldSatisfy` (not . BS8.isInfixOf "_collateralReturn1")
     it "emits the edge + _:collateralReturn1 sub-block when SJust" $ do
         let txOut = mkBasicTxOut stubAddr (MaryValue (Coin 1_000_000) (MultiAsset mempty))
             bytes =
@@ -97,9 +97,10 @@ collateralReturnSpec = describe "cardano:hasCollateralReturn" $ do
                     )
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                "cardano:hasCollateralReturn _:collateralReturn1"
+                "cardano:hasCollateralReturn _:"
+        bytes `shouldSatisfy` BS8.isInfixOf "_collateralReturn1"
         bytes
-            `shouldSatisfy` BS8.isInfixOf "_:collateralReturn1 a cardano:Output"
+            `shouldSatisfy` BS8.isInfixOf "_collateralReturn1 a cardano:Output"
         bytes
             `shouldSatisfy` BS8.isInfixOf "cardano:lovelace 1000000"
 

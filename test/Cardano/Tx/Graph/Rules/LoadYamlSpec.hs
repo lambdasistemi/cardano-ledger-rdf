@@ -443,12 +443,13 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
             -- hasIdentifier lines.
             assertByteSubstring
                 overlay
-                "  cardano:hasIdentifier _:foo_paymentScript ."
+                "  cardano:hasIdentifier <urn:cardano:id:PaymentScript:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> ."
             assertByteSubstring
                 overlay
-                "  cardano:hasIdentifier _:foo_paymentScript ."
+                "  cardano:hasIdentifier <urn:cardano:id:PaymentScript:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> ."
             -- The shared identifier block is emitted exactly once.
-            let blockHeader = "_:foo_paymentScript a cardano:Identifier ;"
+            let blockHeader =
+                    "<urn:cardano:id:PaymentScript:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> a cardano:Identifier ;"
                 occurrences = byteOccurrences overlay blockHeader
             if occurrences == 1
                 then pure ()

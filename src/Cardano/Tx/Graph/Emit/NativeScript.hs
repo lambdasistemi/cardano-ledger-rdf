@@ -51,7 +51,7 @@ their identity is structural and anchored by the parent-derived
 -}
 emitNativeScriptTree ::
     LookupTable ->
-    (LookupTable -> LeafType -> ByteString -> Emit BnodeName) ->
+    (LookupTable -> LeafType -> ByteString -> Emit Object) ->
     BnodeName ->
     ByteString ->
     NativeScript ConwayEra ->
@@ -62,7 +62,7 @@ emitNativeScriptTree lookupTbl resolveIdent rootBnode hashBytes script = do
   where
     emitNode ::
         BnodeName ->
-        Maybe BnodeName ->
+        Maybe Object ->
         NativeScript ConwayEra ->
         Emit ()
     emitNode bnode mHashBnode native = do
@@ -77,7 +77,7 @@ emitNativeScriptTree lookupTbl resolveIdent rootBnode hashBytes script = do
                     ( Triple
                         subj
                         (PIri (vocabCurie TermRequiresSigner))
-                        (OBnode signerBnode)
+                        signerBnode
                     )
             RequireAllOf children -> do
                 tellType subj TermScriptAll
@@ -111,7 +111,7 @@ emitNativeScriptTree lookupTbl resolveIdent rootBnode hashBytes script = do
                     ( Triple
                         subj
                         (PIri (vocabCurie TermHasHash))
-                        (OBnode hashBnode)
+                        hashBnode
                     )
 
     emitChildren parentBnode parentSubj children =

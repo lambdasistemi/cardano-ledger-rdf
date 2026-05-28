@@ -12,13 +12,13 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034 ;
+<urn:cardano:tx:8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasProposal _:proposal1 ;
+  cardano:hasProposal _:8bc26556_proposal1 ;
   cardano:hasFee 0 .
 
-_:hash_txid_8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034 a cardano:Identifier ;
+<urn:cardano:id:TxId:8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034" .
 
@@ -26,33 +26,33 @@ _:hash_txid_8bc2655651916808c903d2eb0d99148eb68e64cc0ecb30c9c0656ea993b86034 a c
 # Proposal 1
 #
 
-_:cred_stakekey_0000000000000000000000000000000000000000000000000000001b a cardano:Identifier ;
+<urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001b> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "0000000000000000000000000000000000000000000000000000001b" .
 
-_:proposal1 a cardano:Proposal ;
+_:8bc26556_proposal1 a cardano:Proposal ;
   cardano:hasDeposit 100000000000 ;
-  cardano:hasReturnAddress _:cred_stakekey_0000000000000000000000000000000000000000000000000000001b ;
-  cardano:hasAnchor _:proposalAnchor1 ;
-  cardano:hasGovAction _:govAction1 ;
-  cardano:hasDatum _:proposalDatum1 .
+  cardano:hasReturnAddress <urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001b> ;
+  cardano:hasAnchor _:8bc26556_proposalAnchor1 ;
+  cardano:hasGovAction _:8bc26556_govAction1 ;
+  cardano:hasDatum _:8bc26556_proposalDatum1 .
 
-_:proposalAnchor1 a cardano:Anchor ;
+_:8bc26556_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/parameter-change" ;
   cardano:anchorHash "1111111111111111111111111111111111111111111111111111111111111111" .
 
-_:govAction1 a cardano:ParameterChange ;
-  cardano:hasProtocolParamUpdate _:govAction1ProtocolParamUpdate ;
-  cardano:hasGuardPolicy _:hash_script_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa .
+_:8bc26556_govAction1 a cardano:ParameterChange ;
+  cardano:hasProtocolParamUpdate _:8bc26556_govAction1ProtocolParamUpdate ;
+  cardano:hasGuardPolicy <urn:cardano:id:ScriptHash:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> .
 
-_:govAction1ProtocolParamUpdate a cardano:ProtocolParamUpdate ;
+_:8bc26556_govAction1ProtocolParamUpdate a cardano:ProtocolParamUpdate ;
   cardano:hasMinFeeB 44 ;
   cardano:hasMaxTxSize 16384 .
 
-_:hash_script_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa a cardano:Identifier ;
+<urn:cardano:id:ScriptHash:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> a cardano:Identifier ;
   cardano:leafType "ScriptHash" ;
   cardano:bytesHex "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" .
 
-_:proposalDatum1 a cardano:Datum ;
+_:8bc26556_proposalDatum1 a cardano:Datum ;
   cardano:decodedAs "ParameterChange" ;
   cardano:hasRawBytes "841b000000174876e800581de00000000000000000000000000000000000000000000000000000001b8400f6a201182c03194000581caaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa82782868747470733a2f2f6578616d706c652e696e76616c69642f706172616d657465722d6368616e676558201111111111111111111111111111111111111111111111111111111111111111" .

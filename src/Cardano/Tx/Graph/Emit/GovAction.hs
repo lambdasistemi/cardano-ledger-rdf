@@ -17,7 +17,6 @@ module Cardano.Tx.Graph.Emit.GovAction (
 
 import Data.ByteString (ByteString)
 import Data.Map.Strict qualified as Map
-import Data.Maybe qualified as Maybe
 import Data.Ratio (denominator, numerator)
 import Data.Set qualified as Set
 import Data.Text (Text)
@@ -104,10 +103,8 @@ import Cardano.Slotting.Slot (EpochNo (..))
 import Cardano.Tx.Graph.Emit.Lookup (
     BnodeName (..),
     LookupTable,
-    lookupByteIdentifier,
-    lookupTextIdentifier,
-    rawBytesBnodeName,
-    rawTextBnodeName,
+    identifierIri,
+    textIdentifierIri,
  )
 import Cardano.Tx.Graph.Emit.Monad (Emit, introduce, tellTriple)
 import Cardano.Tx.Graph.Emit.Triple (
@@ -120,7 +117,7 @@ import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
 import Cardano.Tx.Graph.Rules.Load (LeafType (..))
 
 type ResolveIdent =
-    LookupTable -> LeafType -> ByteString -> Emit BnodeName
+    LookupTable -> LeafType -> ByteString -> Emit Object
 
 {- | Emit a typed governance-action tree for the covered Conway
 constructors. Variants still intentionally modeled by another
@@ -197,9 +194,9 @@ emitParameterChange
         case guardPolicy of
             SNothing -> pure ()
             SJust (ScriptHash h) -> do
-                guardBnode <-
+                guardObj <-
                     resolveIdent lookupTbl LtScriptHash (hashToBytes h)
-                tellObj rootBnode TermHasGuardPolicy guardBnode
+                tellObj rootBnode TermHasGuardPolicy guardObj
 
 emitHardForkInitiation ::
     LookupTable ->
@@ -212,7 +209,7 @@ emitHardForkInitiation lookupTbl proposalBnode rootBnode prior protVer = do
     govActionHeader proposalBnode rootBnode TermHardForkInitiation
     emitPriorAction lookupTbl rootBnode prior
     let versionBnode = childBnode rootBnode "ProtocolVersion"
-    tellObj rootBnode TermHasProtocolVersion versionBnode
+    tellObj rootBnode TermHasProtocolVersion (OBnode versionBnode)
     tellType versionBnode TermProtocolVersion
     emitProtocolVersion versionBnode protVer
 
@@ -263,7 +260,7 @@ emitNewConstitution
         govActionHeader proposalBnode rootBnode TermNewConstitution
         emitPriorAction lookupTbl rootBnode prior
         let constitutionBnode = childBnode rootBnode "Constitution"
-        tellObj rootBnode TermHasConstitution constitutionBnode
+        tellObj rootBnode TermHasConstitution (OBnode constitutionBnode)
         tellType constitutionBnode TermConstitution
         emitAnchor
             lookupTbl
@@ -274,9 +271,9 @@ emitNewConstitution
         case constitutionGuardrailsScriptHash of
             SNothing -> pure ()
             SJust (ScriptHash h) -> do
-                guardBnode <-
+                guardObj <-
                     resolveIdent lookupTbl LtScriptHash (hashToBytes h)
-                tellObj constitutionBnode TermHasGuardrailScript guardBnode
+                tellObj constitutionBnode TermHasGuardrailScript guardObj
 
 emitProtocolParamUpdate ::
     BnodeName ->
@@ -284,7 +281,7 @@ emitProtocolParamUpdate ::
     Emit ()
 emitProtocolParamUpdate rootBnode params = do
     let updateBnode = childBnode rootBnode "ProtocolParamUpdate"
-    tellObj rootBnode TermHasProtocolParamUpdate updateBnode
+    tellObj rootBnode TermHasProtocolParamUpdate (OBnode updateBnode)
     tellType updateBnode TermProtocolParamUpdate
     emitMaybeCoinPerByte updateBnode TermHasMinFeeA $
         params ^. ppuTxFeePerByteL @ConwayEra
@@ -356,7 +353,7 @@ emitMaybeExUnits ::
 emitMaybeExUnits _ _ _ SNothing = pure ()
 emitMaybeExUnits parentBnode predicate suffix (SJust (ExUnits memory steps)) = do
     let bnode = childBnode parentBnode suffix
-    tellObj parentBnode predicate bnode
+    tellObj parentBnode predicate (OBnode bnode)
     tellType bnode TermExUnits
     tellInt bnode TermHasMemory (toInteger memory)
     tellInt bnode TermHasSteps (toInteger steps)
@@ -365,7 +362,7 @@ emitMaybePrices :: BnodeName -> StrictMaybe Prices -> Emit ()
 emitMaybePrices _ SNothing = pure ()
 emitMaybePrices parentBnode (SJust Prices{..}) = do
     let bnode = childBnode parentBnode "ExecutionCosts"
-    tellObj parentBnode TermHasExecutionCosts bnode
+    tellObj parentBnode TermHasExecutionCosts (OBnode bnode)
     tellType bnode TermExUnitPrices
     tellText bnode TermHasPriceMemory (renderRational prMem)
     tellText bnode TermHasPriceSteps (renderRational prSteps)
@@ -377,7 +374,7 @@ emitMaybePoolVotingThresholds ::
 emitMaybePoolVotingThresholds _ SNothing = pure ()
 emitMaybePoolVotingThresholds parentBnode (SJust PoolVotingThresholds{..}) = do
     let bnode = childBnode parentBnode "PoolVotingThresholds"
-    tellObj parentBnode TermHasPoolVotingThresholds bnode
+    tellObj parentBnode TermHasPoolVotingThresholds (OBnode bnode)
     tellType bnode TermPoolVotingThresholds
     tellText bnode TermHasMotionNoConfidence $
         renderRational pvtMotionNoConfidence
@@ -397,7 +394,7 @@ emitMaybeDRepVotingThresholds ::
 emitMaybeDRepVotingThresholds _ SNothing = pure ()
 emitMaybeDRepVotingThresholds parentBnode (SJust DRepVotingThresholds{..}) = do
     let bnode = childBnode parentBnode "DRepVotingThresholds"
-    tellObj parentBnode TermHasDRepVotingThresholds bnode
+    tellObj parentBnode TermHasDRepVotingThresholds (OBnode bnode)
     tellType bnode TermDRepVotingThresholds
     tellText bnode TermHasMotionNoConfidence $
         renderRational dvtMotionNoConfidence
@@ -427,8 +424,8 @@ emitRemovedMember ::
     Credential ColdCommitteeRole ->
     Emit ()
 emitRemovedMember lookupTbl resolveIdent rootBnode cred = do
-    credBnode <- resolveCommitteeColdCredential lookupTbl resolveIdent cred
-    tellObj rootBnode TermRemovesMember credBnode
+    credObj <- resolveCommitteeColdCredential lookupTbl resolveIdent cred
+    tellObj rootBnode TermRemovesMember credObj
 
 emitAddedMember ::
     LookupTable ->
@@ -439,10 +436,10 @@ emitAddedMember ::
 emitAddedMember lookupTbl resolveIdent rootBnode (ix, (cred, EpochNo epoch)) = do
     let additionBnode =
             childBnode rootBnode ("CommitteeAddition" <> Text.pack (show ix))
-    credBnode <- resolveCommitteeColdCredential lookupTbl resolveIdent cred
-    tellObj rootBnode TermAddsMember additionBnode
+    credObj <- resolveCommitteeColdCredential lookupTbl resolveIdent cred
+    tellObj rootBnode TermAddsMember (OBnode additionBnode)
     tellType additionBnode TermCommitteeAddition
-    tellObj additionBnode TermHasIdentifier credBnode
+    tellObj additionBnode TermHasIdentifier credObj
     tellInt additionBnode TermTermLimit (fromIntegral epoch)
 
 emitAnchor ::
@@ -453,15 +450,15 @@ emitAnchor ::
     Anchor ->
     Emit ()
 emitAnchor lookupTbl resolveIdent parentBnode anchorBnode (Anchor url dataHash) = do
-    hashBnode <-
+    hashObj <-
         resolveIdent
             lookupTbl
             LtAnchorDataHash
             (hashToBytes (extractHash dataHash))
-    tellObj parentBnode TermHasAnchor anchorBnode
+    tellObj parentBnode TermHasAnchor (OBnode anchorBnode)
     tellType anchorBnode TermAnchor
     tellText anchorBnode TermAnchorUrl (urlToText url)
-    tellObj anchorBnode TermAnchorHash hashBnode
+    tellObj anchorBnode TermAnchorHash hashObj
 
 emitProtocolVersion :: BnodeName -> ProtVer -> Emit ()
 emitProtocolVersion bnode ProtVer{..} = do
@@ -476,51 +473,59 @@ emitPriorAction ::
 emitPriorAction lookupTbl rootBnode = \case
     SNothing -> pure ()
     SJust (GovPurposeId actionId) -> do
-        actionBnode <- emitGovActionIdBlock lookupTbl actionId
-        tellObj rootBnode TermHasPriorAction actionBnode
+        actionObj <- emitGovActionIdBlock lookupTbl actionId
+        tellObj rootBnode TermHasPriorAction actionObj
 
-emitGovActionIdBlock :: LookupTable -> GovActionId -> Emit BnodeName
+emitGovActionIdBlock :: LookupTable -> GovActionId -> Emit Object
 emitGovActionIdBlock lookupTbl (GovActionId (TxId safeHash) (GovActionIx ix)) = do
     let txIdBytes = hashToBytes (extractHash safeHash)
         token = hexText txIdBytes <> ":" <> Text.pack (show ix)
-        mEntityBnode = lookupTextIdentifier lookupTbl LtGovActionId token
-        govActionBnode =
-            Maybe.fromMaybe
-                (rawTextBnodeName LtGovActionId token)
-                mEntityBnode
-        govActionSubj = SBnode govActionBnode
-    txIdBnode <- resolveTxId lookupTbl txIdBytes
+        govActionIri = textIdentifierIri LtGovActionId token
+        govActionSubj = SIri govActionIri
+    txIdObj <- resolveTxId lookupTbl txIdBytes
     introduce govActionSubj $ do
-        tellType govActionBnode TermGovActionId
-        if Maybe.isJust mEntityBnode
-            then pure ()
-            else do
-                tellType govActionBnode TermIdentifier
-                tellText govActionBnode TermLeafType "GovActionId"
-                tellText govActionBnode TermBytesHex token
-        tellObj govActionBnode TermHasTxId txIdBnode
-        tellInt govActionBnode TermHasIndex (fromIntegral ix)
-    pure govActionBnode
+        tellTriple (Triple govActionSubj PRdfType (OIri (vocabCurie TermGovActionId)))
+        tellTriple (Triple govActionSubj PRdfType (OIri (vocabCurie TermIdentifier)))
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermLeafType))
+                (OStringLit "GovActionId")
+            )
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermBytesHex))
+                (OStringLit token)
+            )
+        tellTriple
+            (Triple govActionSubj (PIri (vocabCurie TermHasTxId)) txIdObj)
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermHasIndex))
+                (OIntLit (fromIntegral ix))
+            )
+    pure (OIri govActionIri)
 
-resolveTxId :: LookupTable -> ByteString -> Emit BnodeName
-resolveTxId lookupTbl bytes = do
+resolveTxId :: LookupTable -> ByteString -> Emit Object
+resolveTxId _lookupTbl bytes = do
     let token = hexText bytes
-        bnode =
-            Maybe.fromMaybe
-                (rawBytesBnodeName LtTxId bytes)
-                (lookupByteIdentifier lookupTbl LtTxId bytes)
-        subj = SBnode bnode
+        iri = identifierIri LtTxId bytes
+        subj = SIri iri
     introduce subj $ do
-        tellType bnode TermIdentifier
-        tellText bnode TermLeafType "TxId"
-        tellText bnode TermBytesHex token
-    pure bnode
+        tellTriple (Triple subj PRdfType (OIri (vocabCurie TermIdentifier)))
+        tellTriple
+            (Triple subj (PIri (vocabCurie TermLeafType)) (OStringLit "TxId"))
+        tellTriple
+            (Triple subj (PIri (vocabCurie TermBytesHex)) (OStringLit token))
+    pure (OIri iri)
 
 resolveCommitteeColdCredential ::
     LookupTable ->
     ResolveIdent ->
     Credential ColdCommitteeRole ->
-    Emit BnodeName
+    Emit Object
 resolveCommitteeColdCredential lookupTbl resolveIdent = \case
     KeyHashObj h -> resolveIdent lookupTbl CommitteeColdKey (keyHashBytes h)
     ScriptHashObj h ->
@@ -580,17 +585,16 @@ emitMaybeText bnode term render (SJust x) =
 
 govActionHeader :: BnodeName -> BnodeName -> VocabTerm -> Emit ()
 govActionHeader proposalBnode rootBnode classTerm = do
-    tellObj proposalBnode TermHasGovAction rootBnode
+    tellObj proposalBnode TermHasGovAction (OBnode rootBnode)
     tellType rootBnode classTerm
 
 tellType :: BnodeName -> VocabTerm -> Emit ()
 tellType bnode term =
     tellTriple (Triple (SBnode bnode) PRdfType (OIri (vocabCurie term)))
 
-tellObj :: BnodeName -> VocabTerm -> BnodeName -> Emit ()
+tellObj :: BnodeName -> VocabTerm -> Object -> Emit ()
 tellObj subj term obj =
-    tellTriple
-        (Triple (SBnode subj) (PIri (vocabCurie term)) (OBnode obj))
+    tellTriple (Triple (SBnode subj) (PIri (vocabCurie term)) obj)
 
 tellText :: BnodeName -> VocabTerm -> Text -> Emit ()
 tellText subj term txt =

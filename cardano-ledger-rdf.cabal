@@ -221,6 +221,7 @@ test-suite unit-tests
     Cardano.Tx.Graph.Emit.BlueprintTypedFixtureSpec
     Cardano.Tx.Graph.Emit.BlueprintWiringSpec
     Cardano.Tx.Graph.Emit.BodyRootSpec
+    Cardano.Tx.Graph.Emit.CatMergeCompositionSpec
     Cardano.Tx.Graph.Emit.CertVariantsSpec
     Cardano.Tx.Graph.Emit.ExhaustivitySpec
     Cardano.Tx.Graph.Emit.IdentifierLiteralSpec

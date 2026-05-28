@@ -115,9 +115,8 @@ mkCase slug tx = do
 bnode forms emitted by 'resolveCredentialAndIntroduceIdent'.
 -}
 isRawBytesIdentifier :: Text -> Bool
-isRawBytesIdentifier s =
-    Text.isPrefixOf "_:cred_" s
-        || Text.isPrefixOf "_:hash_" s
+isRawBytesIdentifier =
+    Text.isPrefixOf "<urn:cardano:id:"
 
 ----------------------------------------------------------------------
 -- Subject extraction

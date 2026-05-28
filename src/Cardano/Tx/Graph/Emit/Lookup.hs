@@ -38,6 +38,10 @@ module Cardano.Tx.Graph.Emit.Lookup (
     entityBnodeName,
     rawBytesBnodeName,
     rawTextBnodeName,
+    identifierIri,
+    textIdentifierIri,
+    txIri,
+    utxoIri,
 
     -- * Constants
     rawBytesPrefixLength,
@@ -207,6 +211,32 @@ rawTextBnodeName lt token =
             <> "_"
             <> Text.replace ":" "_" token
 
+-- | IRI for a content-addressed byte identifier.
+identifierIri :: LeafType -> ByteString -> Text
+identifierIri lt bytes =
+    "urn:cardano:id:"
+        <> leafTypeText lt
+        <> ":"
+        <> TextEncoding.decodeLatin1 (Base16.encode bytes)
+
+-- | IRI for a content-addressed text identifier.
+textIdentifierIri :: LeafType -> Text -> Text
+textIdentifierIri lt token =
+    "urn:cardano:id:" <> leafTypeText lt <> ":" <> token
+
+-- | IRI for a transaction subject.
+txIri :: ByteString -> Text
+txIri bytes =
+    "urn:cardano:tx:" <> TextEncoding.decodeLatin1 (Base16.encode bytes)
+
+-- | IRI for a transaction output subject.
+utxoIri :: ByteString -> Int -> Text
+utxoIri txIdBytes ix =
+    "urn:cardano:utxo:"
+        <> TextEncoding.decodeLatin1 (Base16.encode txIdBytes)
+        <> ":"
+        <> Text.pack (show ix)
+
 {- | The bnode-name family prefix: @"cred"@ for the
 operator-declarable credential leaves (PaymentKey, PoolId, etc.)
 and @"hash"@ for the body-walker-only hash leaves (TxId,
@@ -271,6 +301,31 @@ rolePrefix = \case
     LtAnchorDataHash -> "anchordata"
     LtVrfKeyHash -> "vrfkey"
     LtPoolMetadataHash -> "poolmetadata"
+
+leafTypeText :: LeafType -> Text
+leafTypeText = \case
+    PaymentKey -> "PaymentKey"
+    PaymentScript -> "PaymentScript"
+    StakeKey -> "StakeKey"
+    StakeScript -> "StakeScript"
+    AssetClass -> "AssetClass"
+    Policy -> "Policy"
+    PoolId -> "PoolId"
+    DRepKey -> "DRepKey"
+    DRepScript -> "DRepScript"
+    CommitteeColdKey -> "CommitteeColdKey"
+    CommitteeColdScript -> "CommitteeColdScript"
+    CommitteeHotKey -> "CommitteeHotKey"
+    CommitteeHotScript -> "CommitteeHotScript"
+    LtTxId -> "TxId"
+    LtGovActionId -> "GovActionId"
+    LtDatumHash -> "DatumHash"
+    LtScriptHash -> "ScriptHash"
+    LtScriptDataHash -> "ScriptDataHash"
+    LtAuxiliaryDataHash -> "AuxiliaryDataHash"
+    LtAnchorDataHash -> "AnchorDataHash"
+    LtVrfKeyHash -> "VrfKeyHash"
+    LtPoolMetadataHash -> "PoolMetadataHash"
 
 {- | Decode a hex 'Text' to a 'ByteString'; @error@ on failure.
 

@@ -342,7 +342,7 @@ emitRedeemerEntry
                 (OBnode (idExUnitsBnode k))
             )
         tellTriple (Triple dataSubj PRdfType (OIri (vocabCurie TermDatum)))
-        hashBnode <-
+        hashObj <-
             resolveCredentialAndIntroduceIdent
                 lookupTbl
                 LtDatumHash
@@ -351,7 +351,7 @@ emitRedeemerEntry
             ( Triple
                 dataSubj
                 (PIri (vocabCurie TermHasHash))
-                (OBnode hashBnode)
+                hashObj
             )
         emitDecodedOrOpaque
             dataSubj
@@ -459,7 +459,7 @@ emitKeyWitnessEntry lookupTbl k wit = do
         WitVKey _ (SignedDSIGN sig) = wit
         KeyHash keyHashHash = witVKeyHash wit
         keyHashBytes = hashToBytes keyHashHash
-    keyBnode <-
+    keyObj <-
         resolveCredentialAndIntroduceIdent
             lookupTbl
             PaymentKey
@@ -476,7 +476,7 @@ emitKeyWitnessEntry lookupTbl k wit = do
         ( Triple
             kwSubj
             (PIri (vocabCurie TermHasVerificationKey))
-            (OBnode keyBnode)
+            keyObj
         )
 
 ----------------------------------------------------------------------
@@ -511,7 +511,7 @@ emitDatumWitnessEntry lookupTbl blueprints outputs k (dHash, datum) = do
                 Nothing -> NoBlueprintRegistered
                 Just txOut -> decodeDatumForOutput blueprints txOut datum
     tellTriple (Triple datumSubj PRdfType (OIri (vocabCurie TermDatum)))
-    hashBnode <-
+    hashObj <-
         resolveCredentialAndIntroduceIdent
             lookupTbl
             LtDatumHash
@@ -520,7 +520,7 @@ emitDatumWitnessEntry lookupTbl blueprints outputs k (dHash, datum) = do
         ( Triple
             datumSubj
             (PIri (vocabCurie TermHasHash))
-            (OBnode hashBnode)
+            hashObj
         )
     emitDecodedOrOpaque
         datumSubj
@@ -581,7 +581,7 @@ emitScriptWitnessEntry lookupTbl k (_, script) = do
                 version = plutusVersionInt (plutusScriptLanguage ps)
             tellTriple
                 (Triple scriptSubj PRdfType (OIri (vocabCurie TermPlutusScript)))
-            hashBnode <-
+            hashObj <-
                 resolveCredentialAndIntroduceIdent
                     lookupTbl
                     LtScriptHash
@@ -590,7 +590,7 @@ emitScriptWitnessEntry lookupTbl k (_, script) = do
                 ( Triple
                     scriptSubj
                     (PIri (vocabCurie TermHasHash))
-                    (OBnode hashBnode)
+                    hashObj
                 )
             tellTriple
                 ( Triple

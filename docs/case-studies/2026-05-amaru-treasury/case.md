@@ -99,9 +99,9 @@ post-processing block has been removed.
 **Resolved** (#100, in `Cardano.Tx.Graph.Emit.Project.emitTxBlock`):
 the body emitter now hashes the Conway tx body via
 `Cardano.Ledger.Hashes.hashAnnotated` and pins it as
-`_:tx cardano:hasTxId _:hash_txid_<HEX>` — using the same
-`Identifier`-typed bnode pattern as inputs' parent-txid references,
-so SPARQL JOINs across the closure use
+`<urn:cardano:tx:<HEX>> cardano:hasTxId <urn:cardano:id:TxId:<HEX>>` —
+using the same `Identifier`-typed IRI pattern as inputs' parent-txid
+references, so SPARQL JOINs across the closure use
 `cardano:hasTxId/cardano:bytesHex` uniformly.
 
 ### 3. CIP-57 blueprint binding rejects two scripts sharing a blueprint
