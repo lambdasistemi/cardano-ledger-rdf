@@ -81,8 +81,11 @@ export BLOCKFROST_PROJECT_ID=mainnet...
 tx-fetch --out-dir lattice --depth 1 \
     013329ee... 107e439f... 11ace24a...
 
-# 2. Emit one merged Turtle lattice, with operator overlay merged in.
-tx-graph --rules rules.yaml --in-dir lattice/cbor --out lattice.ttl
+# 2. Emit one merged Turtle lattice.
+tx-graph --rules rules.yaml > lattice.ttl
+for f in lattice/cbor/*.cbor; do
+  tx-graph "$f"
+done >> lattice.ttl
 
 # 3. Query across the lattice with any SPARQL engine.
 arq --data lattice.ttl --query queries/per-scope-flow.rq

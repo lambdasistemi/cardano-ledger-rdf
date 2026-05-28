@@ -20,8 +20,11 @@ Documentation: <https://lambdasistemi.github.io/cardano-ledger-rdf/>.
 ## Workflow
 
 ```bash
-tx-fetch --out-dir lattice/cbor --depth 1 <seed-txid> ...
-tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out lattice.ttl
+tx-fetch --out-dir lattice --depth 1 <seed-txid> ...
+tx-graph --rules rules/amaru-treasury.yaml > lattice.ttl
+for f in lattice/cbor/*.cbor; do
+  tx-graph "$f"
+done >> lattice.ttl
 arq --data lattice.ttl --query my.rq    # consume directly via Apache Jena, or any SPARQL engine
 ```
 

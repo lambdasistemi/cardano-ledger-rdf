@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # tx-lattice — thin convenience wrapper around tx-fetch + tx-graph.
 #
-# Architecture (post-#114 + post-tx-fetch split):
+# Architecture (post-#114 + post-tx-fetch split, simplified in #59):
 #
 #   tx-fetch  fetches the closure of CBORs into <out-dir>/cbor/, plus a
 #             seeds.txt enumerating the operator's seed list.
-#   tx-graph  --in-dir <out-dir>/cbor --out-dir <out-dir> indexes every
-#             CBOR by its computed TxId and emits one canonical Turtle
-#             file per tx, with the operator overlay merged in if
-#             --rules is supplied.
+#   tx-graph  emits an optional rules overlay and one canonical Turtle graph
+#             per CBOR. This wrapper composes the lattice by concatenating
+#             those Turtle fragments into <out-dir>/lattice.ttl.
 #
 #   This wrapper composes the two for the operator's convenience.  For
 #   raw closure fetches (no overlay, no rules), use tx-fetch directly.
@@ -75,11 +74,23 @@ fi
 
 "$TXF" --out-dir "$OUT_DIR" --network "$NETWORK" --depth "$DEPTH" "${TXIDS[@]}"
 
+OUT_TTL="$OUT_DIR/lattice.ttl"
 if [[ -n "$RULES" ]]; then
-  "$TXG" --rules "$RULES" --in-dir "$OUT_DIR/cbor" --out-dir "$OUT_DIR"
+  "$TXG" --rules "$RULES" > "$OUT_TTL"
 else
-  "$TXG" --in-dir "$OUT_DIR/cbor" --out-dir "$OUT_DIR"
+  : > "$OUT_TTL"
 fi
 
-emitted=$(find "$OUT_DIR" -maxdepth 1 -name '*.ttl' | wc -l)
-echo "tx-lattice: done. $emitted ttl(s) in closure (depth=$DEPTH) → $OUT_DIR/" >&2
+shopt -s nullglob
+cbor_files=("$OUT_DIR"/cbor/*.cbor)
+if [[ ${#cbor_files[@]} -eq 0 ]]; then
+  echo "tx-lattice: no CBOR files found under $OUT_DIR/cbor" >&2
+  exit 1
+fi
+
+for cbor in "${cbor_files[@]}"; do
+  "$TXG" "$cbor"
+done >> "$OUT_TTL"
+
+emitted=${#cbor_files[@]}
+echo "tx-lattice: done. $emitted tx graph(s) in closure (depth=$DEPTH) → $OUT_TTL" >&2

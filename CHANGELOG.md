@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Removed
+
+* **tx-graph:** remove batch-mode `--in-dir` and `--out-dir`; compose
+  multi-transaction lattices with shell loops and Turtle concatenation.
+
 ## [0.2.3.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.2.0...v0.2.3.0) (2026-05-27)
 
 ### Features

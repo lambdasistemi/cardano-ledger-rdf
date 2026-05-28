@@ -94,8 +94,9 @@ The IO vote set contains **928 vote rationales with anchors**. The top host is *
 
 ```sh
 # 1. Assemble cbor/ - see Dataset selection above for the Koios calls.
-# 2. One emitter invocation produces the SPARQL-queryable lattice:
-tx-graph --rules rules.yaml --in-dir cbor/ --out lattice.ttl
+# 2. Concatenate one overlay and one graph per CBOR into the lattice:
+tx-graph --rules rules.yaml > lattice.ttl
+for f in cbor/*.cbor; do tx-graph "$f"; done >> lattice.ttl
 
 # 3. Run any of the 7 documented queries after saving its SPARQL block:
 arq --data lattice.ttl --query q1-asks.rq

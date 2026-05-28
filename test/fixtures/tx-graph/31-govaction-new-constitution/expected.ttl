@@ -42,17 +42,17 @@ _:9602a0a8_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorHash "5555555555555555555555555555555555555555555555555555555555555555" .
 
 _:9602a0a8_govAction1 a cardano:NewConstitution ;
-  cardano:hasPriorAction <urn:cardano:id:GovActionId:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD:8> ;
+  cardano:hasPriorAction <urn:cardano:id:GovActionId:4444444444444444444444444444444444444444444444444444444444444444:8> ;
   cardano:hasConstitution _:9602a0a8_govAction1Constitution .
 
 <urn:cardano:id:TxId:4444444444444444444444444444444444444444444444444444444444444444> a cardano:Identifier ;
   cardano:leafType "TxId" ;
-  cardano:bytesHex "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD" .
+  cardano:bytesHex "4444444444444444444444444444444444444444444444444444444444444444" .
 
-<urn:cardano:id:GovActionId:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD:8> a cardano:GovActionId ;
+<urn:cardano:id:GovActionId:4444444444444444444444444444444444444444444444444444444444444444:8> a cardano:GovActionId ;
   a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
-  cardano:bytesHex "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD:8" ;
+  cardano:bytesHex "4444444444444444444444444444444444444444444444444444444444444444:8" ;
   cardano:hasTxId <urn:cardano:id:TxId:4444444444444444444444444444444444444444444444444444444444444444> ;
   cardano:hasIndex 8 .
 

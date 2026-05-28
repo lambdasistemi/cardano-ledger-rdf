@@ -27,4 +27,7 @@ for chunk in "$TMP"/chunk-*; do
       done
 done
 
-tx-graph --rules "$SCRIPT_DIR/rules.yaml" --in-dir "$OUT/cbor" --out "$OUT/lattice.ttl"
+tx-graph --rules "$SCRIPT_DIR/rules.yaml" > "$OUT/lattice.ttl"
+for f in "$OUT"/cbor/*.cbor; do
+  tx-graph "$f"
+done >> "$OUT/lattice.ttl"

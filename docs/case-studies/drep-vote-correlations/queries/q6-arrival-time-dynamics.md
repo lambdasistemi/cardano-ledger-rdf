@@ -3,21 +3,24 @@
 The current tx-graph lattice cannot answer early-vs-late voter dynamics by
 itself. Vote CBOR carries the voting procedure, voter, action id, verdict,
 and optional anchor, but the transaction block time used for arrival order
-comes from the chain indexer. `tx-graph --in-dir cbor/` does not emit that
+comes from the chain indexer. `tx-graph` does not emit that
 indexer-side field.
 
 The SPARQL boundary check is:
 
 ```sparql
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
-SELECT ?vote ?action ?voter ?verdict ?anchor
+SELECT ?action ?verdict ?hasAnchor (COUNT(?vote) AS ?votes)
 WHERE {
   ?vote a cardano:Vote ;
         cardano:hasVotingAction ?action ;
         cardano:hasVoter ?voter ;
         cardano:hasVerdict ?verdict .
   OPTIONAL { ?vote cardano:hasAnchor ?anchor . }
+  BIND(BOUND(?anchor) AS ?hasAnchor)
 }
+GROUP BY ?action ?verdict ?hasAnchor
+ORDER BY ?action ?verdict ?hasAnchor
 LIMIT 20
 ```
 

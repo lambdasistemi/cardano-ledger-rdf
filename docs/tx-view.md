@@ -26,13 +26,13 @@ Available options:
 subset emitted by `tx-graph`. The command has no network access and does
 not read CBOR, rules, or a directory of graphs.
 
-The file may be a one-transaction graph or a merged lattice emitted by
-`tx-graph --in-dir DIR --out lattice.ttl`. The `json-ld` and
+The file may be a one-transaction graph or a merged lattice assembled by
+concatenating `tx-graph` Turtle output. The `json-ld` and
 `entity-occurrences` views project the parsed file as a whole. The
 transaction-shaped text views, `cli-tree` and `asset-flow`, render the
 first `cardano:Transaction` subject found by the current in-repo reader;
-for per-transaction presentation, run them against per-transaction `.ttl`
-files from `tx-graph --out-dir`.
+for per-transaction presentation, run them against individual `.ttl`
+files emitted with `tx-graph --out FILE`.
 
 Use `--out FILE` to write the rendered bytes to a file instead of stdout:
 

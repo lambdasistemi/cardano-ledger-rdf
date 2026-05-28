@@ -42,19 +42,19 @@ _:ae53040f_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorHash "3333333333333333333333333333333333333333333333333333333333333333" .
 
 _:ae53040f_govAction1 a cardano:UpdateCommittee ;
-  cardano:hasPriorAction <urn:cardano:id:GovActionId:"""""""""""""""""""""""""""""""":7> ;
+  cardano:hasPriorAction <urn:cardano:id:GovActionId:2222222222222222222222222222222222222222222222222222222222222222:7> ;
   cardano:hasNewQuorum "2/3" ;
   cardano:removesMember <urn:cardano:id:CommitteeColdKey:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> ;
   cardano:addsMember _:ae53040f_govAction1CommitteeAddition1 .
 
 <urn:cardano:id:TxId:2222222222222222222222222222222222222222222222222222222222222222> a cardano:Identifier ;
   cardano:leafType "TxId" ;
-  cardano:bytesHex "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"" .
+  cardano:bytesHex "2222222222222222222222222222222222222222222222222222222222222222" .
 
-<urn:cardano:id:GovActionId:"""""""""""""""""""""""""""""""":7> a cardano:GovActionId ;
+<urn:cardano:id:GovActionId:2222222222222222222222222222222222222222222222222222222222222222:7> a cardano:GovActionId ;
   a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
-  cardano:bytesHex "\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\":7" ;
+  cardano:bytesHex "2222222222222222222222222222222222222222222222222222222222222222:7" ;
   cardano:hasTxId <urn:cardano:id:TxId:2222222222222222222222222222222222222222222222222222222222222222> ;
   cardano:hasIndex 7 .
 

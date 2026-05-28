@@ -68,8 +68,9 @@ the expected reference-input pattern for the treasury and swap scripts.
 
 ```sh
 # 1. Assemble cbor/ from selections.txt; see Dataset selection.
-# 2. Emit one SPARQL-queryable lattice:
-tx-graph --rules rules.yaml --in-dir cbor/ --out lattice.ttl
+# 2. Concatenate one overlay and one graph per CBOR into the lattice:
+tx-graph --rules rules.yaml > lattice.ttl
+for f in cbor/*.cbor; do tx-graph "$f"; done >> lattice.ttl
 
 # 3. Save any query page's SPARQL block as qN.rq, then run it:
 arq --data lattice.ttl --query q0-conservation-check.rq
@@ -129,23 +130,15 @@ consumed input's `TxOut` from a `ResolvedUTxO` map. The earlier
 lattice path never populated that map, so dispatch silently fell back
 to `NoBlueprintRegistered`.
 
-The fix introduced **a lattice-aware in-memory resolver**:
+The current path composes one graph per CBOR:
 
-* `tx-graph --in-dir DIR` indexes every CBOR in DIR by its
-  computed `TxId` (`hashAnnotated . bodyTxL`) and resolves each
-  emitted tx's spending / reference / collateral inputs against
-  the in-memory map — pulling the parent body's output at the
-  consumed `TxIx`. The resolver is implemented in
-  `app/tx-graph/Main.hs:inMemoryResolver` and plugs into the
-  existing `Cardano.Tx.Graph.Resolve` chain abstraction — no
-  changes to the Witness walker were needed.
-* `scripts/tx-lattice` walks the BFS closure into
-  `OUT_DIR/cbor/<txid>.cbor` (Blockfrost `/txs/<hash>/cbor` per
-  parent), then hands the whole directory to a single
-  `tx-graph --in-dir OUT_DIR/cbor --out-dir OUT_DIR` invocation.
-  Every tx in the closure resolves its inputs against the same
-  in-memory lattice, so spending redeemers dispatch typed-decode
-  via the consumed parent's script hash uniformly across seeds
+* `tx-graph` emits a single transaction graph with tx-scoped
+  positional blank nodes and stable content-addressed identifiers.
+* `pipeline.sh` writes the operator overlay once, then loops over
+  `OUT_DIR/cbor/*.cbor` and appends each `tx-graph "$f"` body graph.
+  Cross-transaction queries join through the emitted `TxId`,
+  `TxOutRef`, address, asset, and credential identifiers rather than
+  through a special merge command.
   and BFS-walked ancestors alike.
 
 (The original #112 fix was an on-disk `--closure-dir DIR`

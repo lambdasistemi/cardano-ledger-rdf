@@ -42,17 +42,17 @@ _:38c1d8ec_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorHash "8888888888888888888888888888888888888888888888888888888888888888" .
 
 _:38c1d8ec_govAction1 a cardano:HardForkInitiation ;
-  cardano:hasPriorAction <urn:cardano:id:GovActionId:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww:9> ;
+  cardano:hasPriorAction <urn:cardano:id:GovActionId:7777777777777777777777777777777777777777777777777777777777777777:9> ;
   cardano:hasProtocolVersion _:38c1d8ec_govAction1ProtocolVersion .
 
 <urn:cardano:id:TxId:7777777777777777777777777777777777777777777777777777777777777777> a cardano:Identifier ;
   cardano:leafType "TxId" ;
-  cardano:bytesHex "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww" .
+  cardano:bytesHex "7777777777777777777777777777777777777777777777777777777777777777" .
 
-<urn:cardano:id:GovActionId:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww:9> a cardano:GovActionId ;
+<urn:cardano:id:GovActionId:7777777777777777777777777777777777777777777777777777777777777777:9> a cardano:GovActionId ;
   a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
-  cardano:bytesHex "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww:9" ;
+  cardano:bytesHex "7777777777777777777777777777777777777777777777777777777777777777:9" ;
   cardano:hasTxId <urn:cardano:id:TxId:7777777777777777777777777777777777777777777777777777777777777777> ;
   cardano:hasIndex 9 .
 
