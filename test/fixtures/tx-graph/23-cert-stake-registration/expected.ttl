@@ -12,17 +12,17 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1 ;
+<urn:cardano:tx:fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasCertificate _:cert1 ;
-  cardano:hasCertificate _:cert2 ;
-  cardano:hasCertificate _:cert3 ;
-  cardano:hasCertificate _:cert4 ;
-  cardano:hasCertificate _:cert5 ;
+  cardano:hasCertificate _:fa676b36_cert1 ;
+  cardano:hasCertificate _:fa676b36_cert2 ;
+  cardano:hasCertificate _:fa676b36_cert3 ;
+  cardano:hasCertificate _:fa676b36_cert4 ;
+  cardano:hasCertificate _:fa676b36_cert5 ;
   cardano:hasFee 0 .
 
-_:hash_txid_fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1 a cardano:Identifier ;
+<urn:cardano:id:TxId:fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1" .
 
@@ -30,12 +30,12 @@ _:hash_txid_fa676b368158661753b3b5dbc4fbecf5b6a9489fe0ca043136ce99ff4874a7f1 a c
 # Certificate 1
 #
 
-_:cert1 a cardano:Certificate ;
+_:fa676b36_cert1 a cardano:Certificate ;
   a cardano:RegDeposit ;
-  cardano:hasStakeCredential _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 ;
+  cardano:hasStakeCredential <urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> ;
   cardano:hasDeposit 2000000 .
 
-_:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "11111111111111111111111111111111111111111111111111111111" .
 
@@ -43,12 +43,12 @@ _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a carda
 # Certificate 2
 #
 
-_:cert2 a cardano:Certificate ;
+_:fa676b36_cert2 a cardano:Certificate ;
   a cardano:UnRegDeposit ;
-  cardano:hasStakeCredential _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 ;
+  cardano:hasStakeCredential <urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> ;
   cardano:hasDeposit 2000000 .
 
-_:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "11111111111111111111111111111111111111111111111111111111" .
 
@@ -56,17 +56,17 @@ _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a carda
 # Certificate 3
 #
 
-_:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "11111111111111111111111111111111111111111111111111111111" .
 
-_:cert3 a cardano:Certificate ;
+_:fa676b36_cert3 a cardano:Certificate ;
   a cardano:StakeRegDeleg ;
-  cardano:hasStakeCredential _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 ;
-  cardano:delegatesToPool _:cred_poolid_22222222222222222222222222222222222222222222222222222222 ;
+  cardano:hasStakeCredential <urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> ;
+  cardano:delegatesToPool <urn:cardano:id:PoolId:22222222222222222222222222222222222222222222222222222222> ;
   cardano:hasDeposit 2000000 .
 
-_:cred_poolid_22222222222222222222222222222222222222222222222222222222 a cardano:Identifier ;
+<urn:cardano:id:PoolId:22222222222222222222222222222222222222222222222222222222> a cardano:Identifier ;
   cardano:leafType "PoolId" ;
   cardano:bytesHex "22222222222222222222222222222222222222222222222222222222" .
 
@@ -74,17 +74,17 @@ _:cred_poolid_22222222222222222222222222222222222222222222222222222222 a cardano
 # Certificate 4
 #
 
-_:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "11111111111111111111111111111111111111111111111111111111" .
 
-_:cert4 a cardano:Certificate ;
+_:fa676b36_cert4 a cardano:Certificate ;
   a cardano:VoteRegDeleg ;
-  cardano:hasStakeCredential _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 ;
-  cardano:delegatesToDRep _:cred_drepkey_33333333333333333333333333333333333333333333333333333333 ;
+  cardano:hasStakeCredential <urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> ;
+  cardano:delegatesToDRep <urn:cardano:id:DRepKey:33333333333333333333333333333333333333333333333333333333> ;
   cardano:hasDeposit 2000000 .
 
-_:cred_drepkey_33333333333333333333333333333333333333333333333333333333 a cardano:Identifier ;
+<urn:cardano:id:DRepKey:33333333333333333333333333333333333333333333333333333333> a cardano:Identifier ;
   cardano:leafType "DRepKey" ;
   cardano:bytesHex "33333333333333333333333333333333333333333333333333333333" .
 
@@ -92,21 +92,21 @@ _:cred_drepkey_33333333333333333333333333333333333333333333333333333333 a cardan
 # Certificate 5
 #
 
-_:cred_stakekey_11111111111111111111111111111111111111111111111111111111 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "11111111111111111111111111111111111111111111111111111111" .
 
-_:cert5 a cardano:Certificate ;
+_:fa676b36_cert5 a cardano:Certificate ;
   a cardano:StakeVoteRegDeleg ;
-  cardano:hasStakeCredential _:cred_stakekey_11111111111111111111111111111111111111111111111111111111 ;
-  cardano:delegatesToPool _:cred_poolid_22222222222222222222222222222222222222222222222222222222 ;
-  cardano:delegatesToDRep _:cred_drepkey_33333333333333333333333333333333333333333333333333333333 ;
+  cardano:hasStakeCredential <urn:cardano:id:StakeKey:11111111111111111111111111111111111111111111111111111111> ;
+  cardano:delegatesToPool <urn:cardano:id:PoolId:22222222222222222222222222222222222222222222222222222222> ;
+  cardano:delegatesToDRep <urn:cardano:id:DRepKey:33333333333333333333333333333333333333333333333333333333> ;
   cardano:hasDeposit 2000000 .
 
-_:cred_poolid_22222222222222222222222222222222222222222222222222222222 a cardano:Identifier ;
+<urn:cardano:id:PoolId:22222222222222222222222222222222222222222222222222222222> a cardano:Identifier ;
   cardano:leafType "PoolId" ;
   cardano:bytesHex "22222222222222222222222222222222222222222222222222222222" .
 
-_:cred_drepkey_33333333333333333333333333333333333333333333333333333333 a cardano:Identifier ;
+<urn:cardano:id:DRepKey:33333333333333333333333333333333333333333333333333333333> a cardano:Identifier ;
   cardano:leafType "DRepKey" ;
   cardano:bytesHex "33333333333333333333333333333333333333333333333333333333" .

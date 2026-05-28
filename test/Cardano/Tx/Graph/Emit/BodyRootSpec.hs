@@ -112,7 +112,7 @@ validityIntervalSpecs = describe "cardano:hasValidityInterval" $ do
                 emitBytes
                     (baseTx & vldt (SJust 1_000_000) (SJust 1_500_000))
         txBlockOfBytes bytes
-            `shouldSatisfy` BS8.isInfixOf "cardano:hasValidityInterval _:interval1"
+            `shouldSatisfy` BS8.isInfixOf "cardano:hasValidityInterval _:"
         intervalBlockOfBytes bytes
             `shouldSatisfy` BS8.isInfixOf "cardano:intervalStart 1000000"
         intervalBlockOfBytes bytes
@@ -120,7 +120,7 @@ validityIntervalSpecs = describe "cardano:hasValidityInterval" $ do
     it "emits start only when invalidHereafter is SNothing" $ do
         let bytes = emitBytes (baseTx & vldt (SJust 1_000_000) SNothing)
         txBlockOfBytes bytes
-            `shouldSatisfy` BS8.isInfixOf "cardano:hasValidityInterval _:interval1"
+            `shouldSatisfy` BS8.isInfixOf "cardano:hasValidityInterval _:"
         intervalBlockOfBytes bytes
             `shouldSatisfy` BS8.isInfixOf "cardano:intervalStart 1000000"
         intervalBlockOfBytes bytes
@@ -128,7 +128,7 @@ validityIntervalSpecs = describe "cardano:hasValidityInterval" $ do
     it "emits end only when invalidBefore is SNothing" $ do
         let bytes = emitBytes (baseTx & vldt SNothing (SJust 1_500_000))
         txBlockOfBytes bytes
-            `shouldSatisfy` BS8.isInfixOf "cardano:hasValidityInterval _:interval1"
+            `shouldSatisfy` BS8.isInfixOf "cardano:hasValidityInterval _:"
         intervalBlockOfBytes bytes
             `shouldSatisfy` (not . BS8.isInfixOf "cardano:intervalStart")
         intervalBlockOfBytes bytes
@@ -167,11 +167,11 @@ scriptDataHashSpecs = describe "cardano:scriptDataHash" $ do
         let h = stubScriptIntegrityHash 0xaa
             bytes = emitBytes (baseTx & scriptDataHash (SJust h))
             hex = BS8.replicate 64 'a'
-        -- T122c / S22: hash is now an Identifier-typed bnode
-        -- under the @_:hash_scriptdata_…@ name, not a flat
-        -- string literal.
+        -- T122c / #56: hash is now an Identifier-typed IRI,
+        -- not a flat string literal.
         txBlockOfBytes bytes
-            `shouldSatisfy` BS8.isInfixOf "cardano:scriptDataHash _:hash_scriptdata_"
+            `shouldSatisfy` BS8.isInfixOf
+                "cardano:scriptDataHash <urn:cardano:id:ScriptDataHash:"
         bytes
             `shouldSatisfy` BS8.isInfixOf "cardano:leafType \"ScriptDataHash\""
         bytes
@@ -194,7 +194,7 @@ auxiliaryDataHashSpecs = describe "cardano:auxiliaryDataHash" $ do
             hex = BS8.replicate 64 'b'
         txBlockOfBytes bytes
             `shouldSatisfy` BS8.isInfixOf
-                "cardano:auxiliaryDataHash _:hash_auxiliarydata_"
+                "cardano:auxiliaryDataHash <urn:cardano:id:AuxiliaryDataHash:"
         bytes
             `shouldSatisfy` BS8.isInfixOf "cardano:leafType \"AuxiliaryDataHash\""
         bytes
@@ -271,7 +271,7 @@ auxiliaryDataBodySpecs = describe "cardano:hasAuxiliaryData" $ do
                             serialize' (eraProtVerLow @ConwayEra) auxData
                 txBlockOfBytes bytes
                     `shouldSatisfy` BS8.isInfixOf
-                        "cardano:hasAuxiliaryData _:auxiliaryData1"
+                        "cardano:hasAuxiliaryData _:"
                 auxiliaryDataBlockOfBytes bytes
                     `shouldSatisfy` BS8.isInfixOf "a cardano:AuxiliaryData"
                 auxiliaryDataBlockOfBytes bytes
@@ -350,11 +350,11 @@ emitBytes tx =
 emptyUtxo :: ResolvedUTxO
 emptyUtxo = Map.empty
 
-{- | The @_:tx@ subject block — bytes from the
-@_:tx a cardano:Transaction@ anchor to the next blank line.
+{- | The transaction subject block — bytes from the
+@cardano:Transaction@ anchor to the next blank line.
 -}
 txBlockOfBytes :: ByteString -> ByteString
-txBlockOfBytes = sliceFrom "_:tx a cardano:Transaction"
+txBlockOfBytes = sliceBlockContaining " a cardano:Transaction"
 
 {- | The @_:interval1@ subject sub-block — bytes from the
 @_:interval1@ subject-position anchor (after the blank line
@@ -364,31 +364,21 @@ blank line. Returns @""@ when no such block exists. The
 occurrence of @_:interval1@ inside the parent block.
 -}
 intervalBlockOfBytes :: ByteString -> ByteString
-intervalBlockOfBytes bs =
-    case BS8.breakSubstring "\n\n_:interval1 " bs of
-        (_, suf)
-            | BS.null suf -> ""
-            | otherwise ->
-                let body = BS8.drop 2 suf -- skip "\n\n"
-                    (block, _) = BS8.breakSubstring "\n\n" body
-                 in block
+intervalBlockOfBytes = sliceBlockContaining "cardano:interval"
 
 -- | The @_:auxiliaryData1@ subject sub-block. Returns @""@ when absent.
 auxiliaryDataBlockOfBytes :: ByteString -> ByteString
-auxiliaryDataBlockOfBytes bs =
-    case BS8.breakSubstring "\n\n_:auxiliaryData1 " bs of
-        (_, suf)
-            | BS.null suf -> ""
-            | otherwise ->
-                let body = BS8.drop 2 suf -- skip "\n\n"
-                    (block, _) = BS8.breakSubstring "\n\n" body
-                 in block
+auxiliaryDataBlockOfBytes = sliceBlockContaining " a cardano:AuxiliaryData"
 
-sliceFrom :: ByteString -> ByteString -> ByteString
-sliceFrom needle bs =
-    case BS8.breakSubstring needle bs of
-        (_, suf)
-            | BS.null suf -> ""
-            | otherwise ->
-                let (block, _) = BS8.breakSubstring "\n\n" suf
-                 in block
+sliceBlockContaining :: ByteString -> ByteString -> ByteString
+sliceBlockContaining needle =
+    headOrEmpty . filter (BS8.isInfixOf needle) . blocks
+  where
+    headOrEmpty [] = ""
+    headOrEmpty (x : _) = x
+
+    blocks input =
+        case BS8.breakSubstring "\n\n" input of
+            (block, rest)
+                | BS.null rest -> [block]
+                | otherwise -> block : blocks (BS8.drop 2 rest)

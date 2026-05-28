@@ -245,7 +245,7 @@ extractCardanoLocalParts bs =
     concat
         [ scanCardanoLocals line
         | bsLine <- BS8.lines bs
-        , let line = BS8.unpack bsLine
+        , let line = stripAngleIris (BS8.unpack bsLine)
         , not ("@prefix" `isPrefixOfStr` line)
         ]
   where
@@ -310,7 +310,7 @@ extractUsedPrefixes bs =
     concat
         [ scanCuries line
         | bsLine <- BS8.lines bs
-        , let line = BS8.unpack bsLine
+        , let line = stripAngleIris (BS8.unpack bsLine)
         , not (prefixKeyword `isPrefix` line)
         , not (hashMark `isPrefix` line)
         ]
@@ -358,3 +358,23 @@ scanCuries = go False
 
     dropName =
         dropWhile (\c -> isAlphaNum c || c == '_' || c == '-')
+
+{- | Blank out absolute IRI tokens before CURIE scanning. Turtle
+IRIs such as @<urn:cardano:id:...>@ contain colon-separated
+segments but are not CURIEs and must not be checked against the
+declared prefix set or canonical Cardano vocabulary pin.
+-}
+stripAngleIris :: String -> String
+stripAngleIris = go False False
+  where
+    go _ _ [] = []
+    go inString inIri ('"' : rest)
+        | not inIri = '"' : go (not inString) False rest
+        | otherwise = ' ' : go inString True rest
+    go inString False ('<' : rest)
+        | not inString = ' ' : go inString True rest
+    go inString True ('>' : rest)
+        | not inString = ' ' : go inString False rest
+    go inString True (_ : rest)
+        | not inString = ' ' : go inString True rest
+    go inString inIri (c : rest) = c : go inString inIri rest

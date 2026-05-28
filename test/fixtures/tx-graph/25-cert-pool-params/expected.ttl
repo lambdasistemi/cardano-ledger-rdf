@@ -12,14 +12,14 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93 ;
+<urn:cardano:tx:35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasCertificate _:cert1 ;
-  cardano:hasCertificate _:cert2 ;
+  cardano:hasCertificate _:35f60658_cert1 ;
+  cardano:hasCertificate _:35f60658_cert2 ;
   cardano:hasFee 0 .
 
-_:hash_txid_35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93 a cardano:Identifier ;
+<urn:cardano:id:TxId:35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93" .
 
@@ -27,74 +27,74 @@ _:hash_txid_35f6065885019b9352b94c0b27b9e4ede0a0eaa224a3a3ce34e82feb2966be93 a c
 # Certificate 1
 #
 
-_:cert1 a cardano:Certificate ;
+_:35f60658_cert1 a cardano:Certificate ;
   a cardano:PoolRegistration ;
-  cardano:hasPoolParams _:cert1PoolParams .
+  cardano:hasPoolParams _:35f60658_cert1PoolParams .
 
-_:cert1PoolParams a cardano:PoolParams ;
-  cardano:hasOperator _:cred_poolid_55555555555555555555555555555555555555555555555555555555 ;
-  cardano:hasVrfKeyhash _:hash_vrfkey_8888888888888888888888888888888888888888888888888888888888888888 ;
+_:35f60658_cert1PoolParams a cardano:PoolParams ;
+  cardano:hasOperator <urn:cardano:id:PoolId:55555555555555555555555555555555555555555555555555555555> ;
+  cardano:hasVrfKeyhash <urn:cardano:id:VrfKeyHash:8888888888888888888888888888888888888888888888888888888888888888> ;
   cardano:hasPledge 1000000000000 ;
   cardano:hasCost 340000000 ;
   cardano:hasMargin "1/40" ;
-  cardano:hasRewardAccount _:cred_stakekey_00000000000000000000000000000000000000000000000000000019 ;
-  cardano:hasOwner _:cred_stakekey_66666666666666666666666666666666666666666666666666666666 ;
-  cardano:hasOwner _:cred_stakekey_77777777777777777777777777777777777777777777777777777777 ;
-  cardano:hasRelay _:cert1PoolParamsRelay1 ;
-  cardano:hasRelay _:cert1PoolParamsRelay2 ;
-  cardano:hasRelay _:cert1PoolParamsRelay3 ;
-  cardano:hasPoolMetadata _:cert1PoolParamsMetadata .
+  cardano:hasRewardAccount <urn:cardano:id:StakeKey:00000000000000000000000000000000000000000000000000000019> ;
+  cardano:hasOwner <urn:cardano:id:StakeKey:66666666666666666666666666666666666666666666666666666666> ;
+  cardano:hasOwner <urn:cardano:id:StakeKey:77777777777777777777777777777777777777777777777777777777> ;
+  cardano:hasRelay _:35f60658_cert1PoolParamsRelay1 ;
+  cardano:hasRelay _:35f60658_cert1PoolParamsRelay2 ;
+  cardano:hasRelay _:35f60658_cert1PoolParamsRelay3 ;
+  cardano:hasPoolMetadata _:35f60658_cert1PoolParamsMetadata .
 
-_:cred_poolid_55555555555555555555555555555555555555555555555555555555 a cardano:Identifier ;
+<urn:cardano:id:PoolId:55555555555555555555555555555555555555555555555555555555> a cardano:Identifier ;
   cardano:leafType "PoolId" ;
   cardano:bytesHex "55555555555555555555555555555555555555555555555555555555" .
 
-_:hash_vrfkey_8888888888888888888888888888888888888888888888888888888888888888 a cardano:Identifier ;
+<urn:cardano:id:VrfKeyHash:8888888888888888888888888888888888888888888888888888888888888888> a cardano:Identifier ;
   cardano:leafType "VrfKeyHash" ;
   cardano:bytesHex "8888888888888888888888888888888888888888888888888888888888888888" .
 
-_:cred_stakekey_00000000000000000000000000000000000000000000000000000019 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:00000000000000000000000000000000000000000000000000000019> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "00000000000000000000000000000000000000000000000000000019" .
 
-_:cred_stakekey_66666666666666666666666666666666666666666666666666666666 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:66666666666666666666666666666666666666666666666666666666> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "66666666666666666666666666666666666666666666666666666666" .
 
-_:cred_stakekey_77777777777777777777777777777777777777777777777777777777 a cardano:Identifier ;
+<urn:cardano:id:StakeKey:77777777777777777777777777777777777777777777777777777777> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "77777777777777777777777777777777777777777777777777777777" .
 
-_:cert1PoolParamsRelay1 a cardano:Relay ;
+_:35f60658_cert1PoolParamsRelay1 a cardano:Relay ;
   a cardano:SingleHostAddr ;
   cardano:hasPort 3001 .
 
-_:cert1PoolParamsRelay2 a cardano:Relay ;
+_:35f60658_cert1PoolParamsRelay2 a cardano:Relay ;
   a cardano:SingleHostName ;
   cardano:hasPort 3002 ;
   cardano:hasDnsName "relay.example.invalid" .
 
-_:cert1PoolParamsRelay3 a cardano:Relay ;
+_:35f60658_cert1PoolParamsRelay3 a cardano:Relay ;
   a cardano:MultiHostName ;
   cardano:hasDnsName "_cardano._tcp.example.invalid" .
 
-_:hash_poolmetadata_5555555555555555555555555555555555555555555555555555555555555555 a cardano:Identifier ;
+<urn:cardano:id:PoolMetadataHash:5555555555555555555555555555555555555555555555555555555555555555> a cardano:Identifier ;
   cardano:leafType "PoolMetadataHash" ;
   cardano:bytesHex "5555555555555555555555555555555555555555555555555555555555555555" .
 
-_:cert1PoolParamsMetadata a cardano:PoolMetadata ;
+_:35f60658_cert1PoolParamsMetadata a cardano:PoolMetadata ;
   cardano:hasUrl "https://example.invalid/pool.json" ;
-  cardano:hasHash _:hash_poolmetadata_5555555555555555555555555555555555555555555555555555555555555555 .
+  cardano:hasHash <urn:cardano:id:PoolMetadataHash:5555555555555555555555555555555555555555555555555555555555555555> .
 
 #
 # Certificate 2
 #
 
-_:cert2 a cardano:Certificate ;
+_:35f60658_cert2 a cardano:Certificate ;
   a cardano:PoolRetirement ;
-  cardano:hasPoolOperator _:cred_poolid_55555555555555555555555555555555555555555555555555555555 ;
+  cardano:hasPoolOperator <urn:cardano:id:PoolId:55555555555555555555555555555555555555555555555555555555> ;
   cardano:retireAtEpoch 580 .
 
-_:cred_poolid_55555555555555555555555555555555555555555555555555555555 a cardano:Identifier ;
+<urn:cardano:id:PoolId:55555555555555555555555555555555555555555555555555555555> a cardano:Identifier ;
   cardano:leafType "PoolId" ;
   cardano:bytesHex "55555555555555555555555555555555555555555555555555555555" .

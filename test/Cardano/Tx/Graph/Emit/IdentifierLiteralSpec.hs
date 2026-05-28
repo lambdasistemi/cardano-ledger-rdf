@@ -21,7 +21,7 @@ bytes themselves were not exposed as RDF data.
 This spec exercises the path via the tx-graph fixtures
 which contain payment-key credentials (every fixture) — the
 emitted bytes must contain at least one
-@_:cred_paymentkey_\<hex\> a cardano:Identifier ;@ subject
+@urn:cardano:id:PaymentKey:\<hex\> a cardano:Identifier ;@ subject
 block with the matching @cardano:bytesHex@ literal.
 -}
 module Cardano.Tx.Graph.Emit.IdentifierLiteralSpec (spec) where
@@ -47,16 +47,13 @@ spec =
     describe "Cardano.Tx.Graph.Emit raw-bytes identifier literals (T119b)" $ do
         it "emits a cardano:Identifier block per raw-bytes credential" $ do
             let bytes = emitBytes S02.tx
-            -- Fixture 02 references _:cred_paymentkey_<full-28-byte-hex>
+            -- Fixture 02 references the PaymentKey identifier IRI
             -- (56 zero hex chars) across its address-decomposition section.
-            -- The full-hex bnode label is what
-            -- 'Cardano.Tx.Graph.Emit.Lookup.rawBytesBnodeName' mints
-            -- post-fix(emit): use full hex for raw-bytes bnode labels.
             bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    ( "_:cred_paymentkey_"
+                    ( "<urn:cardano:id:PaymentKey:"
                         <> BS8.replicate 56 '0'
-                        <> " a cardano:Identifier"
+                        <> "> a cardano:Identifier"
                     )
         it "the identifier block carries cardano:leafType" $ do
             let bytes = emitBytes S02.tx

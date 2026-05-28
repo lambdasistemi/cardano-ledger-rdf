@@ -51,21 +51,9 @@ def bytes_hex_repl(match):
     return f'{match.group(1)}"{hex_if_needed(match.group(2))}"'
 
 
-def gov_action_bnode_repl(match):
-    token = match.group(2)
-    if re.fullmatch(r"[0-9a-f]+", token):
-        return match.group(0)
-    return f"{match.group(1)}{token.encode('latin-1').hex()}{match.group(3)}"
-
-
 text = re.sub(
     r'(cardano:bytesHex )"([^"]*)"',
     bytes_hex_repl,
-    text,
-)
-text = re.sub(
-    r"(_:hash_govactionid_)(.*?)(_[0-9]+)",
-    gov_action_bnode_repl,
     text,
 )
 path.write_text(text, encoding="utf-8")

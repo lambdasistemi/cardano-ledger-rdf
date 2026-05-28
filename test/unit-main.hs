@@ -10,6 +10,7 @@ import Cardano.Tx.Graph.Emit.BlueprintSpec qualified as GraphEmitBlueprintSpec
 import Cardano.Tx.Graph.Emit.BlueprintTypedFixtureSpec qualified as GraphEmitBlueprintTypedFixtureSpec
 import Cardano.Tx.Graph.Emit.BlueprintWiringSpec qualified as GraphEmitBlueprintWiringSpec
 import Cardano.Tx.Graph.Emit.BodyRootSpec qualified as GraphEmitBodyRootSpec
+import Cardano.Tx.Graph.Emit.CatMergeCompositionSpec qualified as GraphEmitCatMergeCompositionSpec
 import Cardano.Tx.Graph.Emit.CertVariantsSpec qualified as GraphEmitCertVariantsSpec
 import Cardano.Tx.Graph.Emit.ExhaustivitySpec qualified as GraphEmitExhaustivitySpec
 import Cardano.Tx.Graph.Emit.IdentifierLiteralSpec qualified as GraphEmitIdentifierLiteralSpec
@@ -65,6 +66,7 @@ main = hspec $ do
     GraphEmitBlueprintTypedFixtureSpec.spec
     GraphEmitBlueprintWiringSpec.spec
     GraphEmitBodyRootSpec.spec
+    GraphEmitCatMergeCompositionSpec.spec
     GraphEmitCertVariantsSpec.spec
     GraphEmitExhaustivitySpec.spec
     GraphEmitIdentifierLiteralSpec.spec

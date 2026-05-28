@@ -114,7 +114,10 @@ assertRefScriptShape bytes k refScript =
         SJust _ -> do
             outputBlockOfBytes bytes k
                 `shouldSatisfy` BS8.isInfixOf
-                    (BS8.pack ("cardano:hasReferenceScript _:outputRefScript" <> show k))
+                    (BS8.pack "cardano:hasReferenceScript _:")
+            outputBlockOfBytes bytes k
+                `shouldSatisfy` BS8.isInfixOf
+                    (BS8.pack ("_outputRefScript" <> show k))
             -- T118 / S17: script bnodes carry one of two rdf:type
             -- triples discriminating Plutus vs native scripts.
             refScriptBlockOfBytes bytes k
@@ -181,14 +184,14 @@ parent output block. Returns empty if no such sub-block exists.
 refScriptBlockOfBytes :: ByteString -> Int -> ByteString
 refScriptBlockOfBytes bs k =
     let needle =
-            "_:outputRefScript"
+            "_outputRefScript"
                 <> BS8.pack (show k)
                 <> " a "
      in case BS8.breakSubstring needle bs of
             (_, suf)
                 | BS.null suf -> ""
                 | otherwise ->
-                    let (block, _) = BS8.breakSubstring "\n\n" suf
+                    let (block, _) = BS8.breakSubstring "\n\n" ("_:" <> suf)
                      in block
 
 {- | Extract the bytes between a section header line (e.g.

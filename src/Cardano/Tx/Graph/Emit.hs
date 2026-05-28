@@ -81,14 +81,19 @@ module Cardano.Tx.Graph.Emit (
 
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
+import Data.ByteString.Base16 qualified as Base16
 import Data.Map.Strict (Map)
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Text.Encoding qualified as TextEncoding
 
+import Cardano.Crypto.Hash (hashToBytes)
+import Cardano.Ledger.Api.Tx (bodyTxL)
 import Cardano.Ledger.Api.Tx.Out (TxOut)
 import Cardano.Ledger.Conway (ConwayEra)
-import Cardano.Ledger.Hashes (ScriptHash)
+import Cardano.Ledger.Hashes (ScriptHash, extractHash, hashAnnotated)
 import Cardano.Ledger.TxIn (TxIn)
+import Lens.Micro ((^.))
 
 import Cardano.Tx.Blueprint (Blueprint)
 import Cardano.Tx.Graph.Emit.Blueprint (
@@ -317,13 +322,20 @@ emit tx utxo entities blueprints =
     -- for future error modes (e.g. typed-datum decode failures
     -- when CIP-57 blueprint decoding lands, #50).
     let lookupTbl = buildLookup entities
+        txIdText =
+            TextEncoding.decodeLatin1 $
+                Base16.encode $
+                    hashToBytes $
+                        extractHash $
+                            hashAnnotated (tx ^. bodyTxL)
+        body =
+            projectBody entities lookupTbl blueprints tx utxo
+                <> projectWitness entities lookupTbl blueprints tx utxo
      in Right
             EmittedGraph
                 { graphPrefixes = []
                 , graphOverlayTurtle = BS.empty
-                , graphBody =
-                    projectBody entities lookupTbl blueprints tx utxo
-                        <> projectWitness entities lookupTbl blueprints tx utxo
+                , graphBody = scopeBodyBnodes txIdText body
                 }
 
 {- | Render an 'EmittedGraph' to a 'ByteString' in the requested

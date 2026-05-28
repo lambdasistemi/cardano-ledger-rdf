@@ -12,12 +12,12 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9 ;
+<urn:cardano:tx:cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9> ;
   cardano:isValid "true"^^xsd:boolean ;
   cardano:hasFee 0 ;
   cardano:hasCurrentTreasuryValue 90000000000000000 .
 
-_:hash_txid_cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9 a cardano:Identifier ;
+<urn:cardano:id:TxId:cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "cd98a0763b9c5d592055545cdd1837bb2c6a1e2ad5826f354dc1fe694f22bfa9" .

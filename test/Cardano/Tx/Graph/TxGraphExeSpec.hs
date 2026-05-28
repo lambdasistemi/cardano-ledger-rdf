@@ -40,7 +40,7 @@ import Data.List (isInfixOf, isSuffixOf)
 import System.Directory (createDirectoryIfMissing, listDirectory)
 import System.Environment (lookupEnv)
 import System.Exit (ExitCode (..))
-import System.FilePath (takeBaseName, (</>))
+import System.FilePath ((</>))
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempDirectory)
 import System.Process (
@@ -272,15 +272,9 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                     length ttlNames `shouldBe` 1
                     case ttlNames of
                         [ttlName] -> do
-                            let txTag = take 8 (takeBaseName ttlName)
                             ttlBytes <- BS.readFile (outDir </> ttlName)
                             BS8.unpack ttlBytes
-                                `shouldSatisfy` ( ( "_:"
-                                                        <> txTag
-                                                        <> "_tx"
-                                                  )
-                                                    `isInfixOf`
-                                                )
+                                `shouldSatisfy` ("<urn:cardano:tx:" `isInfixOf`)
                             BS8.unpack ttlBytes
                                 `shouldSatisfy` not . ("_:tx " `isInfixOf`)
                         _ ->

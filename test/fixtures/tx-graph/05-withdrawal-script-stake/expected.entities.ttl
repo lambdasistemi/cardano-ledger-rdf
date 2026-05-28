@@ -9,28 +9,28 @@
 :alice a cardano:Entity ;
   rdfs:label "alice" ;
   cardano:bech32 "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz" ;
-  cardano:hasIdentifier _:alice_paymentKey ;
-  cardano:hasIdentifier _:alice_stakeKey .
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> .
 
-_:alice_paymentKey a cardano:Identifier ;
+<urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> a cardano:Identifier ;
   cardano:leafType "PaymentKey" ;
   cardano:bytesHex "8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1" .
 
-_:alice_stakeKey a cardano:Identifier ;
+<urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3" .
 
 :amaru_treasury_network_compliance a cardano:Entity ;
   rdfs:label "amaru-treasury.network_compliance" ;
   cardano:bech32 "addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk" ;
-  cardano:hasIdentifier _:amaru_treasury_network_compliance_paymentScript ;
-  cardano:hasIdentifier _:amaru_treasury_network_compliance_stakeScript .
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> .
 
-_:amaru_treasury_network_compliance_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d" .
 
-_:amaru_treasury_network_compliance_stakeScript a cardano:Identifier ;
+<urn:cardano:id:StakeScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> a cardano:Identifier ;
   cardano:leafType "StakeScript" ;
   cardano:bytesHex "32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d" .
 

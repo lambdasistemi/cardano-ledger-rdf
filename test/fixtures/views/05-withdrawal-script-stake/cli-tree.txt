@@ -4,6 +4,6 @@ outputs:
   - address: addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t
     coin: 51.825000 ADA
 withdrawals:
-  - account: 00000000000000000000000000000000000000000000000000000001
+  - account: <urn:cardano:id:StakeKey:00000000000000000000000000000000000000000000000000000001>
     amount: 50.000000 ADA
 fee: 0.000000 ADA

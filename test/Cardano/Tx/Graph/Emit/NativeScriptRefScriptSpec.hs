@@ -69,28 +69,30 @@ spec =
                 threshold = sliceSubjectBlock "outputRefScript1_c2" bytes
             root `shouldSatisfy` BS8.isInfixOf "a cardano:NativeScript"
             root `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptAll"
-            root `shouldSatisfy` BS8.isInfixOf "cardano:hasHash _:hash_script_"
             root
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:hasChild _:outputRefScript1_c1"
+                    "cardano:hasHash <urn:cardano:id:ScriptHash:"
             root
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:hasChild _:outputRefScript1_c2"
+                    "cardano:hasChild _:"
+            root
+                `shouldSatisfy` BS8.isInfixOf
+                    "_outputRefScript1_c2"
             root
                 `shouldSatisfy` not . BS8.isInfixOf "cardano:hasRawBytes"
             sliceSubjectBlock "outputRefScript1_c1" bytes
                 `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptPubkey"
             sliceSubjectBlock "outputRefScript1_c1" bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:requiresSigner _:cred_paymentkey_"
+                    "cardano:requiresSigner <urn:cardano:id:PaymentKey:"
             threshold `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptNofK"
             threshold `shouldSatisfy` BS8.isInfixOf "cardano:requiredCount 2"
             threshold
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:hasChild _:outputRefScript1_c2_c1"
+                    "_outputRefScript1_c2_c1"
             threshold
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:hasChild _:outputRefScript1_c2_c3"
+                    "_outputRefScript1_c2_c3"
         it "emits InvalidBefore and InvalidHereafter leaves with slots" $ do
             let bytes = emitBytes (txWithRefScript timelockNativeRefScript)
                 before = sliceSubjectBlock "outputRefScript1_c1" bytes
@@ -168,10 +170,18 @@ emptyUtxo = Map.empty
 -- | Slice the bytes between a bnode subject anchor and the next blank line.
 sliceSubjectBlock :: ByteString -> ByteString -> ByteString
 sliceSubjectBlock subject bs =
-    let needle = "\n_:" <> subject <> " "
-     in case BS8.breakSubstring needle ("\n" <> bs) of
-            (_, suf)
-                | BS8.null suf -> ""
-                | otherwise ->
-                    let (block, _) = BS8.breakSubstring "\n\n" (BS8.drop 1 suf)
-                     in block
+    let needle = "_" <> subject <> " "
+     in case filter (blockStartsWith needle) (blocks bs) of
+            [] -> ""
+            block : _ -> block
+  where
+    blockStartsWith needle block =
+        case BS8.lines block of
+            [] -> False
+            firstLine : _ -> needle `BS8.isInfixOf` firstLine
+
+    blocks input =
+        case BS8.breakSubstring "\n\n" input of
+            (block, rest)
+                | BS8.null rest -> [block]
+                | otherwise -> block : blocks (BS8.drop 2 rest)

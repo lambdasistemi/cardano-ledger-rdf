@@ -128,7 +128,6 @@ module Cardano.Tx.Graph.Emit.Project (
 import Data.ByteString (ByteString)
 import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Short qualified as SBS
-import Data.List (find)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Maybe qualified as Maybe
@@ -289,10 +288,10 @@ import Cardano.Tx.Graph.Emit.GovAction (emitTypedGovActionTree)
 import Cardano.Tx.Graph.Emit.Lookup (
     BnodeName (..),
     LookupTable,
-    lookupByteIdentifier,
-    lookupTextIdentifier,
-    rawBytesBnodeName,
-    rawTextBnodeName,
+    identifierIri,
+    textIdentifierIri,
+    txIri,
+    utxoIri,
  )
 import Cardano.Tx.Graph.Emit.Monad (
     Emit,
@@ -313,7 +312,6 @@ import Cardano.Tx.Graph.Emit.Triple (
 import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
 import Cardano.Tx.Graph.Rules.Load (
     EntityDecl (..),
-    EntityIdentifier (..),
     LeafType (..),
  )
 import Cardano.Tx.Ledger (ConwayTx)
@@ -392,7 +390,13 @@ projectBody entities lookupTbl blueprints tx utxo =
         (inputData, addrRegistry1) =
             buildInputs entities lookupTbl utxo inputs
         (outputData, addrRegistry2) =
-            buildOutputs entities lookupTbl blueprints outputs addrRegistry1
+            buildOutputs
+                entities
+                lookupTbl
+                blueprints
+                txIdBytes
+                outputs
+                addrRegistry1
         (collateralData, addrRegistry3) =
             buildCollaterals entities lookupTbl utxo collateralIns addrRegistry2
         (collateralReturnData, addrRegistry4) =
@@ -627,31 +631,26 @@ resolveCredentialAndIntroduceIdent ::
     LookupTable ->
     LeafType ->
     ByteString ->
-    Emit BnodeName
-resolveCredentialAndIntroduceIdent tbl lt bytes = do
-    case lookupByteIdentifier tbl lt bytes of
-        Just bn ->
-            -- Entity-named — overlay path emits the literal triples.
-            pure bn
-        Nothing -> do
-            let bn = rawBytesBnodeName lt bytes
-                bnSubj = SBnode bn
-            introduce bnSubj $ do
-                tellTriple
-                    (Triple bnSubj PRdfType (OIri (vocabCurie TermIdentifier)))
-                tellTriple
-                    ( Triple
-                        bnSubj
-                        (PIri (vocabCurie TermLeafType))
-                        (OStringLit (leafTypeText lt))
-                    )
-                tellTriple
-                    ( Triple
-                        bnSubj
-                        (PIri (vocabCurie TermBytesHex))
-                        (OStringLit (hexText bytes))
-                    )
-            pure bn
+    Emit Object
+resolveCredentialAndIntroduceIdent _tbl lt bytes = do
+    let iri = identifierIri lt bytes
+        identSubj = SIri iri
+    introduce identSubj $ do
+        tellTriple
+            (Triple identSubj PRdfType (OIri (vocabCurie TermIdentifier)))
+        tellTriple
+            ( Triple
+                identSubj
+                (PIri (vocabCurie TermLeafType))
+                (OStringLit (leafTypeText lt))
+            )
+        tellTriple
+            ( Triple
+                identSubj
+                (PIri (vocabCurie TermBytesHex))
+                (OStringLit (hexText bytes))
+            )
+    pure (OIri iri)
 
 {- | Canonical camelCase string form of a 'LeafType'. Matches the
 @cardano:leafType@ literal the entity-overlay path emits
@@ -689,10 +688,6 @@ leafTypeText = \case
 -- | Bnode name a body input at position @k@ (1-based) gets.
 idInputBnode :: Int -> BnodeName
 idInputBnode k = BnodeName ("input" <> Text.pack (show k))
-
--- | Bnode name a body output at position @k@ (1-based) gets.
-idOutputBnode :: Int -> BnodeName
-idOutputBnode k = BnodeName ("output" <> Text.pack (show k))
 
 {- | Bnode name the per-output datum sub-block at output position
 @k@ (1-based) gets. T105 / S4 attaches it to the output via
@@ -982,7 +977,7 @@ emitAssetListCell lookupTbl va total (m, (policy, assetName, qty)) = do
         entrySubj = SBnode entryBnode
         policyBytes = policyIdBytes policy
         assetBytes = policyBytes <> assetClassNameBytes assetName
-    assetIdBnode <-
+    assetIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl AssetClass assetBytes
     tellTriple
         (Triple cellSubj (PIri "rdf:first") (OBnode entryBnode))
@@ -994,7 +989,7 @@ emitAssetListCell lookupTbl va total (m, (policy, assetName, qty)) = do
         ( Triple
             entrySubj
             (PIri (vocabCurie TermHasIdentifier))
-            (OBnode assetIdBnode)
+            assetIdObj
         )
     tellTriple
         ( Triple
@@ -1074,7 +1069,7 @@ emitTxBlock
     nDatumWitnesses
     nScriptWitnesses
     nBootstrapWitnesses = do
-        let txSubj = SBnode (BnodeName "tx")
+        let txSubj = SIri (txIri txIdBytes)
             tt p o = tellTriple (Triple txSubj p o)
             -- Emit one @cardano:hasX _:xK@ edge per k in
             -- @[1..n]@. Sequenced via 'mapM_' over the range so
@@ -1084,19 +1079,27 @@ emitTxBlock
                     ( tt (PIri (vocabCurie term)) . OBnode . mkBnode
                     )
                     [1 .. n]
+            outputEdges =
+                mapM_
+                    ( \k ->
+                        tt
+                            (PIri (vocabCurie TermHasOutput))
+                            (OIri (utxoIri txIdBytes (k - 1)))
+                    )
+                    [1 .. nOutputs]
         tt PRdfType (OIri (vocabCurie TermTransaction))
         -- Issue #100: pin the tx's own on-chain hash as an
         -- Identifier-typed bnode, matching the existing
         -- emitFromTxOutRef pattern for parent-txid references.
         -- SPARQL JOINs across the closure use
         -- @cardano:hasTxId/cardano:bytesHex@ uniformly.
-        txIdBnode <-
+        txIdObj <-
             resolveCredentialAndIntroduceIdent lookupTbl LtTxId txIdBytes
-        tt (PIri (vocabCurie TermHasTxId)) (OBnode txIdBnode)
+        tt (PIri (vocabCurie TermHasTxId)) txIdObj
         tt (PIri (vocabCurie TermIsValid)) (OBoolLit isValid)
         edges TermHasInput idInputBnode nInputs
         edges TermHasReferenceInput idReferenceInputBnode nReferenceInputs
-        edges TermHasOutput idOutputBnode nOutputs
+        outputEdges
         edges TermHasMint idMintBnode nMints
         edges TermHasWithdrawal idWithdrawalBnode nWithdrawals
         edges TermHasCertificate idCertBnode nCerts
@@ -1247,13 +1250,13 @@ emitRequiredSigners lookupTbl txSubj = mapM_ emit1
   where
     emit1 (KeyHash h) = do
         let bytes = hashToBytes h
-        bn <-
+        identObj <-
             resolveCredentialAndIntroduceIdent lookupTbl PaymentKey bytes
         tellTriple
             ( Triple
                 txSubj
                 (PIri (vocabCurie TermHasRequiredSigner))
-                (OBnode bn)
+                identObj
             )
 
 {- | Emit the @cardano:hasValidityInterval _:interval1@ edge plus
@@ -1323,12 +1326,12 @@ emitScriptDataHash ::
 emitScriptDataHash _ _ SNothing = pure ()
 emitScriptDataHash lookupTbl txSubj (SJust h) = do
     let bytes = hashToBytes (extractHash h)
-    bn <- resolveCredentialAndIntroduceIdent lookupTbl LtScriptDataHash bytes
+    identObj <- resolveCredentialAndIntroduceIdent lookupTbl LtScriptDataHash bytes
     tellTriple
         ( Triple
             txSubj
             (PIri (vocabCurie TermScriptDataHash))
-            (OBnode bn)
+            identObj
         )
 
 {- | Emit @cardano:auxiliaryDataHash _:hash_auxiliarydata_X@ when
@@ -1345,12 +1348,12 @@ emitAuxiliaryDataHash ::
 emitAuxiliaryDataHash _ _ SNothing = pure ()
 emitAuxiliaryDataHash lookupTbl txSubj (SJust (TxAuxDataHash h)) = do
     let bytes = hashToBytes (extractHash h)
-    bn <- resolveCredentialAndIntroduceIdent lookupTbl LtAuxiliaryDataHash bytes
+    identObj <- resolveCredentialAndIntroduceIdent lookupTbl LtAuxiliaryDataHash bytes
     tellTriple
         ( Triple
             txSubj
             (PIri (vocabCurie TermAuxiliaryDataHash))
-            (OBnode bn)
+            identObj
         )
 
 ----------------------------------------------------------------------
@@ -1491,36 +1494,14 @@ All forms produce uniform downstream suffixes:
 @\<base\>Addr@, @\<base\>CredPayment@, @\<base\>CredStake@.
 -}
 pickAddrBase :: [EntityDecl] -> PaymentLeaf -> Maybe StakeLeaf -> Text
-pickAddrBase entities pl ml =
-    paymentBase <> stakeSuffix
+pickAddrBase _entities pl ml =
+    hexText (plBytes pl) <> stakeSuffix
   where
-    paymentBase =
-        case findEntityForLeaf entities (plLeafType pl) (plBytes pl) of
-            Just slug -> slug
-            Nothing ->
-                "cred_"
-                    <> rolePrefixText (plLeafType pl)
-                    <> "_"
-                    <> hexText (plBytes pl)
     stakeSuffix =
         case ml of
             Nothing -> ""
             Just (StakeLeaf lt bs) ->
                 "_s" <> rolePrefixText lt <> hexText bs
-
-findEntityForLeaf ::
-    [EntityDecl] -> LeafType -> ByteString -> Maybe Text
-findEntityForLeaf entities lt bytes =
-    entitySlug
-        <$> find
-            ( any
-                ( \i ->
-                    entityIdLeafType i == lt
-                        && entityIdBytesHex i == hexText bytes
-                )
-                . entityIdentifiers
-            )
-            entities
 
 rolePrefixText :: LeafType -> Text
 rolePrefixText = \case
@@ -1666,13 +1647,13 @@ emitFromTxOutRef lookupTbl parentSubj refBnode (TxIn (TxId safeHash) (TxIx index
         )
     tellTriple
         (Triple refSubj PRdfType (OIri (vocabCurie TermTxOutRef)))
-    txIdBnode <-
+    txIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl LtTxId txIdBytes
     tellTriple
         ( Triple
             refSubj
             (PIri (vocabCurie TermHasTxId))
-            (OBnode txIdBnode)
+            txIdObj
         )
     tellTriple
         ( Triple
@@ -1704,10 +1685,11 @@ buildOutputs ::
     [EntityDecl] ->
     LookupTable ->
     [(ScriptHash, Blueprint, Text)] ->
+    ByteString ->
     [TxOut ConwayEra] ->
     AddrRegistry ->
     ([[SubjectBlock]], AddrRegistry)
-buildOutputs entities lookupTbl blueprints outputs reg0 =
+buildOutputs entities lookupTbl blueprints txIdBytes outputs reg0 =
     go [] reg0 (zip [1 ..] outputs)
   where
     -- Strict iteration: 'outputs' is a small list.
@@ -1724,6 +1706,7 @@ buildOutputs entities lookupTbl blueprints outputs reg0 =
                     ( emitOutput
                         lookupTbl
                         blueprints
+                        txIdBytes
                         k
                         (aeBnodeBase entry)
                         txOut
@@ -1745,12 +1728,13 @@ neither datum nor reference script keep their pre-T105 shape.
 emitOutput ::
     LookupTable ->
     [(ScriptHash, Blueprint, Text)] ->
+    ByteString ->
     Int ->
     Text ->
     TxOut ConwayEra ->
     Emit ()
-emitOutput lookupTbl blueprints k base txOut = do
-    let outSubj = SBnode (idOutputBnode k)
+emitOutput lookupTbl blueprints txIdBytes k base txOut = do
+    let outSubj = SIri (utxoIri txIdBytes (k - 1))
         value = txOut ^. valueTxOutL
         datum = txOut ^. datumTxOutL
         refScript = txOut ^. referenceScriptTxOutL
@@ -1814,13 +1798,13 @@ emitOutputDatum lookupTbl _blueprints k outSubj _txOut (DatumHash dh) = do
             (OBnode datumBnode)
         )
     tellTriple (Triple datumSubj PRdfType (OIri (vocabCurie TermDatum)))
-    hashBnode <-
+    hashObj <-
         resolveCredentialAndIntroduceIdent lookupTbl LtDatumHash hashBytes
     tellTriple
         ( Triple
             datumSubj
             (PIri (vocabCurie TermHasHash))
-            (OBnode hashBnode)
+            hashObj
         )
 emitOutputDatum lookupTbl blueprints k outSubj txOut (Datum binaryData) = do
     let datumBnode = idOutputDatumBnode k
@@ -1837,13 +1821,13 @@ emitOutputDatum lookupTbl blueprints k outSubj txOut (Datum binaryData) = do
             (OBnode datumBnode)
         )
     tellTriple (Triple datumSubj PRdfType (OIri (vocabCurie TermDatum)))
-    hashBnode <-
+    hashObj <-
         resolveCredentialAndIntroduceIdent lookupTbl LtDatumHash hashBytes
     tellTriple
         ( Triple
             datumSubj
             (PIri (vocabCurie TermHasHash))
-            (OBnode hashBnode)
+            hashObj
         )
     emitDecodedOrOpaque
         datumSubj
@@ -2167,13 +2151,13 @@ emitOutputReferenceScript lookupTbl k outSubj (SJust script) = do
             -- so the same script hash referenced from a payment-script
             -- credential or the witness-set's script bag joins on bnode
             -- equality (operator A-007).
-            hashBnode <-
+            hashObj <-
                 resolveCredentialAndIntroduceIdent lookupTbl LtScriptHash hashBytes
             tellTriple
                 ( Triple
                     scriptSubj
                     (PIri (vocabCurie TermHasHash))
-                    (OBnode hashBnode)
+                    hashObj
                 )
             tellTriple
                 ( Triple
@@ -2247,7 +2231,7 @@ emitAddrEntry
                             (PIri (vocabCurie TermHasStakeCredential))
                             (OBnode stakeCredBnode)
                         )
-        payIdBnode <-
+        payIdObj <-
             resolveCredentialAndIntroduceIdent
                 lookupTbl
                 (plLeafType aePaymentCred)
@@ -2263,12 +2247,12 @@ emitAddrEntry
                 ( Triple
                     payCredSubj
                     (PIri (vocabCurie TermHasIdentifier))
-                    (OBnode payIdBnode)
+                    payIdObj
                 )
         case aeStakeCred of
             Nothing -> pure ()
             Just sl -> do
-                stakeIdBnode <-
+                stakeIdObj <-
                     resolveCredentialAndIntroduceIdent
                         lookupTbl
                         (slLeafType sl)
@@ -2284,7 +2268,7 @@ emitAddrEntry
                         ( Triple
                             stakeCredSubj
                             (PIri (vocabCurie TermHasIdentifier))
-                            (OBnode stakeIdBnode)
+                            stakeIdObj
                         )
 
 ----------------------------------------------------------------------
@@ -2313,7 +2297,7 @@ emitMintCluster lookupTbl k policyId assetName quantity = do
         assetBytes = policyBytes <> assetClassNameBytes assetName
         mintSubj = SBnode (idMintBnode k)
         assetSubj = SBnode (idAssetBnode k)
-    assetIdBnode <-
+    assetIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl AssetClass assetBytes
     tellTriple (Triple mintSubj PRdfType (OIri (vocabCurie TermMint)))
     tellTriple
@@ -2333,7 +2317,7 @@ emitMintCluster lookupTbl k policyId assetName quantity = do
         ( Triple
             assetSubj
             (PIri (vocabCurie TermHasIdentifier))
-            (OBnode assetIdBnode)
+            assetIdObj
         )
 
 policyIdBytes :: PolicyID -> ByteString
@@ -2369,14 +2353,14 @@ emitWithdrawalCluster ::
 emitWithdrawalCluster lookupTbl k account (Coin lovelace) = do
     let (leafTy, credBytes) = accountStakeLeaf account
         wSubj = SBnode (idWithdrawalBnode k)
-    credIdBnode <-
+    credIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
     tellTriple (Triple wSubj PRdfType (OIri (vocabCurie TermWithdrawal)))
     tellTriple
         ( Triple
             wSubj
             (PIri (vocabCurie TermWithdrawalAccount))
-            (OBnode credIdBnode)
+            credIdObj
         )
     tellTriple
         ( Triple
@@ -2545,9 +2529,9 @@ emitStakeDelegation lookupTbl k stakeCred poolBytes = do
     let (stakeLT, stakeBytes) = stakeCredLeaf stakeCred
         certSubj = SBnode (idCertBnode k)
         poolSubj = SBnode (idPoolBnode k)
-    stakeIdBnode <-
+    stakeIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl stakeLT stakeBytes
-    poolIdBnode <-
+    poolIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl PoolId poolBytes
     tellTriple
         ( Triple
@@ -2559,7 +2543,7 @@ emitStakeDelegation lookupTbl k stakeCred poolBytes = do
         ( Triple
             certSubj
             (PIri (vocabCurie TermOnCredential))
-            (OBnode stakeIdBnode)
+            stakeIdObj
         )
     tellTriple
         ( Triple
@@ -2572,7 +2556,7 @@ emitStakeDelegation lookupTbl k stakeCred poolBytes = do
         ( Triple
             poolSubj
             (PIri (vocabCurie TermHasIdentifier))
-            (OBnode poolIdBnode)
+            poolIdObj
         )
 
 emitVoteDelegation ::
@@ -2586,9 +2570,9 @@ emitVoteDelegation lookupTbl k stakeCred drepLT drepBytes = do
     let (stakeLT, stakeBytes) = stakeCredLeaf stakeCred
         certSubj = SBnode (idCertBnode k)
         drepSubj = SBnode (idDRepBnode k)
-    stakeIdBnode <-
+    stakeIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl stakeLT stakeBytes
-    drepIdBnode <-
+    drepIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl drepLT drepBytes
     tellTriple
         ( Triple
@@ -2600,7 +2584,7 @@ emitVoteDelegation lookupTbl k stakeCred drepLT drepBytes = do
         ( Triple
             certSubj
             (PIri (vocabCurie TermOnCredential))
-            (OBnode stakeIdBnode)
+            stakeIdObj
         )
     tellTriple
         ( Triple
@@ -2613,7 +2597,7 @@ emitVoteDelegation lookupTbl k stakeCred drepLT drepBytes = do
         ( Triple
             drepSubj
             (PIri (vocabCurie TermHasIdentifier))
-            (OBnode drepIdBnode)
+            drepIdObj
         )
 
 stakeCredLeaf :: Credential Staking -> (LeafType, ByteString)
@@ -2957,7 +2941,7 @@ emitProposalShell
     (ProposalProcedure (Coin lovelace) returnAddr _ anchor) = do
         let propSubj = SBnode (idProposalBnode k)
             (leafTy, credBytes) = accountStakeLeaf returnAddr
-        returnAddrBnode <-
+        returnAddrObj <-
             resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
         tellTriple (Triple propSubj PRdfType (OIri (vocabCurie TermProposal)))
         tellTriple
@@ -2970,7 +2954,7 @@ emitProposalShell
             ( Triple
                 propSubj
                 (PIri (vocabCurie TermHasReturnAddress))
-                (OBnode returnAddrBnode)
+                returnAddrObj
             )
         emitProposalAnchor k propSubj anchor
 
@@ -3011,7 +2995,7 @@ emitTreasuryWithdrawalsGovAction
         case guardPolicy of
             SNothing -> pure ()
             SJust (ScriptHash h) -> do
-                guardBnode <-
+                guardObj <-
                     resolveCredentialAndIntroduceIdent
                         lookupTbl
                         LtScriptHash
@@ -3020,7 +3004,7 @@ emitTreasuryWithdrawalsGovAction
                     ( Triple
                         actionSubj
                         (PIri (vocabCurie TermHasGuardPolicy))
-                        (OBnode guardBnode)
+                        guardObj
                     )
 
 emitTreasuryWithdrawal ::
@@ -3044,7 +3028,7 @@ emitTreasuryWithdrawal
                 (PIri (vocabCurie TermHasWithdrawal))
                 (OBnode withdrawalBnode)
             )
-        rewardBnode <-
+        rewardObj <-
             resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
         tellTriple
             ( Triple
@@ -3056,7 +3040,7 @@ emitTreasuryWithdrawal
             ( Triple
                 withdrawalSubj
                 (PIri (vocabCurie TermToRewardAccount))
-                (OBnode rewardBnode)
+                rewardObj
             )
         tellTriple
             ( Triple
@@ -3149,7 +3133,7 @@ buildVoteCluster lookupTbl k voter actionId procedure = do
     let voteSubj = SBnode (idVoteBnode k)
         voterSubj = SBnode (idVoterBnode k)
         VotingProcedure vote mAnchor = procedure
-    govActionBnode <- emitGovActionIdBlock lookupTbl actionId
+    govActionObj <- emitGovActionIdBlock lookupTbl actionId
     tellTriple (Triple voteSubj PRdfType (OIri (vocabCurie TermVote)))
     tellTriple
         ( Triple
@@ -3161,7 +3145,7 @@ buildVoteCluster lookupTbl k voter actionId procedure = do
         ( Triple
             voteSubj
             (PIri (vocabCurie TermHasVotingAction))
-            (OBnode govActionBnode)
+            govActionObj
         )
     tellTriple
         ( Triple
@@ -3186,17 +3170,13 @@ verdictText = \case
 The subject is deterministic over @txid:index@ and can be replaced
 by an operator-declared entity bnode through the rules lookup table.
 -}
-emitGovActionIdBlock :: LookupTable -> GovActionId -> Emit BnodeName
+emitGovActionIdBlock :: LookupTable -> GovActionId -> Emit Object
 emitGovActionIdBlock lookupTbl (GovActionId (TxId safeHash) (GovActionIx ix)) = do
     let txIdBytes = hashToBytes (extractHash safeHash)
         token = hexText txIdBytes <> ":" <> Text.pack (show ix)
-        mEntityBnode = lookupTextIdentifier lookupTbl LtGovActionId token
-        govActionBnode =
-            Maybe.fromMaybe
-                (rawTextBnodeName LtGovActionId token)
-                mEntityBnode
-        govActionSubj = SBnode govActionBnode
-    txIdBnode <-
+        govActionIri = textIdentifierIri LtGovActionId token
+        govActionSubj = SIri govActionIri
+    txIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl LtTxId txIdBytes
     introduce govActionSubj $ do
         tellTriple
@@ -3205,32 +3185,29 @@ emitGovActionIdBlock lookupTbl (GovActionId (TxId safeHash) (GovActionIx ix)) = 
                 PRdfType
                 (OIri (vocabCurie TermGovActionId))
             )
-        if Maybe.isJust mEntityBnode
-            then pure ()
-            else do
-                tellTriple
-                    ( Triple
-                        govActionSubj
-                        PRdfType
-                        (OIri (vocabCurie TermIdentifier))
-                    )
-                tellTriple
-                    ( Triple
-                        govActionSubj
-                        (PIri (vocabCurie TermLeafType))
-                        (OStringLit (leafTypeText LtGovActionId))
-                    )
-                tellTriple
-                    ( Triple
-                        govActionSubj
-                        (PIri (vocabCurie TermBytesHex))
-                        (OStringLit token)
-                    )
+        tellTriple
+            ( Triple
+                govActionSubj
+                PRdfType
+                (OIri (vocabCurie TermIdentifier))
+            )
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermLeafType))
+                (OStringLit (leafTypeText LtGovActionId))
+            )
+        tellTriple
+            ( Triple
+                govActionSubj
+                (PIri (vocabCurie TermBytesHex))
+                (OStringLit token)
+            )
         tellTriple
             ( Triple
                 govActionSubj
                 (PIri (vocabCurie TermHasTxId))
-                (OBnode txIdBnode)
+                txIdObj
             )
         tellTriple
             ( Triple
@@ -3238,7 +3215,7 @@ emitGovActionIdBlock lookupTbl (GovActionId (TxId safeHash) (GovActionIx ix)) = 
                 (PIri (vocabCurie TermHasIndex))
                 (OIntLit (fromIntegral ix))
             )
-    pure govActionBnode
+    pure (OIri govActionIri)
 
 {- | Emit the @_:voterK a cardano:VoterX ; cardano:hasIdentifier
 "\<hex\>"@ sub-block. The discriminating class

@@ -9,36 +9,36 @@
 :mpfs_oracle a cardano:Entity ;
   rdfs:label "mpfs.oracle" ;
   cardano:bech32 "addr1zx4c4tn2l5efcxs8zxrft28kc8uhykwt5h3ar3z9qh7tgh6avaqcquvquw4pmrz7xz3dj237afxu75hh6n5fhngxeywsvp6mlq" ;
-  cardano:hasIdentifier _:mpfs_oracle_paymentScript ;
-  cardano:hasIdentifier _:mpfs_oracle_stakeKey .
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:ab8aae6afd329c1a07118695a8f6c1f97259cba5e3d1c44505fcb45f> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeKey:5d6741807180e3aa1d8c5e30a2d92a3eea4dcf52f7d4e89bcd06c91d> .
 
-_:mpfs_oracle_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:ab8aae6afd329c1a07118695a8f6c1f97259cba5e3d1c44505fcb45f> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "ab8aae6afd329c1a07118695a8f6c1f97259cba5e3d1c44505fcb45f" .
 
-_:mpfs_oracle_stakeKey a cardano:Identifier ;
+<urn:cardano:id:StakeKey:5d6741807180e3aa1d8c5e30a2d92a3eea4dcf52f7d4e89bcd06c91d> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "5d6741807180e3aa1d8c5e30a2d92a3eea4dcf52f7d4e89bcd06c91d" .
 
 :mpfs_oracle_script a cardano:Entity ;
   rdfs:label "mpfs.oracle.script" ;
-  cardano:hasIdentifier _:mpfs_oracle_script_paymentScript .
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:aa11bb22cc33dd44ee55ff6677889900112233445566778899aabbcc> .
 
-_:mpfs_oracle_script_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:aa11bb22cc33dd44ee55ff6677889900112233445566778899aabbcc> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "aa11bb22cc33dd44ee55ff6677889900112233445566778899aabbcc" .
 
 :operator a cardano:Entity ;
   rdfs:label "operator" ;
   cardano:bech32 "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz" ;
-  cardano:hasIdentifier _:operator_paymentKey ;
-  cardano:hasIdentifier _:operator_stakeKey .
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> .
 
-_:operator_paymentKey a cardano:Identifier ;
+<urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> a cardano:Identifier ;
   cardano:leafType "PaymentKey" ;
   cardano:bytesHex "8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1" .
 
-_:operator_stakeKey a cardano:Identifier ;
+<urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3" .
 

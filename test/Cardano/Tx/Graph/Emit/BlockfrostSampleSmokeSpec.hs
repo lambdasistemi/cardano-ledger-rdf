@@ -30,7 +30,7 @@ For each @<slug>.cbor.hex@ in the cache the spec emits two
    'decodeConwayTxInput', 'emit' returns @Right@ (no
    @PUnsupportedLeafType@ / @MalformedTxCbor@ / etc.), and the
    serialized Turtle output is non-empty and contains the
-   @_:tx a cardano:Transaction@ anchor.
+   @urn:cardano:tx:* a cardano:Transaction@ anchor.
 2. /Redeemer-block surfaces/ (T128e) — when the witness set
    carries a non-empty @Redeemers@ map, the emitted Turtle
    carries the canonical redeemer block: the top-level
@@ -127,7 +127,7 @@ assertTxEmits path = do
         withEmittedTurtle path $ \_tx out ->
             out
                 `shouldSatisfy` BS8.isInfixOf
-                    "_:tx a cardano:Transaction"
+                    "> a cardano:Transaction"
     it (takeFileName path <> " — redeemer block surfaces if redeemers present") $
         withEmittedTurtle path $ \tx out ->
             let Redeemers rdmrMap = tx ^. witsTxL . rdmrsTxWitsL

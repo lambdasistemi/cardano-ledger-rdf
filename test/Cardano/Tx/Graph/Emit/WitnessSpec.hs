@@ -81,43 +81,51 @@ spec = describe "Cardano.Tx.Graph.Emit witness set (T128b / S31)" $ do
     describe "redeemer witness" $ do
         let bytes = emitBytes txWithRedeemer
         it "emits cardano:hasRedeemer on _:tx" $
-            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasRedeemer _:redeemer1"
+            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasRedeemer _:"
         it "emits the redeemer Class anchor" $
-            bytes `shouldSatisfy` BS8.isInfixOf "_:redeemer1 a cardano:Redeemer"
+            bytes `shouldSatisfy` BS8.isInfixOf "_redeemer1 a cardano:Redeemer"
         it "emits hasPurpose / hasIndex / hasData / hasExUnits" $ do
             bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasPurpose \"Spend\""
             bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasIndex 0"
-            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasData _:redeemerData1"
-            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasExUnits _:exUnits1"
+            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasData _:"
+            bytes `shouldSatisfy` BS8.isInfixOf "_redeemerData1"
+            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasExUnits _:"
+            bytes `shouldSatisfy` BS8.isInfixOf "_exUnits1"
         it "emits the ExUnits sub-block with memoryUnits + cpuUnits" $ do
-            bytes `shouldSatisfy` BS8.isInfixOf "_:exUnits1 a cardano:ExUnits"
+            bytes `shouldSatisfy` BS8.isInfixOf "_exUnits1 a cardano:ExUnits"
             bytes `shouldSatisfy` BS8.isInfixOf "cardano:memoryUnits 100"
             bytes `shouldSatisfy` BS8.isInfixOf "cardano:cpuUnits 200"
     describe "datum witness" $ do
         let bytes = emitBytes txWithDatumWitness
-        it "emits cardano:hasDatumWitness on _:tx" $
+        it "emits cardano:hasDatumWitness on _:tx" $ do
             bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:hasDatumWitness _:dataWitness1"
+                    "cardano:hasDatumWitness _:"
+            bytes `shouldSatisfy` BS8.isInfixOf "_dataWitness1"
         it "binds the datum-witness bnode to cardano:Datum" $
             bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    "_:dataWitness1 a cardano:Datum"
+                    "_dataWitness1 a cardano:Datum"
         it "carries hasHash (shared DatumHash identifier) + hasRawBytes" $ do
-            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasHash _:hash_datum_"
+            bytes
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:hasHash <urn:cardano:id:DatumHash:"
             bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasRawBytes"
     describe "script witness" $ do
         let bytes = emitBytes txWithScriptWitness
-        it "emits cardano:hasScriptWitness on _:tx" $
+        it "emits cardano:hasScriptWitness on _:tx" $ do
             bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:hasScriptWitness _:scriptWitness1"
+                    "cardano:hasScriptWitness _:"
+            bytes `shouldSatisfy` BS8.isInfixOf "_scriptWitness1"
         it "types the witness-set script as cardano:NativeScript (stub)" $
             bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    "_:scriptWitness1 a cardano:NativeScript"
+                    "_scriptWitness1 a cardano:NativeScript"
         it "carries hasHash and typed native-script leaves, not hasRawBytes" $ do
-            bytes `shouldSatisfy` BS8.isInfixOf "cardano:hasHash _:hash_script_"
+            bytes
+                `shouldSatisfy` BS8.isInfixOf
+                    "cardano:hasHash <urn:cardano:id:ScriptHash:"
             sliceSubjectBlock "scriptWitness1" bytes
                 `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptNofK"
             sliceSubjectBlock "scriptWitness1" bytes
@@ -126,7 +134,7 @@ spec = describe "Cardano.Tx.Graph.Emit witness set (T128b / S31)" $ do
                 `shouldSatisfy` BS8.isInfixOf "a cardano:ScriptPubkey"
             sliceSubjectBlock "scriptWitness1_c1" bytes
                 `shouldSatisfy` BS8.isInfixOf
-                    "cardano:requiresSigner _:cred_paymentkey_"
+                    "cardano:requiresSigner <urn:cardano:id:PaymentKey:"
             sliceSubjectBlock "scriptWitness1" bytes
                 `shouldSatisfy` not . BS8.isInfixOf "cardano:hasRawBytes"
     describe "shared verification-key bnode (T128b shared-identity)" $ do
@@ -234,10 +242,18 @@ txWithSharedSignerAndKeyWit =
 -- | Slice the bytes between a bnode subject anchor and the next blank line.
 sliceSubjectBlock :: ByteString -> ByteString -> ByteString
 sliceSubjectBlock subject bs =
-    let needle = "\n_:" <> subject <> " "
-     in case BS8.breakSubstring needle ("\n" <> bs) of
-            (_, suf)
-                | BS8.null suf -> ""
-                | otherwise ->
-                    let (block, _) = BS8.breakSubstring "\n\n" (BS8.drop 1 suf)
-                     in block
+    let needle = "_" <> subject <> " "
+     in case filter (blockStartsWith needle) (blocks bs) of
+            [] -> ""
+            block : _ -> block
+  where
+    blockStartsWith needle block =
+        case BS8.lines block of
+            [] -> False
+            firstLine : _ -> needle `BS8.isInfixOf` firstLine
+
+    blocks input =
+        case BS8.breakSubstring "\n\n" input of
+            (block, rest)
+                | BS8.null rest -> [block]
+                | otherwise -> block : blocks (BS8.drop 2 rest)

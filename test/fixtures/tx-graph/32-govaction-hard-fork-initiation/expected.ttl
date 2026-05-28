@@ -12,13 +12,13 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969 ;
+<urn:cardano:tx:38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasProposal _:proposal1 ;
+  cardano:hasProposal _:38c1d8ec_proposal1 ;
   cardano:hasFee 0 .
 
-_:hash_txid_38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969 a cardano:Identifier ;
+<urn:cardano:id:TxId:38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969" .
 
@@ -26,40 +26,40 @@ _:hash_txid_38c1d8ecc839b29a6ddf5da7dbb02635e90bb8c00272de369bb0fbe36b467969 a c
 # Proposal 1
 #
 
-_:cred_stakekey_0000000000000000000000000000000000000000000000000000001e a cardano:Identifier ;
+<urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001e> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "0000000000000000000000000000000000000000000000000000001e" .
 
-_:proposal1 a cardano:Proposal ;
+_:38c1d8ec_proposal1 a cardano:Proposal ;
   cardano:hasDeposit 100000000000 ;
-  cardano:hasReturnAddress _:cred_stakekey_0000000000000000000000000000000000000000000000000000001e ;
-  cardano:hasAnchor _:proposalAnchor1 ;
-  cardano:hasGovAction _:govAction1 ;
-  cardano:hasDatum _:proposalDatum1 .
+  cardano:hasReturnAddress <urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001e> ;
+  cardano:hasAnchor _:38c1d8ec_proposalAnchor1 ;
+  cardano:hasGovAction _:38c1d8ec_govAction1 ;
+  cardano:hasDatum _:38c1d8ec_proposalDatum1 .
 
-_:proposalAnchor1 a cardano:Anchor ;
+_:38c1d8ec_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/hard-fork-initiation" ;
   cardano:anchorHash "8888888888888888888888888888888888888888888888888888888888888888" .
 
-_:govAction1 a cardano:HardForkInitiation ;
-  cardano:hasPriorAction _:hash_govactionid_wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww_9 ;
-  cardano:hasProtocolVersion _:govAction1ProtocolVersion .
+_:38c1d8ec_govAction1 a cardano:HardForkInitiation ;
+  cardano:hasPriorAction <urn:cardano:id:GovActionId:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww:9> ;
+  cardano:hasProtocolVersion _:38c1d8ec_govAction1ProtocolVersion .
 
-_:hash_txid_7777777777777777777777777777777777777777777777777777777777777777 a cardano:Identifier ;
+<urn:cardano:id:TxId:7777777777777777777777777777777777777777777777777777777777777777> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww" .
 
-_:hash_govactionid_wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww_9 a cardano:GovActionId ;
+<urn:cardano:id:GovActionId:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww:9> a cardano:GovActionId ;
   a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
   cardano:bytesHex "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww:9" ;
-  cardano:hasTxId _:hash_txid_7777777777777777777777777777777777777777777777777777777777777777 ;
+  cardano:hasTxId <urn:cardano:id:TxId:7777777777777777777777777777777777777777777777777777777777777777> ;
   cardano:hasIndex 9 .
 
-_:govAction1ProtocolVersion a cardano:ProtocolVersion ;
+_:38c1d8ec_govAction1ProtocolVersion a cardano:ProtocolVersion ;
   cardano:hasMajorVersion 11 ;
   cardano:hasMinorVersion 0 .
 
-_:proposalDatum1 a cardano:Datum ;
+_:38c1d8ec_proposalDatum1 a cardano:Datum ;
   cardano:decodedAs "HardForkInitiation" ;
   cardano:hasRawBytes "841b000000174876e800581de00000000000000000000000000000000000000000000000000000001e8301825820777777777777777777777777777777777777777777777777777777777777777709820b0082782c68747470733a2f2f6578616d706c652e696e76616c69642f686172642d666f726b2d696e6974696174696f6e58208888888888888888888888888888888888888888888888888888888888888888" .

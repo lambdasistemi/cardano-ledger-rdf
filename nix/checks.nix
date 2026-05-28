@@ -54,7 +54,12 @@ let
 
     unit = {
       name = "unit";
-      runtimeInputs = [ components.tests.unit-tests ];
+      runtimeInputs = [
+        components.tests.unit-tests
+        pkgs.apache-jena
+        pkgs.jre_headless
+        pkgs.which
+      ];
       # LoadExeSpec spawns the tx-graph binary as a subprocess and
       # reads its path from TX_GRAPH_EXE (with a `cabal list-bin`
       # fallback for the dev shell). The nix-check sandbox has no

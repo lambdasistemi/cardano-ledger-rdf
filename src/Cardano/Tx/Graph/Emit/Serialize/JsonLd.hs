@@ -313,6 +313,9 @@ lexTokens = go
             | c == ':' ->
                 let (local, after) = Text.span isLocalChar rest
                  in (TCurie (":" <> local) :) <$> go after
+            | c == '<' -> case lexBracketIri rest of
+                Left err -> Left err
+                Right (iri, after) -> (TCurie iri :) <$> go after
             | c == '"' -> case lexString rest of
                 Left err -> Left err
                 Right (str, after) -> (TString str :) <$> go after
@@ -385,6 +388,13 @@ lexString = goS Text.empty
                 Just (e, rest') -> goS (Text.snoc acc e) rest'
                 Nothing -> Left "lexer: dangling backslash in string"
             | otherwise -> goS (Text.snoc acc c) rest
+
+lexBracketIri :: Text -> Either Text (Text, Text)
+lexBracketIri t =
+    let (iri, after) = Text.breakOn ">" t
+     in case Text.uncons after of
+            Just ('>', rest) -> Right (iri, rest)
+            _ -> Left "lexer: unterminated IRI"
 
 ----------------------------------------------------------------------
 -- Mini Turtle parser

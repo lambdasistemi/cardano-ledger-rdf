@@ -11,10 +11,10 @@ shape is pinned by spec FR-012 and FR-013:
   base) in that exact order, then a blank line.
 * A header comment block (@# Operator-declared entities (from rules.yaml).@).
 * For each entity in source order: a four-line @:slug a cardano:Entity@
-  block (label + one @cardano:hasIdentifier _:bnode@ line per
+  block (label + one @cardano:hasIdentifier <urn:...>@ line per
   identifier, two-space indent), then a blank line.
 * For each *first-seen* identifier @(leafType, bytesHex)@ pair: a
-  three-line @\\_:bnode a cardano:Identifier@ block with @leafType@
+  three-line identifier IRI block with @leafType@
   and @bytesHex@ literals, two-space indent. Identifiers shared with
   an earlier entity are NOT re-declared.
 * A single trailing newline.
@@ -30,7 +30,6 @@ module Cardano.Tx.Graph.Rules.Load.Emit.Overlay (
 import Cardano.Tx.Graph.Rules.Load.Naming (
     NamingTable,
     buildNamingTable,
-    lookupBnodeName,
  )
 import Cardano.Tx.Graph.Rules.Load.Types (
     Attestation (..),
@@ -172,12 +171,12 @@ attached to an entity's head block. The last line ends with @.@; the
 others end with @;@. Two-space indent.
 -}
 renderIdentifierLines :: NamingTable -> [EntityIdentifier] -> Text
-renderIdentifierLines table idents =
-    let bnodes = map (resolveBnode table) idents
-        terminators = replicate (length bnodes - 1) " ;\n" ++ [" .\n"]
-        line bnode term =
-            "  cardano:hasIdentifier _:" <> bnode <> term
-     in Text.concat (zipWith line bnodes terminators)
+renderIdentifierLines _table idents =
+    let iris = map renderIdentifierIri idents
+        terminators = replicate (length iris - 1) " ;\n" ++ [" .\n"]
+        line iri term =
+            "  cardano:hasIdentifier <" <> iri <> ">" <> term
+     in Text.concat (zipWith line iris terminators)
 
 {- | Render the per-identifier @\\_:bnode a cardano:Identifier@ block
 *only* if the bnode has not been seen before. Threads the seen-set
@@ -192,19 +191,19 @@ renderEntityIdentifierBlocks ::
     (Text, Set Text)
 renderEntityIdentifierBlocks _ [] emitted = ("", emitted)
 renderEntityIdentifierBlocks table (ident : rest) emitted =
-    let bnode = resolveBnode table ident
+    let iri = renderIdentifierIri ident
         (thisBlock, emitted') =
-            if Set.member bnode emitted
+            if Set.member iri emitted
                 then ("", emitted)
-                else (renderIdentifierBlock bnode ident, Set.insert bnode emitted)
+                else (renderIdentifierBlock iri ident, Set.insert iri emitted)
         (restText, emitted'') = renderEntityIdentifierBlocks table rest emitted'
      in (thisBlock <> restText, emitted'')
 
 renderIdentifierBlock :: Text -> EntityIdentifier -> Text
-renderIdentifierBlock bnode EntityIdentifier{entityIdLeafType, entityIdBytesHex} =
-    "_:"
-        <> bnode
-        <> " a cardano:Identifier ;\n"
+renderIdentifierBlock iri EntityIdentifier{entityIdLeafType, entityIdBytesHex} =
+    "<"
+        <> iri
+        <> "> a cardano:Identifier ;\n"
         <> "  cardano:leafType "
         <> renderLiteral (renderLeafType entityIdLeafType)
         <> " ;\n"
@@ -213,18 +212,12 @@ renderIdentifierBlock bnode EntityIdentifier{entityIdLeafType, entityIdBytesHex}
         <> " .\n"
         <> "\n"
 
-resolveBnode :: NamingTable -> EntityIdentifier -> Text
-resolveBnode table ident =
-    case lookupBnodeName table ident of
-        Just b -> b
-        Nothing ->
-            -- Unreachable: the naming table is built from the same
-            -- identifier list. If this ever fires it indicates a
-            -- caller wired the table wrong.
-            error
-                ( "emitOverlay: identifier missing from naming table "
-                    <> show ident
-                )
+renderIdentifierIri :: EntityIdentifier -> Text
+renderIdentifierIri EntityIdentifier{entityIdLeafType, entityIdBytesHex} =
+    "urn:cardano:id:"
+        <> renderLeafType entityIdLeafType
+        <> ":"
+        <> entityIdBytesHex
 
 {- | Render a 'Text' value as a Turtle string literal — wrap in double
 quotes; the fixtures' names contain no double quotes or backslashes,

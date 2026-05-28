@@ -12,13 +12,13 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1 ;
+<urn:cardano:tx:9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasProposal _:proposal1 ;
+  cardano:hasProposal _:9602a0a8_proposal1 ;
   cardano:hasFee 0 .
 
-_:hash_txid_9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1 a cardano:Identifier ;
+<urn:cardano:id:TxId:9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1" .
 
@@ -26,52 +26,52 @@ _:hash_txid_9602a0a811b65e389bb6836526a10836b89a16d92c9d10e742847a4a5786afb1 a c
 # Proposal 1
 #
 
-_:cred_stakekey_0000000000000000000000000000000000000000000000000000001d a cardano:Identifier ;
+<urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001d> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "0000000000000000000000000000000000000000000000000000001d" .
 
-_:proposal1 a cardano:Proposal ;
+_:9602a0a8_proposal1 a cardano:Proposal ;
   cardano:hasDeposit 100000000000 ;
-  cardano:hasReturnAddress _:cred_stakekey_0000000000000000000000000000000000000000000000000000001d ;
-  cardano:hasAnchor _:proposalAnchor1 ;
-  cardano:hasGovAction _:govAction1 ;
-  cardano:hasDatum _:proposalDatum1 .
+  cardano:hasReturnAddress <urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001d> ;
+  cardano:hasAnchor _:9602a0a8_proposalAnchor1 ;
+  cardano:hasGovAction _:9602a0a8_govAction1 ;
+  cardano:hasDatum _:9602a0a8_proposalDatum1 .
 
-_:proposalAnchor1 a cardano:Anchor ;
+_:9602a0a8_proposalAnchor1 a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/constitution-proposal" ;
   cardano:anchorHash "5555555555555555555555555555555555555555555555555555555555555555" .
 
-_:govAction1 a cardano:NewConstitution ;
-  cardano:hasPriorAction _:hash_govactionid_DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD_8 ;
-  cardano:hasConstitution _:govAction1Constitution .
+_:9602a0a8_govAction1 a cardano:NewConstitution ;
+  cardano:hasPriorAction <urn:cardano:id:GovActionId:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD:8> ;
+  cardano:hasConstitution _:9602a0a8_govAction1Constitution .
 
-_:hash_txid_4444444444444444444444444444444444444444444444444444444444444444 a cardano:Identifier ;
+<urn:cardano:id:TxId:4444444444444444444444444444444444444444444444444444444444444444> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD" .
 
-_:hash_govactionid_DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD_8 a cardano:GovActionId ;
+<urn:cardano:id:GovActionId:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD:8> a cardano:GovActionId ;
   a cardano:Identifier ;
   cardano:leafType "GovActionId" ;
   cardano:bytesHex "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD:8" ;
-  cardano:hasTxId _:hash_txid_4444444444444444444444444444444444444444444444444444444444444444 ;
+  cardano:hasTxId <urn:cardano:id:TxId:4444444444444444444444444444444444444444444444444444444444444444> ;
   cardano:hasIndex 8 .
 
-_:govAction1Constitution a cardano:Constitution ;
-  cardano:hasAnchor _:govAction1ConstitutionAnchor ;
-  cardano:hasGuardrailScript _:hash_script_dddddddddddddddddddddddddddddddddddddddddddddddddddddddd .
+_:9602a0a8_govAction1Constitution a cardano:Constitution ;
+  cardano:hasAnchor _:9602a0a8_govAction1ConstitutionAnchor ;
+  cardano:hasGuardrailScript <urn:cardano:id:ScriptHash:dddddddddddddddddddddddddddddddddddddddddddddddddddddddd> .
 
-_:hash_anchordata_6666666666666666666666666666666666666666666666666666666666666666 a cardano:Identifier ;
+<urn:cardano:id:AnchorDataHash:6666666666666666666666666666666666666666666666666666666666666666> a cardano:Identifier ;
   cardano:leafType "AnchorDataHash" ;
   cardano:bytesHex "6666666666666666666666666666666666666666666666666666666666666666" .
 
-_:govAction1ConstitutionAnchor a cardano:Anchor ;
+_:9602a0a8_govAction1ConstitutionAnchor a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/constitution" ;
-  cardano:anchorHash _:hash_anchordata_6666666666666666666666666666666666666666666666666666666666666666 .
+  cardano:anchorHash <urn:cardano:id:AnchorDataHash:6666666666666666666666666666666666666666666666666666666666666666> .
 
-_:hash_script_dddddddddddddddddddddddddddddddddddddddddddddddddddddddd a cardano:Identifier ;
+<urn:cardano:id:ScriptHash:dddddddddddddddddddddddddddddddddddddddddddddddddddddddd> a cardano:Identifier ;
   cardano:leafType "ScriptHash" ;
   cardano:bytesHex "dddddddddddddddddddddddddddddddddddddddddddddddddddddddd" .
 
-_:proposalDatum1 a cardano:Datum ;
+_:9602a0a8_proposalDatum1 a cardano:Datum ;
   cardano:decodedAs "NewConstitution" ;
   cardano:hasRawBytes "841b000000174876e800581de00000000000000000000000000000000000000000000000000000001d83058258204444444444444444444444444444444444444444444444444444444444444444088282782468747470733a2f2f6578616d706c652e696e76616c69642f636f6e737469747574696f6e58206666666666666666666666666666666666666666666666666666666666666666581cdddddddddddddddddddddddddddddddddddddddddddddddddddddddd82782d68747470733a2f2f6578616d706c652e696e76616c69642f636f6e737469747574696f6e2d70726f706f73616c58205555555555555555555555555555555555555555555555555555555555555555" .

@@ -12,14 +12,14 @@
 # Transaction body.
 #
 
-_:tx a cardano:Transaction ;
-  cardano:hasTxId _:hash_txid_29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92 ;
+<urn:cardano:tx:29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92> ;
   cardano:isValid "true"^^xsd:boolean ;
-  cardano:hasCertificate _:cert1 ;
-  cardano:hasCertificate _:cert2 ;
+  cardano:hasCertificate _:29288f28_cert1 ;
+  cardano:hasCertificate _:29288f28_cert2 ;
   cardano:hasFee 0 .
 
-_:hash_txid_29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92 a cardano:Identifier ;
+<urn:cardano:id:TxId:29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92> a cardano:Identifier ;
   cardano:leafType "TxId" ;
   cardano:bytesHex "29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92" .
 
@@ -27,16 +27,16 @@ _:hash_txid_29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92 a c
 # Certificate 1
 #
 
-_:cert1 a cardano:Certificate ;
+_:29288f28_cert1 a cardano:Certificate ;
   a cardano:AuthCommitteeHotKey ;
-  cardano:hasCommitteeColdCredential _:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 ;
-  cardano:hasCommitteeHotCredential _:cred_committeehotkey_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa .
+  cardano:hasCommitteeColdCredential <urn:cardano:id:CommitteeColdKey:99999999999999999999999999999999999999999999999999999999> ;
+  cardano:hasCommitteeHotCredential <urn:cardano:id:CommitteeHotKey:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> .
 
-_:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 a cardano:Identifier ;
+<urn:cardano:id:CommitteeColdKey:99999999999999999999999999999999999999999999999999999999> a cardano:Identifier ;
   cardano:leafType "CommitteeColdKey" ;
   cardano:bytesHex "99999999999999999999999999999999999999999999999999999999" .
 
-_:cred_committeehotkey_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa a cardano:Identifier ;
+<urn:cardano:id:CommitteeHotKey:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> a cardano:Identifier ;
   cardano:leafType "CommitteeHotKey" ;
   cardano:bytesHex "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" .
 
@@ -44,19 +44,19 @@ _:cred_committeehotkey_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 
 # Certificate 2
 #
 
-_:cert2 a cardano:Certificate ;
+_:29288f28_cert2 a cardano:Certificate ;
   a cardano:ResignCommitteeColdKey ;
-  cardano:hasCommitteeColdCredential _:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 ;
-  cardano:hasAnchor _:cert2Anchor .
+  cardano:hasCommitteeColdCredential <urn:cardano:id:CommitteeColdKey:99999999999999999999999999999999999999999999999999999999> ;
+  cardano:hasAnchor _:29288f28_cert2Anchor .
 
-_:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 a cardano:Identifier ;
+<urn:cardano:id:CommitteeColdKey:99999999999999999999999999999999999999999999999999999999> a cardano:Identifier ;
   cardano:leafType "CommitteeColdKey" ;
   cardano:bytesHex "99999999999999999999999999999999999999999999999999999999" .
 
-_:hash_anchordata_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc a cardano:Identifier ;
+<urn:cardano:id:AnchorDataHash:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc> a cardano:Identifier ;
   cardano:leafType "AnchorDataHash" ;
   cardano:bytesHex "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" .
 
-_:cert2Anchor a cardano:Anchor ;
+_:29288f28_cert2Anchor a cardano:Anchor ;
   cardano:anchorUrl "https://example.invalid/committee-resign" ;
-  cardano:anchorHash _:hash_anchordata_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc .
+  cardano:anchorHash <urn:cardano:id:AnchorDataHash:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc> .
