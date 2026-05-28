@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 {- |
 Module      : Cardano.Tx.Graph.Emit.BodyRootSpec
 Description : Body-root predicate emission (T107 / S6).
@@ -27,17 +29,25 @@ module Cardano.Tx.Graph.Emit.BodyRootSpec (spec) where
 
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
+import Data.ByteString.Base16 qualified as Base16
 import Data.ByteString.Char8 qualified as BS8
 import Data.Map.Strict qualified as Map
 import Data.Maybe (fromJust)
 
-import Lens.Micro ((&), (.~))
+import Lens.Micro ((&), (.~), (^.))
 
 import Cardano.Crypto.Hash (hashFromStringAsHex)
 import Cardano.Crypto.Hash qualified as Hash
 import Cardano.Ledger.Allegra.Scripts (ValidityInterval (..))
 import Cardano.Ledger.Alonzo.TxBody (ScriptIntegrityHash)
-import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx)
+import Cardano.Ledger.Api.Era (eraProtVerLow)
+import Cardano.Ledger.Api.Tx (
+    IsValid (..),
+    auxDataTxL,
+    bodyTxL,
+    isValidTxL,
+    mkBasicTx,
+ )
 import Cardano.Ledger.Api.Tx.Body (
     auxDataHashTxBodyL,
     mkBasicTxBody,
@@ -50,6 +60,8 @@ import Cardano.Ledger.BaseTypes (
     SlotNo (..),
     StrictMaybe (SJust, SNothing),
  )
+import Cardano.Ledger.Binary (serialize')
+import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Hashes (HASH, TxAuxDataHash (..), unsafeMakeSafeHash)
 
 import Cardano.Tx.Graph.Emit (
@@ -60,7 +72,10 @@ import Cardano.Tx.Graph.Emit (
  )
 import Cardano.Tx.Ledger (ConwayTx)
 
-import Test.Hspec (Spec, describe, it, shouldSatisfy)
+import Fixtures.TxGraph.S19_AuxiliaryData qualified as S19
+import Fixtures.TxGraph.S20_IsValidFalse qualified as S20
+
+import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 
 spec :: Spec
 spec = describe "Cardano.Tx.Graph.Emit body-root predicates (T107 / S6)" $ do
@@ -68,6 +83,8 @@ spec = describe "Cardano.Tx.Graph.Emit body-root predicates (T107 / S6)" $ do
     networkIdSpecs
     scriptDataHashSpecs
     auxiliaryDataHashSpecs
+    isValidSpecs
+    auxiliaryDataBodySpecs
 
 ----------------------------------------------------------------------
 -- cardano:hasValidityInterval
@@ -176,6 +193,54 @@ auxiliaryDataHashSpecs = describe "cardano:auxiliaryDataHash" $ do
                 ("cardano:bytesHex \"" <> hex <> "\"")
 
 ----------------------------------------------------------------------
+-- cardano:isValid
+----------------------------------------------------------------------
+
+isValidSpecs :: Spec
+isValidSpecs = describe "cardano:isValid" $ do
+    it "emits true unconditionally for the default transaction flag" $ do
+        let bytes = emitBytes baseTx
+        txBlockOfBytes bytes
+            `shouldSatisfy` BS8.isInfixOf
+                "cardano:isValid \"true\"^^xsd:boolean"
+    it "emits false when isValidTxL is IsValid False" $ do
+        let IsValid flag = S20.tx ^. isValidTxL
+            bytes = emitBytes S20.tx
+        flag `shouldBe` False
+        txBlockOfBytes bytes
+            `shouldSatisfy` BS8.isInfixOf
+                "cardano:isValid \"false\"^^xsd:boolean"
+
+----------------------------------------------------------------------
+-- cardano:hasAuxiliaryData
+----------------------------------------------------------------------
+
+auxiliaryDataBodySpecs :: Spec
+auxiliaryDataBodySpecs = describe "cardano:hasAuxiliaryData" $ do
+    it "elides auxiliary data body when auxDataTxL is SNothing" $ do
+        let bytes = emitBytes baseTx
+        txBlockOfBytes bytes
+            `shouldSatisfy` (not . BS8.isInfixOf "cardano:hasAuxiliaryData")
+    it "emits auxiliary data raw CBOR bytes when auxDataTxL is SJust" $ do
+        case S19.tx ^. auxDataTxL of
+            SNothing -> error "S19.tx unexpectedly has no auxiliary data"
+            SJust auxData -> do
+                let bytes = emitBytes S19.tx
+                    rawHex =
+                        Base16.encode $
+                            serialize' (eraProtVerLow @ConwayEra) auxData
+                txBlockOfBytes bytes
+                    `shouldSatisfy` BS8.isInfixOf
+                        "cardano:hasAuxiliaryData _:auxiliaryData1"
+                auxiliaryDataBlockOfBytes bytes
+                    `shouldSatisfy` BS8.isInfixOf "a cardano:AuxiliaryData"
+                auxiliaryDataBlockOfBytes bytes
+                    `shouldSatisfy` BS8.isInfixOf "a cardano:OpaqueLeaf"
+                auxiliaryDataBlockOfBytes bytes
+                    `shouldSatisfy` BS8.isInfixOf
+                        ("cardano:hasRawBytes \"" <> rawHex <> "\"")
+
+----------------------------------------------------------------------
 -- Synthesis helpers
 ----------------------------------------------------------------------
 
@@ -252,6 +317,17 @@ occurrence of @_:interval1@ inside the parent block.
 intervalBlockOfBytes :: ByteString -> ByteString
 intervalBlockOfBytes bs =
     case BS8.breakSubstring "\n\n_:interval1 " bs of
+        (_, suf)
+            | BS.null suf -> ""
+            | otherwise ->
+                let body = BS8.drop 2 suf -- skip "\n\n"
+                    (block, _) = BS8.breakSubstring "\n\n" body
+                 in block
+
+-- | The @_:auxiliaryData1@ subject sub-block. Returns @""@ when absent.
+auxiliaryDataBlockOfBytes :: ByteString -> ByteString
+auxiliaryDataBlockOfBytes bs =
+    case BS8.breakSubstring "\n\n_:auxiliaryData1 " bs of
         (_, suf)
             | BS.null suf -> ""
             | otherwise ->

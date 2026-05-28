@@ -306,3 +306,4 @@ objectText = \case
     OIri n -> n
     OStringLit s -> "\"" <> s <> "\""
     OIntLit i -> Text.pack (show i)
+    OBoolLit b -> if b then "true" else "false"

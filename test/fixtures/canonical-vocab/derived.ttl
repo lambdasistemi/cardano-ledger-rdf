@@ -16,6 +16,9 @@ cardano:Anchor a rdfs:Class ;
 cardano:Asset a rdfs:Class ;
   rdfs:label "Asset" .
 
+cardano:AuxiliaryData a rdfs:Class ;
+  rdfs:label "AuxiliaryData" .
+
 cardano:BootstrapWitness a rdfs:Class ;
   rdfs:label "BootstrapWitness" .
 
@@ -144,6 +147,9 @@ cardano:hasAsset a rdf:Property ;
 
 cardano:hasAssetValue a rdf:Property ;
   rdfs:label "hasAssetValue" .
+
+cardano:hasAuxiliaryData a rdf:Property ;
+  rdfs:label "hasAuxiliaryData" .
 
 cardano:hasBootstrapWitness a rdf:Property ;
   rdfs:label "hasBootstrapWitness" .
@@ -276,6 +282,9 @@ cardano:intervalEnd a rdf:Property ;
 
 cardano:intervalStart a rdf:Property ;
   rdfs:label "intervalStart" .
+
+cardano:isValid a rdf:Property ;
+  rdfs:label "isValid" .
 
 cardano:leafType a rdf:Property ;
   rdfs:label "leafType" .

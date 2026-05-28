@@ -11,8 +11,8 @@ Q-001 / A-001 (Option B with the @PRdfType@ distinguished
 constructor).
 
 The IR distinguishes the four roles a Turtle token can play —
-blank-node reference, prefixed IRI, string literal, integer
-literal — so the serializer never re-parses the text payloads.
+blank-node reference, prefixed IRI, string literal, integer literal,
+boolean literal — so the serializer never re-parses the text payloads.
 Subjects and objects share most of the constructor space; the
 @rdf:type@ predicate has its own constructor so the Turtle
 serializer can render the Turtle @a@ keyword without
@@ -68,16 +68,15 @@ data Predicate
 
 {- | The object position of a Turtle statement.
 
-Fixture 02's emitter coverage uses only 'OBnode', 'OIri',
-'OStringLit', 'OIntLit'. T006-T010 may add cases (e.g.
-@OHexLit@ for inline-datum hex strings); @-Wincomplete-patterns@
-catches gaps at compile time.
+Boolean literals render as explicit @xsd:boolean@ values in Turtle and native
+booleans in JSON-LD.
 -}
 data Object
     = OBnode !BnodeName
     | OIri !Text
     | OStringLit !Text
     | OIntLit !Integer
+    | OBoolLit !Bool
     deriving stock (Eq, Show)
 
 {- | A single Turtle triple — @Subject Predicate Object@.

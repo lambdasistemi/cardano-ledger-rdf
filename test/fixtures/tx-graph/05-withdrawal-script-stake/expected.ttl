@@ -1,6 +1,7 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/05-withdrawal-script-stake#> .
 
 #
@@ -41,6 +42,7 @@ _:amaru_treasury_network_compliance_stakeScript a cardano:Identifier ;
 
 _:tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_54c4b677f1b3fc8f8d9b3ef221e81f95e82b9551bfda86dd72d752c063533fc8 ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasInput _:input1 ;
   cardano:hasOutput _:output1 ;
   cardano:hasWithdrawal _:withdrawal1 ;

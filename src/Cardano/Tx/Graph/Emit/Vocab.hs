@@ -19,6 +19,7 @@ module Cardano.Tx.Graph.Emit.Vocab (
     cardanoPrefix,
     rdfsPrefix,
     rdfPrefix,
+    xsdPrefix,
     fixturePrefixBase,
 
     -- * Vocab term registry
@@ -45,6 +46,10 @@ carries a non-empty multi-asset value.
 -}
 rdfPrefix :: Text
 rdfPrefix = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+
+-- | The XML Schema namespace. Carries explicitly typed boolean literals.
+xsdPrefix :: Text
+xsdPrefix = "http://www.w3.org/2001/XMLSchema#"
 
 {- | The fixture-local prefix base. The full @\@prefix :@ IRI is
 @\<fixturePrefixBase\>\<slug\>#@ for a given fixture slug.
@@ -78,6 +83,7 @@ data VocabTerm
     | TermPool
     | TermDRep
     | TermDatum
+    | TermAuxiliaryData
     | TermGovActionId
     | TermProposal
     | TermGovAction
@@ -123,6 +129,8 @@ data VocabTerm
     | TermHasReferenceScript
     | TermHasHash
     | TermHasRawBytes
+    | TermIsValid
+    | TermHasAuxiliaryData
     | -- Body-root predicates (T107 / S6 — validity interval,
       -- network id, script-data hash, aux-data hash)
       TermHasValidityInterval
@@ -229,6 +237,7 @@ vocabIri = \case
     TermPool -> cardanoPrefix <> "Pool"
     TermDRep -> cardanoPrefix <> "DRep"
     TermDatum -> cardanoPrefix <> "Datum"
+    TermAuxiliaryData -> cardanoPrefix <> "AuxiliaryData"
     TermGovActionId -> cardanoPrefix <> "GovActionId"
     TermProposal -> cardanoPrefix <> "Proposal"
     TermGovAction -> cardanoPrefix <> "GovAction"
@@ -271,6 +280,8 @@ vocabIri = \case
     TermHasReferenceScript -> cardanoPrefix <> "hasReferenceScript"
     TermHasHash -> cardanoPrefix <> "hasHash"
     TermHasRawBytes -> cardanoPrefix <> "hasRawBytes"
+    TermIsValid -> cardanoPrefix <> "isValid"
+    TermHasAuxiliaryData -> cardanoPrefix <> "hasAuxiliaryData"
     TermHasValidityInterval -> cardanoPrefix <> "hasValidityInterval"
     TermIntervalStart -> cardanoPrefix <> "intervalStart"
     TermIntervalEnd -> cardanoPrefix <> "intervalEnd"
@@ -341,6 +352,7 @@ vocabCurie = \case
     TermPool -> "cardano:Pool"
     TermDRep -> "cardano:DRep"
     TermDatum -> "cardano:Datum"
+    TermAuxiliaryData -> "cardano:AuxiliaryData"
     TermGovActionId -> "cardano:GovActionId"
     TermProposal -> "cardano:Proposal"
     TermGovAction -> "cardano:GovAction"
@@ -383,6 +395,8 @@ vocabCurie = \case
     TermHasReferenceScript -> "cardano:hasReferenceScript"
     TermHasHash -> "cardano:hasHash"
     TermHasRawBytes -> "cardano:hasRawBytes"
+    TermIsValid -> "cardano:isValid"
+    TermHasAuxiliaryData -> "cardano:hasAuxiliaryData"
     TermHasValidityInterval -> "cardano:hasValidityInterval"
     TermIntervalStart -> "cardano:intervalStart"
     TermIntervalEnd -> "cardano:intervalEnd"

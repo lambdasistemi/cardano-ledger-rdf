@@ -1,6 +1,7 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/10-governance-treasury-withdrawal#> .
 
 #
@@ -41,6 +42,7 @@ _:cardano_foundation_ops_stakeKey a cardano:Identifier ;
 
 _:tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_16ce38ee494758b744cd8803975180d2abc53ddaa4ff58a0e01cdfd7b03c937e ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasInput _:input1 ;
   cardano:hasOutput _:output1 ;
   cardano:hasProposal _:proposal1 ;
