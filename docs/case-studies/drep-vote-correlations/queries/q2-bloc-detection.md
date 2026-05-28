@@ -12,25 +12,10 @@ with at least two DReps.
 | 3 | 2 | 576-632 | 20 Yes / 15 No |
 | 4 | 2 | 576-632 | 30 Yes / 4 No / 5 Abstain |
 
-The edge extract is SPARQL-native; the connected-component labelling is a
-small graph post-process over that edge table.
-
-```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-
-SELECT ?voter1 ?voter2 ?common ?agree ?agreementRate
-WHERE {
-  # Use the pairwise agreement subquery from Q1.
-  # Keep the same selected-action VALUES block and the same
-  # HAVING (COUNT(?vote) = 1) unambiguous-observation guard.
-  #
-  # The resulting edge table is filtered as:
-  #   HAVING (?common >= 12)
-  #   FILTER(?agreementRate >= 0.90)
-}
-ORDER BY DESC(?agreementRate) DESC(?common)
-```
+The edge extract is the Q1 pairwise agreement query materialised without
+`LIMIT`, then filtered to `common >= 12` and `agreementRate >= 0.90`. The
+connected-component labelling is a small graph post-process over that edge
+table.
 
 Post-processing rule:
 

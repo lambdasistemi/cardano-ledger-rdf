@@ -71,7 +71,9 @@ epoch 576 and **48.3%** in epoch 632. See
 Mean same-verdict pair rates differ sharply by action type. The single
 selected `ParameterChange` action is highly concentrated at **93.2%**.
 The selected `TreasuryWithdrawals` actions are much looser at **60.6%**,
-while `InfoAction` lands at **79.6%**. See
+while `InfoAction` lands at **79.6%**. The committee action is now reported
+from the emitted `UpdateCommittee` RDF class rather than the older Koios
+`NewCommittee` label. See
 [Q4](queries/q4-action-type-correlation.md).
 
 ### Voter-anchor heuristics
@@ -88,8 +90,28 @@ The current tx-graph lattice cannot answer early-vs-late voter dynamics on
 its own because vote transaction block time is not emitted into RDF. The
 Koios sidecar used during selection can compute the comparison, but Q6
 documents it as a follow-up boundary rather than presenting it as a
-SPARQL-native case-study claim. See
+SPARQL-native case-study claim. Block-context emission is tracked in #46.
+See
 [Q6](queries/q6-arrival-time-dynamics.md).
+
+## What changed since the original run
+
+The lattice was re-emitted against the typed-walker emitter that includes
+native scripts (#48), auxiliary data (#51), certificates (#52), body fields
+21 and 22 (#53), and governance actions (#54).
+
+Q4 now uses typed governance-action triples for
+`TreasuryWithdrawals`, `ParameterChange`, `UpdateCommittee`, and
+`NewConstitution`. The same-verdict rates did not change, but the committee
+row is now named by the RDF class `UpdateCommittee`.
+
+Q5 attempted the new DRep certificate-anchor path from #52. This selected
+transaction lattice contains no anchored `RegDRep` or `UpdateDRep`
+certificates, so the manifesto-anchor split remains unavailable for this
+dataset and the vote-anchor result is unchanged.
+
+Q6 remains outside the RDF lattice because block time and block height are
+not emitted yet (#46).
 
 ## How to reproduce
 

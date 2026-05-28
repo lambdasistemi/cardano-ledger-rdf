@@ -69,18 +69,6 @@ swingDReps = 229
 
 Mono-verdict detail:
 
-```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
-SELECT ?onlyVerdict (COUNT(?voterId) AS ?n)
-WHERE {
-  # Same unambiguous selected-action subquery as above.
-  # Group by ?voterId, require COUNT(?actionKey) >= 5 and
-  # COUNT(DISTINCT ?verdict) = 1, then SAMPLE(?verdict) as ?onlyVerdict.
-}
-GROUP BY ?onlyVerdict
-ORDER BY ?onlyVerdict
-```
-
 Observed detail: **82 Yes-only** and **2 No-only**.
 
 Epoch-local swing rates, using selected actions submitted in the same
