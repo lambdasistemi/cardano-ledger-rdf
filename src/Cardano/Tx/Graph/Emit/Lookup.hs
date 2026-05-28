@@ -224,12 +224,19 @@ familyPrefix = \case
     PoolId -> "cred"
     DRepKey -> "cred"
     DRepScript -> "cred"
+    CommitteeColdKey -> "cred"
+    CommitteeColdScript -> "cred"
+    CommitteeHotKey -> "cred"
+    CommitteeHotScript -> "cred"
     LtTxId -> "hash"
     LtGovActionId -> "hash"
     LtDatumHash -> "hash"
     LtScriptHash -> "hash"
     LtScriptDataHash -> "hash"
     LtAuxiliaryDataHash -> "hash"
+    LtAnchorDataHash -> "hash"
+    LtVrfKeyHash -> "hash"
+    LtPoolMetadataHash -> "hash"
 
 {- | Lowercased role-class prefix used in raw-bytes bnodes.
 
@@ -251,12 +258,19 @@ rolePrefix = \case
     PoolId -> "poolid"
     DRepKey -> "drepkey"
     DRepScript -> "drepscript"
+    CommitteeColdKey -> "committeecoldkey"
+    CommitteeColdScript -> "committeecoldscript"
+    CommitteeHotKey -> "committeehotkey"
+    CommitteeHotScript -> "committeehotscript"
     LtTxId -> "txid"
     LtGovActionId -> "govactionid"
     LtDatumHash -> "datum"
     LtScriptHash -> "script"
     LtScriptDataHash -> "scriptdata"
     LtAuxiliaryDataHash -> "auxiliarydata"
+    LtAnchorDataHash -> "anchordata"
+    LtVrfKeyHash -> "vrfkey"
+    LtPoolMetadataHash -> "poolmetadata"
 
 {- | Decode a hex 'Text' to a 'ByteString'; @error@ on failure.
 

@@ -1,0 +1,62 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/26-cert-committee#> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+_:tx a cardano:Transaction ;
+  cardano:hasTxId _:hash_txid_29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92 ;
+  cardano:isValid "true"^^xsd:boolean ;
+  cardano:hasCertificate _:cert1 ;
+  cardano:hasCertificate _:cert2 ;
+  cardano:hasFee 0 .
+
+_:hash_txid_29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92 a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "29288f282d05bb602f2a8c3b2896d6e119b12cdad68b23003a5915233b1f8c92" .
+
+#
+# Certificate 1
+#
+
+_:cert1 a cardano:Certificate ;
+  a cardano:AuthCommitteeHotKey ;
+  cardano:hasCommitteeColdCredential _:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 ;
+  cardano:hasCommitteeHotCredential _:cred_committeehotkey_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa .
+
+_:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 a cardano:Identifier ;
+  cardano:leafType "CommitteeColdKey" ;
+  cardano:bytesHex "99999999999999999999999999999999999999999999999999999999" .
+
+_:cred_committeehotkey_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa a cardano:Identifier ;
+  cardano:leafType "CommitteeHotKey" ;
+  cardano:bytesHex "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" .
+
+#
+# Certificate 2
+#
+
+_:cert2 a cardano:Certificate ;
+  a cardano:ResignCommitteeColdKey ;
+  cardano:hasCommitteeColdCredential _:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 ;
+  cardano:hasAnchor _:cert2Anchor .
+
+_:cred_committeecoldkey_99999999999999999999999999999999999999999999999999999999 a cardano:Identifier ;
+  cardano:leafType "CommitteeColdKey" ;
+  cardano:bytesHex "99999999999999999999999999999999999999999999999999999999" .
+
+_:hash_anchordata_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc a cardano:Identifier ;
+  cardano:leafType "AnchorDataHash" ;
+  cardano:bytesHex "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc" .
+
+_:cert2Anchor a cardano:Anchor ;
+  cardano:anchorUrl "https://example.invalid/committee-resign" ;
+  cardano:anchorHash _:hash_anchordata_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc .

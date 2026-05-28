@@ -72,6 +72,10 @@ import Fixtures.TxGraph.S18_NativeScriptNested qualified as S18
 import Fixtures.TxGraph.S19_NativeScriptTimelock qualified as S19
 import Fixtures.TxGraph.S21_AuxiliaryData qualified as S21
 import Fixtures.TxGraph.S22_IsValidFalse qualified as S22
+import Fixtures.TxGraph.S23_CertStakeRegistration qualified as S23
+import Fixtures.TxGraph.S24_CertDRepAnchors qualified as S24
+import Fixtures.TxGraph.S25_CertPoolParams qualified as S25
+import Fixtures.TxGraph.S26_CertCommittee qualified as S26
 
 import Test.Hspec (
     Spec,
@@ -113,6 +117,10 @@ allFixtures =
     , ("19-native-script-timelock", S19.tx)
     , ("21-auxiliary-data", S21.tx)
     , ("22-isvalid-false", S22.tx)
+    , ("23-cert-stake-registration", S23.tx)
+    , ("24-cert-drep-anchors", S24.tx)
+    , ("25-cert-pool-params", S25.tx)
+    , ("26-cert-committee", S26.tx)
     ]
 
 {- | One Hspec @it@ per fixture: byte-diff the emitted Turtle

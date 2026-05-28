@@ -1101,8 +1101,15 @@ parseLeafType file ln bnodeName = \case
     "PoolId" -> Right PoolId
     "DRepKey" -> Right DRepKey
     "DRepScript" -> Right DRepScript
+    "CommitteeColdKey" -> Right CommitteeColdKey
+    "CommitteeColdScript" -> Right CommitteeColdScript
+    "CommitteeHotKey" -> Right CommitteeHotKey
+    "CommitteeHotScript" -> Right CommitteeHotScript
     "TxId" -> Right LtTxId
     "GovActionId" -> Right LtGovActionId
+    "AnchorDataHash" -> Right LtAnchorDataHash
+    "VrfKeyHash" -> Right LtVrfKeyHash
+    "PoolMetadataHash" -> Right LtPoolMetadataHash
     other ->
         Left $
             ParserError

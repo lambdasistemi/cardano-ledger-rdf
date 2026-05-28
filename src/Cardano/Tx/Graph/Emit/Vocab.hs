@@ -82,6 +82,26 @@ data VocabTerm
     | TermVoteDelegation
     | TermPool
     | TermDRep
+    | TermRegDeposit
+    | TermUnRegDeposit
+    | TermStakeRegDeleg
+    | TermVoteRegDeleg
+    | TermStakeVoteRegDeleg
+    | TermRegDRep
+    | TermUnRegDRep
+    | TermUpdateDRep
+    | TermPoolRegistration
+    | TermPoolRetirement
+    | TermPoolParams
+    | TermRelay
+    | TermSingleHostAddr
+    | TermSingleHostName
+    | TermMultiHostName
+    | TermPoolMetadata
+    | TermAuthCommitteeHotKey
+    | TermResignCommitteeColdKey
+    | TermDRepAlwaysAbstain
+    | TermDRepAlwaysNoConfidence
     | TermDatum
     | TermAuxiliaryData
     | TermGovActionId
@@ -108,6 +128,28 @@ data VocabTerm
     | TermHasCertificate
     | TermToPool
     | TermToDRep
+    | TermDelegatesToPool
+    | TermDelegatesToDRep
+    | TermHasDRepCredential
+    | TermHasPoolParams
+    | TermHasOperator
+    | TermHasVrfKeyhash
+    | TermHasPledge
+    | TermHasCost
+    | TermHasMargin
+    | TermHasRewardAccount
+    | TermHasOwner
+    | TermHasRelay
+    | TermHasPoolMetadata
+    | TermHasPort
+    | TermHasIPv4
+    | TermHasIPv6
+    | TermHasDnsName
+    | TermHasUrl
+    | TermHasPoolOperator
+    | TermRetireAtEpoch
+    | TermHasCommitteeColdCredential
+    | TermHasCommitteeHotCredential
     | TermHasCollateralInput
     | TermHasReferenceInput
     | TermHasProposal
@@ -246,6 +288,26 @@ vocabIri = \case
     TermVoteDelegation -> cardanoPrefix <> "VoteDelegation"
     TermPool -> cardanoPrefix <> "Pool"
     TermDRep -> cardanoPrefix <> "DRep"
+    TermRegDeposit -> cardanoPrefix <> "RegDeposit"
+    TermUnRegDeposit -> cardanoPrefix <> "UnRegDeposit"
+    TermStakeRegDeleg -> cardanoPrefix <> "StakeRegDeleg"
+    TermVoteRegDeleg -> cardanoPrefix <> "VoteRegDeleg"
+    TermStakeVoteRegDeleg -> cardanoPrefix <> "StakeVoteRegDeleg"
+    TermRegDRep -> cardanoPrefix <> "RegDRep"
+    TermUnRegDRep -> cardanoPrefix <> "UnRegDRep"
+    TermUpdateDRep -> cardanoPrefix <> "UpdateDRep"
+    TermPoolRegistration -> cardanoPrefix <> "PoolRegistration"
+    TermPoolRetirement -> cardanoPrefix <> "PoolRetirement"
+    TermPoolParams -> cardanoPrefix <> "PoolParams"
+    TermRelay -> cardanoPrefix <> "Relay"
+    TermSingleHostAddr -> cardanoPrefix <> "SingleHostAddr"
+    TermSingleHostName -> cardanoPrefix <> "SingleHostName"
+    TermMultiHostName -> cardanoPrefix <> "MultiHostName"
+    TermPoolMetadata -> cardanoPrefix <> "PoolMetadata"
+    TermAuthCommitteeHotKey -> cardanoPrefix <> "AuthCommitteeHotKey"
+    TermResignCommitteeColdKey -> cardanoPrefix <> "ResignCommitteeColdKey"
+    TermDRepAlwaysAbstain -> cardanoPrefix <> "DRepAlwaysAbstain"
+    TermDRepAlwaysNoConfidence -> cardanoPrefix <> "DRepAlwaysNoConfidence"
     TermDatum -> cardanoPrefix <> "Datum"
     TermAuxiliaryData -> cardanoPrefix <> "AuxiliaryData"
     TermGovActionId -> cardanoPrefix <> "GovActionId"
@@ -271,6 +333,28 @@ vocabIri = \case
     TermHasCertificate -> cardanoPrefix <> "hasCertificate"
     TermToPool -> cardanoPrefix <> "toPool"
     TermToDRep -> cardanoPrefix <> "toDRep"
+    TermDelegatesToPool -> cardanoPrefix <> "delegatesToPool"
+    TermDelegatesToDRep -> cardanoPrefix <> "delegatesToDRep"
+    TermHasDRepCredential -> cardanoPrefix <> "hasDRepCredential"
+    TermHasPoolParams -> cardanoPrefix <> "hasPoolParams"
+    TermHasOperator -> cardanoPrefix <> "hasOperator"
+    TermHasVrfKeyhash -> cardanoPrefix <> "hasVrfKeyhash"
+    TermHasPledge -> cardanoPrefix <> "hasPledge"
+    TermHasCost -> cardanoPrefix <> "hasCost"
+    TermHasMargin -> cardanoPrefix <> "hasMargin"
+    TermHasRewardAccount -> cardanoPrefix <> "hasRewardAccount"
+    TermHasOwner -> cardanoPrefix <> "hasOwner"
+    TermHasRelay -> cardanoPrefix <> "hasRelay"
+    TermHasPoolMetadata -> cardanoPrefix <> "hasPoolMetadata"
+    TermHasPort -> cardanoPrefix <> "hasPort"
+    TermHasIPv4 -> cardanoPrefix <> "hasIPv4"
+    TermHasIPv6 -> cardanoPrefix <> "hasIPv6"
+    TermHasDnsName -> cardanoPrefix <> "hasDnsName"
+    TermHasUrl -> cardanoPrefix <> "hasUrl"
+    TermHasPoolOperator -> cardanoPrefix <> "hasPoolOperator"
+    TermRetireAtEpoch -> cardanoPrefix <> "retireAtEpoch"
+    TermHasCommitteeColdCredential -> cardanoPrefix <> "hasCommitteeColdCredential"
+    TermHasCommitteeHotCredential -> cardanoPrefix <> "hasCommitteeHotCredential"
     TermHasCollateralInput -> cardanoPrefix <> "hasCollateralInput"
     TermHasReferenceInput -> cardanoPrefix <> "hasReferenceInput"
     TermHasProposal -> cardanoPrefix <> "hasProposal"
@@ -371,6 +455,26 @@ vocabCurie = \case
     TermVoteDelegation -> "cardano:VoteDelegation"
     TermPool -> "cardano:Pool"
     TermDRep -> "cardano:DRep"
+    TermRegDeposit -> "cardano:RegDeposit"
+    TermUnRegDeposit -> "cardano:UnRegDeposit"
+    TermStakeRegDeleg -> "cardano:StakeRegDeleg"
+    TermVoteRegDeleg -> "cardano:VoteRegDeleg"
+    TermStakeVoteRegDeleg -> "cardano:StakeVoteRegDeleg"
+    TermRegDRep -> "cardano:RegDRep"
+    TermUnRegDRep -> "cardano:UnRegDRep"
+    TermUpdateDRep -> "cardano:UpdateDRep"
+    TermPoolRegistration -> "cardano:PoolRegistration"
+    TermPoolRetirement -> "cardano:PoolRetirement"
+    TermPoolParams -> "cardano:PoolParams"
+    TermRelay -> "cardano:Relay"
+    TermSingleHostAddr -> "cardano:SingleHostAddr"
+    TermSingleHostName -> "cardano:SingleHostName"
+    TermMultiHostName -> "cardano:MultiHostName"
+    TermPoolMetadata -> "cardano:PoolMetadata"
+    TermAuthCommitteeHotKey -> "cardano:AuthCommitteeHotKey"
+    TermResignCommitteeColdKey -> "cardano:ResignCommitteeColdKey"
+    TermDRepAlwaysAbstain -> "cardano:DRepAlwaysAbstain"
+    TermDRepAlwaysNoConfidence -> "cardano:DRepAlwaysNoConfidence"
     TermDatum -> "cardano:Datum"
     TermAuxiliaryData -> "cardano:AuxiliaryData"
     TermGovActionId -> "cardano:GovActionId"
@@ -396,6 +500,28 @@ vocabCurie = \case
     TermHasCertificate -> "cardano:hasCertificate"
     TermToPool -> "cardano:toPool"
     TermToDRep -> "cardano:toDRep"
+    TermDelegatesToPool -> "cardano:delegatesToPool"
+    TermDelegatesToDRep -> "cardano:delegatesToDRep"
+    TermHasDRepCredential -> "cardano:hasDRepCredential"
+    TermHasPoolParams -> "cardano:hasPoolParams"
+    TermHasOperator -> "cardano:hasOperator"
+    TermHasVrfKeyhash -> "cardano:hasVrfKeyhash"
+    TermHasPledge -> "cardano:hasPledge"
+    TermHasCost -> "cardano:hasCost"
+    TermHasMargin -> "cardano:hasMargin"
+    TermHasRewardAccount -> "cardano:hasRewardAccount"
+    TermHasOwner -> "cardano:hasOwner"
+    TermHasRelay -> "cardano:hasRelay"
+    TermHasPoolMetadata -> "cardano:hasPoolMetadata"
+    TermHasPort -> "cardano:hasPort"
+    TermHasIPv4 -> "cardano:hasIPv4"
+    TermHasIPv6 -> "cardano:hasIPv6"
+    TermHasDnsName -> "cardano:hasDnsName"
+    TermHasUrl -> "cardano:hasUrl"
+    TermHasPoolOperator -> "cardano:hasPoolOperator"
+    TermRetireAtEpoch -> "cardano:retireAtEpoch"
+    TermHasCommitteeColdCredential -> "cardano:hasCommitteeColdCredential"
+    TermHasCommitteeHotCredential -> "cardano:hasCommitteeHotCredential"
     TermHasCollateralInput -> "cardano:hasCollateralInput"
     TermHasReferenceInput -> "cardano:hasReferenceInput"
     TermHasProposal -> "cardano:hasProposal"
