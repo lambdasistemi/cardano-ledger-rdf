@@ -1,6 +1,7 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/tx#> .
 
 # === tx 09cfb84d5e0da9702066d9b04d2b1aa904c06ca655475838c41699cf0cbd54a5 ===
@@ -10,6 +11,7 @@
 
 _:09cfb84d_tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_09cfb84d5e0da9702066d9b04d2b1aa904c06ca655475838c41699cf0cbd54a5 ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasInput _:09cfb84d_input1 ;
   cardano:hasOutput _:09cfb84d_output1 ;
   cardano:hasOutput _:09cfb84d_output2 ;
@@ -74,6 +76,7 @@ _:cred_paymentkey_00000000000000000000000000000000000000000000000000000000CredPa
 
 _:4c9306a3_tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_4c9306a30ccffc399fd6afd6a41439171083307c9add191e819f8e4ec30d8824 ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasInput _:4c9306a3_input1 ;
   cardano:hasOutput _:4c9306a3_output1 ;
   cardano:hasOutput _:4c9306a3_output2 ;

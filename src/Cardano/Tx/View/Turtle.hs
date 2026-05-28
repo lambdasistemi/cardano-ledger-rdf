@@ -83,6 +83,8 @@ data Object
       OStringLit !Text
     | -- | A bare integer literal.
       OIntLit !Integer
+    | -- | An explicitly typed @xsd:boolean@ literal.
+      OBoolLit !Bool
     deriving stock (Eq, Ord, Show)
 
 {- | The graph as a subject-keyed index into its predicate-object
@@ -201,6 +203,7 @@ toSubject = \case
     TA -> Left "subject position cannot be the 'a' keyword"
     TStringLit _ -> Left "subject position cannot be a string literal"
     TIntLit _ -> Left "subject position cannot be an integer literal"
+    TBoolLit _ -> Left "subject position cannot be a boolean literal"
     TSemi -> Left "unexpected ';' in subject position"
     TDot -> Left "unexpected '.' in subject position"
 
@@ -211,6 +214,7 @@ toPredicate = \case
     TBnode _ -> Left "blank node is not a valid predicate"
     TStringLit _ -> Left "string literal is not a valid predicate"
     TIntLit _ -> Left "integer literal is not a valid predicate"
+    TBoolLit _ -> Left "boolean literal is not a valid predicate"
     TSemi -> Left "unexpected ';' in predicate position"
     TDot -> Left "unexpected '.' in predicate position"
 
@@ -220,6 +224,7 @@ toObject = \case
     TIri n -> Right (OIri n)
     TStringLit s -> Right (OStringLit s)
     TIntLit i -> Right (OIntLit i)
+    TBoolLit b -> Right (OBoolLit b)
     TA -> Left "'a' keyword is not a valid object"
     TSemi -> Left "unexpected ';' in object position"
     TDot -> Left "unexpected '.' in object position"
@@ -234,6 +239,7 @@ data Tok
     | TA
     | TStringLit !Text
     | TIntLit !Integer
+    | TBoolLit !Bool
     | TSemi
     | TDot
     deriving stock (Eq, Show)
@@ -288,7 +294,16 @@ tokenize = go . dropWhitespace
         Just i ->
             let lit = Text.take i rest
                 r = Text.drop (i + 1) rest
-             in prepend (TStringLit lit) (dropWhitespace r)
+                r' = dropWhitespace r
+             in case Text.stripPrefix "^^xsd:boolean" r' of
+                    Just after
+                        | lit == "true" ->
+                            prepend (TBoolLit True) (dropWhitespace after)
+                        | lit == "false" ->
+                            prepend (TBoolLit False) (dropWhitespace after)
+                        | otherwise ->
+                            Left $ "bad xsd:boolean literal: " <> lit
+                    Nothing -> prepend (TStringLit lit) r'
 
     findUnescapedQuote = Text.findIndex (== '"')
 

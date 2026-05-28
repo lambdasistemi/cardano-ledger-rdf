@@ -162,9 +162,12 @@ import Cardano.Ledger.Api.Scripts.Data (
     hashBinaryData,
  )
 import Cardano.Ledger.Api.Tx (
+    IsValid (..),
     addrTxWitsL,
+    auxDataTxL,
     bodyTxL,
     bootAddrTxWitsL,
+    isValidTxL,
     witsTxL,
  )
 import Cardano.Ledger.Api.Tx.Body (
@@ -235,7 +238,7 @@ import Cardano.Ledger.Conway.TxCert (
     pattern UnRegDepositTxCert,
     pattern UpdateDRepTxCert,
  )
-import Cardano.Ledger.Core (Script, TxCert, hashScript)
+import Cardano.Ledger.Core (Script, TxAuxData, TxCert, hashScript)
 import Cardano.Ledger.Credential (
     Credential (KeyHashObj, ScriptHashObj),
     StakeReference (StakeRefBase, StakeRefNull, StakeRefPtr),
@@ -357,6 +360,8 @@ projectBody entities lookupTbl blueprints tx utxo =
         networkId = body ^. networkIdTxBodyL
         scriptDataHash = body ^. scriptIntegrityHashTxBodyL
         auxDataHash = body ^. auxDataHashTxBodyL
+        auxData = tx ^. auxDataTxL
+        IsValid isValid = tx ^. isValidTxL
         requiredSigners =
             Set.toAscList (body ^. reqSignerHashesTxBodyL)
         totalCollateral = body ^. totalCollateralTxBodyL
@@ -440,6 +445,8 @@ projectBody entities lookupTbl blueprints tx utxo =
                     validity
                     networkId
                     scriptDataHash
+                    isValid
+                    auxData
                     auxDataHash
                     requiredSigners
                     totalCollateral
@@ -1009,6 +1016,8 @@ emitTxBlock ::
     ValidityInterval ->
     StrictMaybe Network ->
     StrictMaybe ScriptIntegrityHash ->
+    Bool ->
+    StrictMaybe (TxAuxData ConwayEra) ->
     StrictMaybe TxAuxDataHash ->
     [KeyHash Guard] ->
     StrictMaybe Coin ->
@@ -1035,6 +1044,8 @@ emitTxBlock
     validity
     networkId
     scriptDataHash
+    isValid
+    auxData
     auxDataHash
     requiredSigners
     totalCollateral
@@ -1064,6 +1075,7 @@ emitTxBlock
         txIdBnode <-
             resolveCredentialAndIntroduceIdent lookupTbl LtTxId txIdBytes
         tt (PIri (vocabCurie TermHasTxId)) (OBnode txIdBnode)
+        tt (PIri (vocabCurie TermIsValid)) (OBoolLit isValid)
         edges TermHasInput idInputBnode nInputs
         edges TermHasReferenceInput idReferenceInputBnode nReferenceInputs
         edges TermHasOutput idOutputBnode nOutputs
@@ -1078,6 +1090,7 @@ emitTxBlock
         emitValidityInterval txSubj validity
         emitNetworkId txSubj networkId
         emitScriptDataHash lookupTbl txSubj scriptDataHash
+        emitAuxiliaryDataBody txSubj auxData
         emitAuxiliaryDataHash lookupTbl txSubj auxDataHash
         emitRequiredSigners lookupTbl txSubj requiredSigners
         emitTotalCollateral txSubj totalCollateral
@@ -1126,6 +1139,38 @@ emitCollateralReturnEdge txSubj True =
             txSubj
             (PIri (vocabCurie TermHasCollateralReturn))
             (OBnode idCollateralReturnBnode)
+        )
+
+{- | Emit the optional auxiliary-data body as an opaque CBOR leaf.
+
+The transaction body already carries @cardano:auxiliaryDataHash@; this block
+adds the auxiliary-data tuple slot itself so metadata-bearing transactions can
+be reconstructed from RDF without an out-of-band CBOR source.
+-}
+emitAuxiliaryDataBody ::
+    Subject ->
+    StrictMaybe (TxAuxData ConwayEra) ->
+    Emit ()
+emitAuxiliaryDataBody _ SNothing = pure ()
+emitAuxiliaryDataBody txSubj (SJust auxData) = do
+    let auxBnode = BnodeName "auxiliaryData1"
+        auxSubj = SBnode auxBnode
+        rawBytes = serialize' (eraProtVerLow @ConwayEra) auxData
+    tellTriple
+        ( Triple
+            txSubj
+            (PIri (vocabCurie TermHasAuxiliaryData))
+            (OBnode auxBnode)
+        )
+    tellTriple
+        (Triple auxSubj PRdfType (OIri (vocabCurie TermAuxiliaryData)))
+    tellTriple
+        (Triple auxSubj PRdfType (OIri (vocabCurie TermOpaqueLeaf)))
+    tellTriple
+        ( Triple
+            auxSubj
+            (PIri (vocabCurie TermHasRawBytes))
+            (OStringLit (hexText rawBytes))
         )
 
 {- | Emit one @cardano:hasRequiredSigner _:cred_paymentkey_X@

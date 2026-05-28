@@ -1,6 +1,7 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/19-native-script-timelock#> .
 
 #
@@ -13,6 +14,7 @@
 
 _:tx a cardano:Transaction ;
   cardano:hasTxId _:hash_txid_5499a9fc868b83151cd4e1635ce17d58e8c3f836f374b35b2023124b61b1e001 ;
+  cardano:isValid "true"^^xsd:boolean ;
   cardano:hasOutput _:output1 ;
   cardano:hasFee 0 .
 

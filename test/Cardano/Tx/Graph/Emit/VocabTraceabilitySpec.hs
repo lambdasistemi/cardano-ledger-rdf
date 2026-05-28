@@ -11,7 +11,8 @@ Turtle output of every fixture currently enabled in
    @rdf:@, @rdfs:@, fixture-local empty prefix — and no others.
    The @rdf:@ prefix was added at T104 to carry the RDF-list
    primitives ('rdf:first', 'rdf:rest', 'rdf:nil') that bind an
-   output's multi-asset value list cells.
+   output's multi-asset value list cells. The @xsd:@ prefix carries
+   explicit boolean literals such as @cardano:isValid@.
 2. No body line references a prefix outside that set (no
    @ex:foo@, no @owl:Class@, etc. Turtle's @a@ keyword covers
    the bare @rdf:type@ subject-predicate; the @rdf:@ prefix
@@ -75,6 +76,8 @@ import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
 import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
 import Fixtures.TxGraph.S18_NativeScriptNested qualified as S18
 import Fixtures.TxGraph.S19_NativeScriptTimelock qualified as S19
+import Fixtures.TxGraph.S21_AuxiliaryData qualified as S21
+import Fixtures.TxGraph.S22_IsValidFalse qualified as S22
 
 import Test.Hspec (
     Spec,
@@ -102,6 +105,8 @@ enabledFixtures =
     , ("14-blueprint-decode-fail", S14.tx)
     , ("18-native-script-nested", S18.tx)
     , ("19-native-script-timelock", S19.tx)
+    , ("21-auxiliary-data", S21.tx)
+    , ("22-isvalid-false", S22.tx)
     ]
 
 spec :: Spec
@@ -127,12 +132,12 @@ fixtureSpec (slug, tx) = describe slug $ do
                         <> ": emit returned Left "
                         <> show err
             Right _ -> pure ()
-    it "declared prefixes ⊆ {cardano, rdf, rdfs, :}" $ do
+    it "declared prefixes ⊆ {cardano, rdf, rdfs, xsd, :}" $ do
         sort (extractDeclaredPrefixes bytes)
-            `shouldBe` sort ["", "cardano", "rdf", "rdfs"]
-    it "every CURIE prefix in the body is one of the declared four" $ do
+            `shouldBe` sort ["", "cardano", "rdf", "rdfs", "xsd"]
+    it "every CURIE prefix in the body is one of the declared five" $ do
         let usedPrefixes = nub (extractUsedPrefixes bytes)
-            ok p = p `elem` ["", "cardano", "rdf", "rdfs"]
+            ok p = p `elem` ["", "cardano", "rdf", "rdfs", "xsd"]
             bad = filter (not . ok) usedPrefixes
         bad `shouldBe` []
     it "no '_internal:' substring leak" $ do

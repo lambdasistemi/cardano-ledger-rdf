@@ -122,6 +122,7 @@ buildContext slug =
         KeyMap.fromList
             [ (Key.fromText "cardano", String cardanoPrefix)
             , (Key.fromText "rdfs", String rdfsPrefix)
+            , (Key.fromText "xsd", String "http://www.w3.org/2001/XMLSchema#")
             , (Key.fromText "", String (fixturePrefixBase <> slug <> "#"))
             ]
 
@@ -194,6 +195,7 @@ renderTypeText = \case
     OBnode (BnodeName n) -> "_:" <> n
     OStringLit s -> s
     OIntLit i -> Text.pack (show i)
+    OBoolLit b -> if b then "true" else "false"
 
 {- | Render the predicate-value(s) for a non-type predicate. A
 single object emits as a bare value; a many-valued predicate
@@ -220,6 +222,7 @@ objectToJson = \case
                 [(Key.fromText "@id", String t)]
     OStringLit s -> String s
     OIntLit i -> Number (fromInteger i)
+    OBoolLit b -> Bool b
 
 ----------------------------------------------------------------------
 -- Subject text rendering
