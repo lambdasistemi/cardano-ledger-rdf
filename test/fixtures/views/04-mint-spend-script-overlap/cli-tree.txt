@@ -4,7 +4,7 @@ outputs:
   - address: addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t
     coin: 4.500000 ADA
     assets:
-      - <urn:cardano:id:AssetClass:c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad5553444d>: 1000
+      - usdm: 1000
 mint:
   - <urn:cardano:id:AssetClass:000000000000000000000000000000000000000000000000000000015553444d>: +1000
 fee: 0.000000 ADA

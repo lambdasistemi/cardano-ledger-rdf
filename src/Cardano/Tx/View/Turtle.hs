@@ -121,7 +121,7 @@ parseTurtle :: ByteString -> Either Text Graph
 parseTurtle bs = do
     let txt = TextEncoding.decodeUtf8 bs
     stmts <- splitStatements (Text.lines txt)
-    pairs <- traverse parseStatement stmts
+    pairs <- traverse (uncurry parseStatement) (zip [0 ..] stmts)
     pure $
         foldl
             (\m (s, ps) -> Map.insertWith (flip (<>)) s ps m)
@@ -172,16 +172,67 @@ splitStatements = go [] []
 
 {- | Tokenize a statement and parse it as a subject followed by one or
 more semicolon-separated predicate-object pairs terminated by @.@.
+
+The subject may be a labelled term (@_:foo@, @:slug@, @\<iri\>@) or a
+@[ predicateObjectList ]@ / @[]@ anonymous blank-node-property-list
+(W3C Turtle §2.6) — the form the overlay emitter uses for off-chain
+attestation blocks. The statement index seeds a synthetic,
+collision-resistant label for each anonymous node.
 -}
-parseStatement :: Text -> Either Text (Subject, [(Predicate, Object)])
-parseStatement stmt = do
+parseStatement :: Int -> Text -> Either Text (Subject, [(Predicate, Object)])
+parseStatement ix stmt = do
     toks <- tokenize stmt
     case toks of
+        (TLBracket : rest) -> parseAnonSubject ix rest
         (subTok : predToks) -> do
             subj <- toSubject subTok
             preds <- parsePreds predToks
             pure (subj, preds)
         [] -> Left "empty statement"
+
+{- | Parse a @[ predicateObjectList ]@ / @[]@ anonymous
+blank-node-property-list in subject position. The anonymous node is
+given a statement-unique synthetic label; predicate-object pairs
+written inside the brackets and any that follow the closing bracket
+all attach to that one node.
+-}
+parseAnonSubject ::
+    Int -> [Tok] -> Either Text (Subject, [(Predicate, Object)])
+parseAnonSubject ix toks = do
+    (inner, afterBracket) <- splitBracket toks
+    innerPreds <- parseInnerPreds inner
+    trailingPreds <- parsePreds afterBracket
+    pure (SBnode (anonLabel ix), innerPreds <> trailingPreds)
+
+{- | Synthetic, collision-resistant label for an anonymous @[]@ node.
+The @gen-@ stem cannot collide with a source @_:@ label because the
+lexer rejects @-@ as a blank-node-label start character.
+-}
+anonLabel :: Int -> Text
+anonLabel ix = "gen-" <> Text.pack (show ix)
+
+{- | Split a token stream at the first @]@, returning the tokens
+inside the brackets and the tokens following the closing bracket.
+-}
+splitBracket :: [Tok] -> Either Text ([Tok], [Tok])
+splitBracket toks = case break (== TRBracket) toks of
+    (inner, _close : after) -> Right (inner, after)
+    (_, []) -> Left "unterminated '[' blank-node-property-list"
+
+{- | Parse the bracket-internal predicate-object list: zero or more
+@predicate object@ pairs separated by @;@, with no trailing @.@.
+-}
+parseInnerPreds :: [Tok] -> Either Text [(Predicate, Object)]
+parseInnerPreds = \case
+    [] -> Right []
+    (pT : oT : rest) -> do
+        p <- toPredicate pT
+        o <- toObject oT
+        case rest of
+            [] -> Right [(p, o)]
+            (TSemi : more) -> ((p, o) :) <$> parseInnerPreds more
+            _ -> Left "expected ';' inside '[ ]' predicate-object list"
+    _ -> Left "malformed predicate-object list inside '[ ]'"
 
 parsePreds :: [Tok] -> Either Text [(Predicate, Object)]
 parsePreds = go
@@ -206,6 +257,8 @@ toSubject = \case
     TBoolLit _ -> Left "subject position cannot be a boolean literal"
     TSemi -> Left "unexpected ';' in subject position"
     TDot -> Left "unexpected '.' in subject position"
+    TLBracket -> Left "unexpected '[' in subject position"
+    TRBracket -> Left "unexpected ']' in subject position"
 
 toPredicate :: Tok -> Either Text Predicate
 toPredicate = \case
@@ -217,6 +270,8 @@ toPredicate = \case
     TBoolLit _ -> Left "boolean literal is not a valid predicate"
     TSemi -> Left "unexpected ';' in predicate position"
     TDot -> Left "unexpected '.' in predicate position"
+    TLBracket -> Left "unexpected '[' in predicate position"
+    TRBracket -> Left "unexpected ']' in predicate position"
 
 toObject :: Tok -> Either Text Object
 toObject = \case
@@ -228,6 +283,8 @@ toObject = \case
     TA -> Left "'a' keyword is not a valid object"
     TSemi -> Left "unexpected ';' in object position"
     TDot -> Left "unexpected '.' in object position"
+    TLBracket -> Left "nested '[ ]' object is not supported"
+    TRBracket -> Left "unexpected ']' in object position"
 
 ----------------------------------------------------------------------
 -- Lexer
@@ -242,6 +299,10 @@ data Tok
     | TBoolLit !Bool
     | TSemi
     | TDot
+    | -- | @[@ — opens an anonymous blank-node-property-list.
+      TLBracket
+    | -- | @]@ — closes an anonymous blank-node-property-list.
+      TRBracket
     deriving stock (Eq, Show)
 
 -- | Tokenize a Turtle statement (one logical statement, multi-line allowed).
@@ -256,6 +317,8 @@ tokenize = go . dropWhitespace
                 Just (c, rest)
                     | c == ';' -> prepend TSemi (dropWhitespace rest)
                     | c == '.' -> prepend TDot (dropWhitespace rest)
+                    | c == '[' -> prepend TLBracket (dropWhitespace rest)
+                    | c == ']' -> prepend TRBracket (dropWhitespace rest)
                     | c == '"' -> readString rest
                     | c == '<' -> readAbsIri rest
                     | c == '_' && Text.take 1 rest == ":" ->

@@ -4,6 +4,12 @@
 It owns the `cardano:` ontology and the tools that emit canonical graphs
 from transaction CBOR and project those graphs through packaged views.
 
+!!! tip "New here? Start with the [Demo](demo.md)"
+    The [end-to-end demo](demo.md) walks the `tx-graph | tx-view` pipeline on
+    a real mainnet transaction — bare vs. operator-typed — then composes the
+    whole May 2026 Amaru treasury batch into one lattice and answers cross-tx
+    SPARQL questions, with a recorded terminal cast.
+
 ## Vocabulary
 
 The `cardano:` namespace is defined by an ontology hosted from this repo at

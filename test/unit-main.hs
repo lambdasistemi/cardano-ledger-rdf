@@ -52,9 +52,12 @@ import Cardano.Tx.Graph.Rules.LoadValidationSpec qualified as GraphRulesLoadVali
 import Cardano.Tx.Graph.Rules.LoadYamlSpec qualified as GraphRulesLoadYamlSpec
 import Cardano.Tx.Graph.TxGraphExeSpec qualified as GraphTxGraphExeSpec
 import Cardano.Tx.View.AssetFlowSpec qualified as ViewAssetFlowSpec
+import Cardano.Tx.View.CliTreeEntitySpec qualified as ViewCliTreeEntitySpec
 import Cardano.Tx.View.CliTreeGoldenSpec qualified as ViewCliTreeGoldenSpec
 import Cardano.Tx.View.EntityOccurrencesSpec qualified as ViewEntityOccurrencesSpec
 import Cardano.Tx.View.JsonLdSpec qualified as ViewJsonLdSpec
+import Cardano.Tx.View.TurtleSpec qualified as ViewTurtleSpec
+import Cardano.Tx.View.TxViewStdinSpec qualified as ViewTxViewStdinSpec
 
 main :: IO ()
 main = hspec $ do
@@ -109,5 +112,8 @@ main = hspec $ do
     GraphTxGraphExeSpec.spec
     ViewAssetFlowSpec.spec
     ViewCliTreeGoldenSpec.spec
+    ViewCliTreeEntitySpec.spec
     ViewEntityOccurrencesSpec.spec
     ViewJsonLdSpec.spec
+    ViewTurtleSpec.spec
+    ViewTxViewStdinSpec.spec
