@@ -71,8 +71,14 @@ findTransactionSubject g =
 -- Entity-label map
 ----------------------------------------------------------------------
 
-{- | Map from Identifier bnode name (the @_:foo@ tail) to its
-@rdfs:label@ as declared by some @cardano:Entity@ subject.
+{- | Map from Identifier name to the @rdfs:label@ of the
+@cardano:Entity@ that claims it. The identifier surface form is used
+verbatim as the key, so both the legacy @_:foo@ blank-node tail and
+the content-addressed @\<urn:cardano:id:…\>@ IRI form (promoted in
+PR 57) resolve. Before #61 only blank-node identifiers were harvested,
+so operator overlays — whose @cardano:hasIdentifier@ links are IRIs —
+never resolved and @tx-view@ printed raw addresses even with
+@--rules@.
 -}
 entityMap :: Graph -> Map Text Text
 entityMap g =
@@ -81,8 +87,14 @@ entityMap g =
         | (_, preds) <- Map.toList g
         , any (\(p, o) -> p == PA && o == OIri "cardano:Entity") preds
         , Just label <- [findStringPred (PIri "rdfs:label") preds]
-        , idName <- [n | (PIri "cardano:hasIdentifier", OBnode n) <- preds]
+        , idName <- entityIdentifierKeys preds
         ]
+
+-- | The identifier surface forms (bnode tails and IRIs) an entity claims.
+entityIdentifierKeys :: [(Predicate, Object)] -> [Text]
+entityIdentifierKeys preds =
+    [n | (PIri "cardano:hasIdentifier", OBnode n) <- preds]
+        <> [n | (PIri "cardano:hasIdentifier", OIri n) <- preds]
 
 ----------------------------------------------------------------------
 -- Top-level body renderer
@@ -397,7 +409,9 @@ resolveIdentifierLabel g em s = case s of
         | otherwise -> case findStringObject (PIri "cardano:bytesHex") s g of
             Just hex -> hex
             Nothing -> "_:" <> name
-    SIri name -> name
+    SIri name
+        | Just label <- Map.lookup name em -> label
+        | otherwise -> name
 
 {- | Resolve an Address subject to either an entity label (when its
 payment credential's hasIdentifier bnode is part of an entity) or
@@ -413,9 +427,7 @@ resolveAddressLabel g em addrSubj =
             pc <- objectToSubject pcObj
             idObj <- findFirstObject pc (PIri "cardano:hasIdentifier") g
             idSubj <- objectToSubject idObj
-            case idSubj of
-                SBnode n -> Map.lookup n em
-                _ -> Nothing
+            Map.lookup (subjectKey idSubj) em
      in fromMaybe bech32 mLabel
 
 ----------------------------------------------------------------------
@@ -468,6 +480,14 @@ walkRdfList g = go
 subjectText :: Subject -> Text
 subjectText (SBnode n) = "_:" <> n
 subjectText (SIri n) = n
+
+{- | The bare surface name of a 'Subject', used as the 'entityMap'
+lookup key — the bnode tail for @_:foo@ and the IRI text for an
+@\<urn:cardano:id:…\>@ identifier.
+-}
+subjectKey :: Subject -> Text
+subjectKey (SBnode n) = n
+subjectKey (SIri n) = n
 
 -- | Render an 'Object' as its source-level surface form (debug only).
 objectText :: Object -> Text

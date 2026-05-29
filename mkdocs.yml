@@ -57,6 +57,7 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Demo: demo.md
   - Vocabulary: vocab.md
   - Tools:
       - tx-graph: tx-graph.md

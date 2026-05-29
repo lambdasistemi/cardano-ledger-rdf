@@ -1,0 +1,35 @@
+# Cross-transaction spend graph — the composability proof on live mainnet.
+#
+# Joins consumer transaction B's input back to the producer transaction A's
+# output, entirely within the merged lattice: B's fromTxOutRef names A's txid
+# and output index, and A's matching output is present because cat-merging
+# the per-tx Turtle put both in one graph (#56/#57 content-addressed IRIs).
+# Each row is one realised edge A#ix → B, with the recipient scope and any
+# USDM riding on the consumed UTxO. No edge can appear unless BOTH ends are
+# in the lattice, so the result set IS the internal flow of the batch.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?prod ?ix ?cons ?scope
+WHERE {
+  ?consumerTx a cardano:Transaction ;
+              cardano:hasTxId/cardano:bytesHex ?consumer ;
+              cardano:hasInput ?in .
+  ?in  cardano:fromTxOutRef ?ref .
+  ?ref cardano:hasTxId/cardano:bytesHex ?producer ;
+       cardano:hasIndex ?ix .
+  ?producerTx a cardano:Transaction ;
+              cardano:hasTxId/cardano:bytesHex ?producer ;
+              cardano:hasOutput ?utxo .
+  ?utxo cardano:hasIndex ?ix ;
+        cardano:atAddress/cardano:bech32 ?bech .
+  FILTER (?producer != ?consumer)
+  BIND (SUBSTR(?producer, 1, 12) AS ?prod)
+  BIND (SUBSTR(?consumer, 1, 12) AS ?cons)
+  BIND (
+    IF(?bech = "addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk", "amaru-treasury.network_compliance",
+    IF(?bech = "addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n", "amaru.swap-order",
+       "other")) AS ?scope)
+}
+ORDER BY ?prod ?ix
+LIMIT 20
