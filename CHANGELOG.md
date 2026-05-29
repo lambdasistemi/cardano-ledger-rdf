@@ -2,20 +2,19 @@
 
 ## Unreleased
 
-### Added
+## [0.2.4.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.3.0...v0.2.4.0) (2026-05-29)
 
-* **tx-graph:** `--provider koios|blockfrost|http` (with `--token` /
-  `--url`) fetches the input CBOR by txid from an HTTP indexer. The
-  default `--provider file` keeps the positional argument as a local
-  CBOR path. Fetched output is byte-identical to the file path, so
-  lattices stay composable.
+### Features
 
-### Removed
-
-* **tx-graph:** remove batch-mode `--in-dir` and `--out-dir`; compose
-  multi-transaction lattices with shell loops and Turtle concatenation.
-* **tx-fetch:** retire the standalone closure fetcher; its role is now
-  `tx-graph --provider`.
+* **rules:** TxId + GovActionId leaf types for keys+bytes shape (#38) ([ab11c43](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/ab11c43131a0c94865d48dcd31463ad33e85a326))
+* **vocab:** port TTL + OWL 2 RL validation gate from cardano-knowledge-maps (closes #40) (#43) ([0df38e5](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/0df38e59181ef56fba71c44b8e5220657bf75107))
+* **tx:** typed native_script tree walker (multisig + timelocks) (#48) ([02a9f04](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/02a9f04fc166e815c4a860b8f99ff39d378611fb))
+* **tx:** emit auxiliary data body + isValid flag (#51) ([6933c45](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/6933c45cd91197f05adaa673b928dfcbe66a8065))
+* **tx:** typed certificate tree walker (stake + DRep + pool + committee) (#52) ([8257e48](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/8257e48fa240612db7636d85eede823509e592bc))
+* **tx:** emit body fields 21 (current_treasury_value) and 22 (donation) (#53) ([3e264be](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/3e264bed40702e4a4e93c6bcb4f616c2025c5834))
+* **tx:** typed governance-action walker (parameter_change + update_committee + new_constitution + hard_fork_initiation) (#54) ([8a2e95c](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/8a2e95c78d19e8a72c8fc3d5d09c2502b18593c1))
+* **emit:** promote content-addressed bnodes to IRIs for cross-response composability (#57) ([4ef6b1a](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/4ef6b1a46d721411616c6b2f12c943d995502ad4))
+* **tx-graph:** remove batch mode; single-CBOR-in, single-Turtle-out (closes #59) (#60) ([ba271f7](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/ba271f7653bc1d1bc8049141e89759af13766b90))
 
 ## [0.2.3.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.2.0...v0.2.3.0) (2026-05-27)
 
