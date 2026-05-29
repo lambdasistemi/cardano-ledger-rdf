@@ -1,8 +1,20 @@
 # Q4 - Action-type correlation
 
 The selected action types have different same-verdict concentration. The
-rate below is computed within each action first as same-verdict DRep pairs
-divided by all DRep pairs, then summed by action type.
+rate below is a **pooled (size-weighted) rate**: same-verdict DRep pairs
+are summed across all actions of a given type, all DRep pairs are summed
+the same way, and the reported `?sameVerdictRate` is the ratio of those
+two sums. It is not a mean of per-action rates.
+
+The `?selectedTx`-only join used to attach `?actionType` assumes that
+every `?selectedIndex` within a given `?selectedTx` carries the same
+action type. That is a homogeneity assumption: a single submission
+transaction can in principle carry multiple proposals with distinct gov
+action classes, in which case all indices in that tx would inherit the
+sampled type. For the 11 selected submission transactions in this
+case-study lattice that assumption holds, but the query as written does
+not verify it; it is the caller's responsibility when reusing this
+pattern on a different selection.
 
 | Action type | Actions | Same-verdict pairs | All pairs | Same-verdict rate |
 | --- | ---: | ---: | ---: | ---: |

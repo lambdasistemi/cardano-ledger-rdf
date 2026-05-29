@@ -68,12 +68,12 @@ epoch 576 and **48.3%** in epoch 632. See
 
 ### Action-type correlation
 
-Mean same-verdict pair rates differ sharply by action type. The single
-selected `ParameterChange` action is highly concentrated at **93.2%**.
-The selected `TreasuryWithdrawals` actions are much looser at **60.6%**,
-while `InfoAction` lands at **79.6%**. The committee action is now reported
-from the emitted `UpdateCommittee` RDF class rather than the older Koios
-`NewCommittee` label. See
+Pooled (size-weighted) same-verdict pair rates differ sharply by action
+type. The single selected `ParameterChange` action is highly concentrated
+at **93.2%**. The selected `TreasuryWithdrawals` actions are much looser
+at **60.6%**, while `InfoAction` lands at **79.6%**. The committee action
+is now reported from the emitted `UpdateCommittee` RDF class rather than
+the older Koios `NewCommittee` label. See
 [Q4](queries/q4-action-type-correlation.md).
 
 ### Voter-anchor heuristics

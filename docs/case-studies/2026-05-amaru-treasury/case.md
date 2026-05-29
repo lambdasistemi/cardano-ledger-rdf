@@ -1,6 +1,6 @@
 # Amaru Treasury May 2026
 
-This case study runs ten SPARQL queries over a real Amaru Treasury
+This case study runs eleven SPARQL queries over a real Amaru Treasury
 May 2026 on-chain lattice built end-to-end from `tx-graph`, the
 closure fetched by transaction CBOR, and Apache Jena.
 
@@ -29,10 +29,10 @@ one page per query: [Q0 conservation](queries/q0-conservation-check.md),
 
 ```mermaid
 flowchart LR
-  subgraph blockfrost[Blockfrost]
-    bf["GET /txs/<hash>/cbor<br/>(only endpoint used)"]
+  subgraph koios[Koios]
+    kc["tx-graph --provider koios<br/>(CBOR pulled per txid)"]
   end
-  bf -->|CBOR| txgraph
+  kc -->|CBOR| txgraph
   rules[("rules.yaml<br/>entities + blueprints + attestations")] --> txgraph
   txgraph["tx-graph<br/>(canonical Turtle emit)"] -->|lattice.ttl| lattice
   subgraph lattice["101-tx lattice"]
@@ -42,15 +42,20 @@ flowchart LR
     parents -. cardano:fromTxOutRef .-> seeds
   end
   lattice --> jena
-  jena["Apache Jena<br/>SPARQL 1.1 engine"] -->|10 queries| results["real on-chain answers"]
+  jena["Apache Jena<br/>SPARQL 1.1 engine"] -->|11 queries| results["real on-chain answers"]
 ```
 
 ## Findings
 
-The conservation query balances exactly: seed inputs equal seed outputs
-plus fees, with a zero ADA gap. The 30 seed transactions paid 19.93 ADA
-in total fees; the contingency disbursement is the highest-fee single
-transaction because it carries the 4-of-4 multisig shape.
+The conservation query balances exactly: seed inputs equal seed
+outputs plus fees, with a zero-lovelace gap. The 30 seed transactions
+paid **19.931398 ADA** in total fees. The most expensive single
+transaction in the batch is the reorganize `71ff129b…` at
+**1.572508 ADA** — an 11-input reorganize at the network_compliance
+scope. The contingency disburse `18d57a4f…` is **not** the most
+expensive seed; it pays **0.415814 ADA** in fee (2 inputs). The
+per-tx fee in this batch tracks input count and script execution
+units, not multisig shape.
 
 The May flow moves 205,000 ADA from contingency to network_compliance,
 then spends network_compliance ADA into SundaeSwap order flow and receives
@@ -67,16 +72,16 @@ the expected reference-input pattern for the treasury and swap scripts.
 ## How to reproduce
 
 ```sh
-# 1. Assemble cbor/ from selections.txt; see Dataset selection.
-# 2. Concatenate one overlay and one graph per CBOR into the lattice:
-tx-graph --rules rules.yaml > lattice.ttl
-for f in cbor/*.cbor; do tx-graph "$f"; done >> lattice.ttl
+# 1. Build the lattice. pipeline.sh fetches each txid's CBOR through
+#    Koios (`tx-graph --provider koios`) and concatenates the
+#    rules.yaml overlay + one body graph per transaction into a single
+#    SPARQL-queryable Turtle file at <out>/lattice.ttl. KOIOS_TOKEN is
+#    optional; without it Koios rate-limits anonymously.
+[KOIOS_TOKEN=...] ./pipeline.sh ./out
 
-# 3. Save any query page's SPARQL block as qN.rq, then run it:
-arq --data lattice.ttl --query q0-conservation-check.rq
+# 2. Save any query page's SPARQL block as qN.rq, then run it:
+arq --data ./out/lattice.ttl --query q0-conservation-check.rq
 ```
-
-`pipeline.sh` automates the CBOR download and lattice emission path.
 
 ## Limitations to be solved on our side
 
@@ -153,7 +158,7 @@ Verified on a 7-tx closure of contingency disburse
 materialising the Reorganize / SweepTreasury / Fund / Disburse
 constructor distinction the SPARQL queries can JOIN on.
 
-### 5. Stale swap-v2 blueprint
+### 5. Sundae V3 order — typed datum still opaque
 
 **Resolved** (#103 — and reclassified). The script at hash
 `fa6a58bb…` is **SundaeSwap V3**'s `order.spend` validator, not
@@ -182,14 +187,17 @@ What still doesn't land:
   The 6-field on-chain shape stays opaque. Q10 keeps the
   scoop-join workaround for resolving the human recipient.
 
-Earlier presentation entries that named the script
-`amaru.swap.v2` (e.g. Q8/Q10 mermaid + comments) are referring
-to this same Sundae V3 order script — the correct entity name
-in `rules.yaml` is `sundae.swap.v3.order`.
+`rules.yaml` in this case-study folder names the entity
+`sundae.swap.v3.order` (the authoritative name) — the older
+`amaru.swap.v2` label has been retired throughout the
+presentation. Q3's narrative "sundae.swap.v3.order + pools +
+scoopers" row, Q8's prose, and Q10's mermaid all refer to this
+same Sundae V3 order script.
 
 ### 6. `tx-lattice` is a shell prototype
 
-**Impact**: closure walk, Blockfrost CBOR fetch, and txid/index
+**Impact**: closure walk, Koios CBOR fetch (driven by `tx-graph
+--provider koios` inside `pipeline.sh`), and txid/index
 post-processing are all bash + jq. Brittle, hard to test, single-
 threaded. The pre-filter for off-chain entities (when rules.yaml
 mixes on-chain + off-chain) is a separate concern that doesn't
