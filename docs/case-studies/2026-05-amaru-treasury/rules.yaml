@@ -31,8 +31,14 @@ blueprints:
     datum: ../../../test/fixtures/tx-graph/blueprints/amaru-treasury.cip57.json
   - script: amaru-treasury.network_compliance
     datum: ../../../test/fixtures/tx-graph/blueprints/amaru-treasury.cip57.json
+  # Case-study override: Sundae's upstream blueprint declares
+  # order.spend.datum as `Data` (intentional, by their design — see
+  # blueprints/sundae-order-typed.cip57.json for the one-ref edit).
+  # Re-pointing it at the existing types/order/OrderDatum definition
+  # lets the emitter decode the 6-field record (pool_ident, owner,
+  # max_protocol_fee, destination, details, extension) directly.
   - script: sundae.swap.v3.order
-    datum: ../../../test/fixtures/tx-graph/blueprints/sundaeswap-v3/plutus.json
+    datum: blueprints/sundae-order-typed.cip57.json
 
 attestations:
   - ipfs: ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam

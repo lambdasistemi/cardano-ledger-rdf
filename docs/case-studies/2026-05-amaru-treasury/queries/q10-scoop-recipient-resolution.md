@@ -1,10 +1,19 @@
-# Q10 — Scoop-recipient resolution (blueprint-free workaround)
+# Q10 — Scoop-recipient resolution (post-scoop, blueprint-free path)
 
-This is the demo of the documented Sundae-V3 datum-decode limitation
-(see [Limitation #5 in the presentation](../case.md#5-sundae-v3-order-typed-datum-still-opaque)):
-follow a swap order to its scoop to find the human recipient WITHOUT
-decoding the swap-order datum. The scoop transaction is pinned via
-`VALUES` to the 9-order dive `4e2642…` from the May 2026 seed batch.
+The post-scoop path for finding the human recipient: follow a swap
+order to its scoop and read the recipient outputs WITHOUT decoding
+the swap-order datum. This is the pre-typed-datum approach.
+
+The newer typed-datum path is in
+[Q11 self-swap validation](q11-self-swap-validation.md), which reads
+the recipient straight off `OrderDatum.destination` at placement time
+(see [limitation #5 in the presentation](../case.md#5-sundae-v3-order-datum-typed-via-operator-override)
+for the override that enables it). Q10 stays useful as the
+post-settlement audit lens — the actual UTxO recipients are visible
+on chain even without the typed decode.
+
+The scoop transaction is pinned via `VALUES` to the 9-order dive
+`4e2642…` from the May 2026 seed batch.
 Per-recipient aggregation collapses the three ADA UTxOs that landed
 at user 4 (`addr1q9v792a…`) and the two ADA UTxOs at user 6
 (`addr1qy4xf86…`) into a single row each, while preserving the

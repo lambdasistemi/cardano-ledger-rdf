@@ -23,7 +23,7 @@ one page per query: [Q0 conservation](queries/q0-conservation-check.md),
 [Q3 ADA scope flow](queries/q3-per-scope-ada-flow.md), [Q4 multisig shape](queries/q4-multisig-shape-distribution.md),
 [Q5 vendor chain](queries/q5-vendor-payment-chain.md), [Q6 disbursement detection](queries/q6-disbursement-detection.md),
 [Q7 USDM scope flow](queries/q7-per-scope-usdm-flow.md), [Q8 scoop detection](queries/q8-scoop-detection.md),
-[Q9 reference-script reuse](queries/q9-reference-script-reuse.md), and [Q10 scoop-recipient resolution](queries/q10-scoop-recipient-resolution.md).
+[Q9 reference-script reuse](queries/q9-reference-script-reuse.md), [Q10 scoop-recipient resolution](queries/q10-scoop-recipient-resolution.md), and [Q11 self-swap validation](queries/q11-self-swap-validation.md).
 
 ## Data flow
 
@@ -68,6 +68,21 @@ batch: the 9-order scoop dive `4e2642080c8d171aad05baed11b076de498b76acecc1c2412
 and the one-order swap cancel `a8bab7bfe1e2ed9d3a5b40189c8de51c5974a6e05c71fc1000a6abd57500b365`.
 Reference-script reuse is concentrated in four hot parent UTxOs, matching
 the expected reference-input pattern for the treasury and swap scripts.
+
+A case-study override at
+[`blueprints/sundae-order-typed.cip57.json`](blueprints/sundae-order-typed.cip57.json)
+re-types Sundae V3's `order.spend` datum from the upstream `Data`
+shape to the fully-typed `OrderDatum` (`pool_ident`, `owner` (kept
+opaque to dodge the `MultisigScript` definition cycle),
+`max_protocol_fee`, `destination`, `details`, `extension`). On the
+typed decode, Q11 reads `OrderDatum.destination.address.payment_credential`
+straight off every swap order placed by a seed transaction and
+confirms each one returns to
+`amaru-treasury.network_compliance`'s script hash
+`32201dc1e827…` — every order, no leaks. This is the validation the
+operator needs **before** signing a swap-order placement: the
+post-swap USDM is contractually required to land back on the
+treasury.
 
 ## How to reproduce
 
@@ -158,41 +173,39 @@ Verified on a 7-tx closure of contingency disburse
 materialising the Reorganize / SweepTreasury / Fund / Disburse
 constructor distinction the SPARQL queries can JOIN on.
 
-### 5. Sundae V3 order — typed datum still opaque
+### 5. Sundae V3 order datum — typed via operator override
 
-**Resolved** (#103 — and reclassified). The script at hash
-`fa6a58bb…` is **SundaeSwap V3**'s `order.spend` validator, not
-an Amaru contract (authoritatively named
-`sundaeOrderScriptHashMainnet` in
-`/code/amaru-treasury-tx/lib/Amaru/Treasury/Constants.hs`). The
-upstream Aiken plutus.json now ships under
-`test/fixtures/tx-graph/blueprints/sundaeswap-v3/` pinned
-at commit `be33466b…` of
-`github.com/SundaeSwap-finance/sundae-contracts` (Apache-2.0).
+**Resolved**. Sundae's upstream Aiken `plutus.json` declares the
+`order.spend` validator's datum as `{"$ref": "#/definitions/Data"}` —
+even though the file *does* carry a fully-typed
+`types/order/OrderDatum` definition (6 positional fields:
+`pool_ident`, `owner`, `max_protocol_fee`, `destination`, `details`,
+`extension`). The case study ships a one-ref override at
+[`blueprints/sundae-order-typed.cip57.json`](blueprints/sundae-order-typed.cip57.json)
+that re-points the validator's datum schema at the typed definition,
+and `rules.yaml` registers it against the
+`sundae.swap.v3.order` entity. Decode now produces typed
+`:OrderDatum_pool_ident` / `:OrderDatum_max_protocol_fee` /
+`:OrderDatum_destination` / `:OrderDatum_details` predicates on every
+swap-order output.
 
-What lands:
+**Carve-out**: Sundae's `MultisigScript` is a self-referential type
+(`AllOf` / `AnyOf` constructors that contain `List<MultisigScript>`),
+and the CIP-57 blueprint resolver in this repo rejects definition
+cycles with `BlueprintDefinitionCycle`. The override therefore
+re-types `OrderDatum.owner` to `Data` (one constructor arg) so the
+field is emitted as an opaque sub-datum rather than crashing the
+whole decode. The other five fields type fully.
 
-- **Typed redeemer decode** — Sundae V3's `OrderRedeemer` is
-  `Scoop | Cancel`. Once registered against an entity named
-  `sundae.swap.v3.order`, every redeemer that spends a Sundae
-  order UTxO emits a `:OrderRedeemer_Scoop` or
-  `:OrderRedeemer_Cancel` predicate. New SPARQL queries:
-  "count scoops vs cancels in the month", "list every cancelled
-  order".
+Independently, **typed redeemer decode** is registered for Sundae V3's
+`OrderRedeemer` (`Scoop | Cancel`) — though firing requires
+`tx-graph --rules rules.yaml` on every per-tx invocation (see
+limitation #6 below: pipeline.sh now does this; older recipes that
+ran `--rules` only for the overlay emit silently produced no typed
+predicates).
 
-What still doesn't land:
-
-- **Typed datum decode** — Sundae's CIP-57 blueprint types the
-  swap-order datum as `Data` (intentional, by their design).
-  The 6-field on-chain shape stays opaque. Q10 keeps the
-  scoop-join workaround for resolving the human recipient.
-
-`rules.yaml` in this case-study folder names the entity
-`sundae.swap.v3.order` (the authoritative name) — the older
-`amaru.swap.v2` label has been retired throughout the
-presentation. Q3's narrative "sundae.swap.v3.order + pools +
-scoopers" row, Q8's prose, and Q10's mermaid all refer to this
-same Sundae V3 order script.
+The presentation's `rules.yaml` uses the authoritative entity name
+`sundae.swap.v3.order`; the older `amaru.swap.v2` label is retired.
 
 ### 6. `tx-lattice` is a shell prototype
 
@@ -241,3 +254,29 @@ every entity declared via `from-address:` now emits a top-level
 `?entity rdfs:label ?scope . ?entity cardano:bech32 ?bech` instead
 of carrying hard-coded bech32 literals in `VALUES` blocks — a
 follow-up to this issue will land that refactor.
+
+### 9. Overlay blank-node inflation on per-tx `--rules` emits
+
+**Impact**. The typed datum decode (limitation #5) requires
+`tx-graph --rules rules.yaml` on **every** per-tx invocation —
+without it the blueprint registry is not active and OrderDatum
+stays opaque. Each per-tx call therefore re-emits the overlay
+alongside the body. Entity declarations (`:slug a cardano:Entity ;
+rdfs:label …`) carry stable IRIs and dedup as triples in the
+combined lattice, so they cost only `O(1)` distinct triples per
+entity. **Off-chain attestation blocks** (`[] a cardano:Attestation ;
+…`) and **off-chain entity blocks** (`:vendor a
+cardano:OffChainEntity ; …`'s attached metadata) include
+blank-node sub-structure that does *not* carry stable identity —
+each per-tx emission mints fresh bnodes, so the lattice ends up
+with `N × per-tx-call-count` copies of each attestation graph.
+
+Queries that join through attestations (Q5) compensate with
+`SELECT DISTINCT`. The numerical results are correct; the noise
+is in the bnode multiplicity.
+
+**Fix**: promote attestation and off-chain-entity bnodes to
+content-addressed IRIs in `Cardano.Tx.Graph.Rules.Load.Emit.Overlay`,
+mirroring the treatment already given to `cardano:Entity` (see #100).
+A pre-overlay-once / per-tx-without-overlay flag on `tx-graph`
+(e.g. `--rules-no-overlay`) would also work as a workaround.

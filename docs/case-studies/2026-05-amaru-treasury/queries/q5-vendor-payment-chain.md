@@ -11,9 +11,9 @@ single SPARQL invocation joins them.
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/#>
+PREFIX :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/tx#>
 
-SELECT ?vendor ?attestationLabel ?ipfs ?usdmTotalAtBridge
+SELECT DISTINCT ?vendor ?attestationLabel ?ipfs ?usdmTotalAtBridge
 WHERE {
   { SELECT (SUM(?qty) AS ?usdmTotalAtBridge) WHERE {
       VALUES ?seedTxId {
@@ -80,9 +80,14 @@ quantity `418,750,000,000`). The query joins on-chain USDM movement
 contracts, invoices, cycle reviews — by walking `cardano:paidVia`
 and `cardano:attests` across the lattice in one SPARQL invocation.
 The fixture-default `:` prefix
-(`https://lambdasistemi.github.io/cardano-rdf/fixtures/#`) is the
-IRI tx-graph emits for `rules.yaml`-declared overlay nodes; the
-vendor IRIs are `:amaru_antithesis` and `:amaru_castellum`.
+(`https://lambdasistemi.github.io/cardano-rdf/fixtures/tx#`) is the
+IRI tx-graph emits for `rules.yaml`-declared overlay nodes when
+`--rules` is passed on every per-tx emission (see pipeline.sh); the
+vendor IRIs are `:amaru_antithesis` and `:amaru_castellum`. The
+`SELECT DISTINCT` is needed because pipeline.sh re-emits the overlay
+on every per-tx call, and the off-chain attestation/vendor blocks
+appear as blank nodes whose identity does not dedup across emissions
+— see limitation #9 below.
 
 ```mermaid
 flowchart LR

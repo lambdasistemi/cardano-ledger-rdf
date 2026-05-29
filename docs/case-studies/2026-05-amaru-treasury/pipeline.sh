@@ -11,13 +11,18 @@ SELECTIONS="$SCRIPT_DIR/selections.txt"
 KOIOS_TOKEN="${KOIOS_TOKEN:-}"
 
 mkdir -p "$OUT"
+: > "$OUT/lattice.ttl"
 
-# overlay once
-tx-graph --rules "$SCRIPT_DIR/rules.yaml" > "$OUT/lattice.ttl"
-
-# bodies fetched + emitted in one shot per txid
+# Bodies fetched + emitted one shot per txid. --rules is passed on every
+# call so each body sees the blueprint registry; without it the typed
+# datum decode (OrderDatum_*) does not fire. Each per-tx invocation
+# re-emits the overlay (entity declarations, blueprint registrations,
+# off-chain attestations) — entity IRIs dedup as triples, but the
+# attestation/off-chain-entity blank-node blocks accumulate; queries
+# joining through them use SELECT DISTINCT (see Q5).
 while IFS= read -r txid; do
   [ -n "$txid" ] || continue
   case "$txid" in \#*) continue ;; esac
-  tx-graph --provider koios ${KOIOS_TOKEN:+--token "$KOIOS_TOKEN"} "$txid"
+  tx-graph --rules "$SCRIPT_DIR/rules.yaml" \
+    --provider koios ${KOIOS_TOKEN:+--token "$KOIOS_TOKEN"} "$txid"
 done < "$SELECTIONS" >> "$OUT/lattice.ttl"
