@@ -2,266 +2,512 @@
 
 `cardano-ledger-rdf` turns a Conway transaction into an RDF graph you can
 read, pipe, and query. This page walks three pipelines on **real mainnet
-data** — first one transaction, then the whole May 2026 Amaru treasury batch —
-and shows the difference an operator overlay makes: raw addresses become named
-scopes, and a pile of transactions becomes one queryable lattice.
+data** — first one transaction, then the whole May 2026 Amaru treasury
+history — and shows the difference an operator overlay makes: raw
+addresses become named scopes, an opaque asset becomes USDM, and a pile of
+independent transactions becomes one queryable lattice.
 
-Every command below runs against the current build. Nothing is hand-edited.
+Every command runs against the published build. Nothing is hand-edited,
+and every number on this page is reproduced by a query you can see and
+re-run. Any token below — transaction id, address, asset — links to
+[CardanoScan](https://cardanoscan.io) so you can verify on a neutral third
+party that the chain really says what we say it does.
 
 ## Setup
 
-```bash
-# from a clone of this repo
-nix develop                       # tx-graph, tx-view, arq are now on PATH
-cabal build exe:tx-graph exe:tx-view -O0
-export PATH="$(dirname "$(cabal list-bin exe:tx-graph -O0)"):$PATH"
-export PATH="$(dirname "$(cabal list-bin exe:tx-view -O0)"):$PATH"
-```
+You need two executables — `tx-graph` (CBOR → RDF) and `tx-view` (RDF →
+human views) — plus `arq` (the SPARQL CLI from Apache Jena) for the query
+section. Pick the install path that fits you; they all produce identical
+graphs.
 
-`tx-graph` reads a Conway transaction either from a local CBOR file or from a
-chain indexer. Pick whichever you have:
+=== "Prebuilt binary (recommended)"
+
+    Most operators and auditors don't want to compile Haskell. Grab a
+    release artifact — no toolchain, no build:
+
+    ```bash
+    # Linux x86_64 — AppImage (also .deb / .rpm on the releases page)
+    base=https://github.com/lambdasistemi/cardano-ledger-rdf/releases/latest/download
+    curl -L "$base/tx-graph-x86_64-linux.AppImage" -o tx-graph && chmod +x tx-graph
+    curl -L "$base/tx-view-x86_64-linux.AppImage"  -o tx-view  && chmod +x tx-view
+    # macOS arm64 — tarball: tx-graph-aarch64-darwin.tar.gz (and tx-view-…)
+    ```
+
+    Browse [the latest release](https://github.com/lambdasistemi/cardano-ledger-rdf/releases/latest)
+    for the exact asset names and your architecture. (There is no
+    container image or Homebrew bottle yet — if a container would help
+    your workflow, that's a fair gap to raise.)
+
+=== "Build from source (Nix)"
+
+    Run straight from the flake — no clone, no `nix develop`:
+
+    ```bash
+    flake=github:lambdasistemi/cardano-ledger-rdf
+    nix run $flake#tx-graph -- --help
+    nix run $flake#tx-view  -- --help
+    ```
+
+    To put them on `PATH` for a session:
+
+    ```bash
+    nix build github:lambdasistemi/cardano-ledger-rdf#tx-graph github:lambdasistemi/cardano-ledger-rdf#tx-view -o result-bins
+    export PATH="$PWD/result-bins/bin:$PATH"
+    ```
+
+`arq` comes from Apache Jena (`nix run nixpkgs#apache-jena -- ...`, or your
+distro's `jena` package).
+
+### Where the transaction comes from
+
+`tx-graph` reads one Conway transaction either from a local CBOR file or
+from a chain indexer — **the graph and every answer below are identical
+whichever you pick**:
 
 ```bash
-# A. fetch by txid from a public indexer (no local node needed)
-tx-graph --provider koios <txid>                       # free, rate-limited
+# A. fetch by txid from a public indexer (no local node)
+tx-graph --provider koios <txid>                                  # free, rate-limited
 tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" <txid>
 
 # B. read a CBOR you already have on disk
 tx-graph path/to/signed-tx.cbor
 ```
 
-The canonical demo transaction is the May 2026 Amaru **network_compliance**
-disbursement:
-
-```
-c150d5c5c67658c8f2a3bc24e16a4852257d46a03224257ac990fcca6f6fde78
-```
-
-The shell snippets below use `$C150` for that txid (provider mode) or
-`$C150/tx.cbor` for a local CBOR; set whichever matches your setup.
+Provider, token, or local file — the emitter is pure, so swapping the
+source can't change the result. The examples use a `$BLOCKFROST_PROJECT_ID`
+already exported in the environment.
 
 ## Pipeline 1 — bare: the explorer baseline
 
+The lead transaction is deliberately a **SundaeSwap swap**, not a plain
+payment: a swap engages a contract, so it carries redeemers and an inline
+order datum. That is exactly the material the overlay has to work on, and
+exactly what a block explorer leaves as opaque bytes.
+
+Our swap is
+[`10a5c1da…`](https://cardanoscan.io/transaction/10a5c1dafe7dd8d4ab680e35dc53b8b550da90bea55f2c758f36474064f2e598)
+— one rung of the treasury's ADA → USDM swap chain. Bare:
+
 ```bash
-tx-graph --provider koios "$C150" | tx-view --graph - --view cli-tree
+tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  10a5c1dafe7dd8d4ab680e35dc53b8b550da90bea55f2c758f36474064f2e598 \
+| tx-view --graph - --view cli-tree
 ```
+
+<div class="scrollbox" markdown>
 
 ```text
 inputs:
-  - txOutRef: 3c3d5332cb159a5f0b42cf48a6f897f1603f94fb4405c6f0c1146d5feb627963#1
-  - txOutRef: 44454ed0def64621ef645958830f599b488b699b28e3797cc37c4f4dd1463a79#2
-  - txOutRef: 77b1b046d1bfb1a09011d4606817ea45d13d8d9e0d02258984d0c6126e4cc9e9#1
+  - txOutRef: dfd355530e2d3baef6fc4cb22369c8b64aa117b0a84ff2cdaadc24cdc3fbc7bc#2
+  - txOutRef: dfd355530e2d3baef6fc4cb22369c8b64aa117b0a84ff2cdaadc24cdc3fbc7bc#3
 referenceInputs:
   - txOutRef: 11ace24a7b0caad4a68a38ef2fff18185dc9ea604e84425dab487cae94e4cf54#0
   - txOutRef: 25ba96f5deb14bb5c56e7542d6a9ba8450f52cc698ebd74574e1a0525d861095#2
   - txOutRef: 810bfcbde85ae72f27d7e8cd154c03c802de15d3fa0dd83a32a4b0fdba330b3c#0
   - txOutRef: e7b395a93d49a17994d66df0e4778a01dee05e7711e6612f28d97b63e4e6311c#2
 outputs:
+  - address: addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n
+    coin: 42.891805 ADA
+    datum:
+      hash: 7c413435da13eabb7117a425f3a495f84ddfc2f8eb9caf8f00d512995bfaf299
+      rawBytes: d8799fd8799f581c64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540efffd87a9f9fd8799f581c7095faf3d48d582fbae8b3f2e726670d7a35e2400c783d992bbdeffbffd8799f581cf3ab64b0f97dcf0f91232754603283df5d75a1201337432c04d23e2effd8799f581c8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1ffd8799f581c97e0f6d6c86dbebf15cc8fdf0981f939b2f2b70928a46511edd49df2ffffff1a00138800d8799fd8799fd87a9f581c32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dffd8799fd8799fd87a9f581c32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dffffffffd87980ffd87a9f9f40401a025c6d9dff9f581cc48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad480014df105553444d1a00989681ffffd87980ff
+  - address: addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n
+    coin: 42.891804 ADA
+    datum:
+      hash: 0ef54f5a163374af92cd46099e7a092857ed5d16ff48f1a0db91b476feae827d
+      rawBytes: d8799fd8799f581c64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540efffd87a9f9fd8799f581c7095faf3d48d582fbae8b3f2e726670d7a35e2400c783d992bbdeffbffd8799f581cf3ab64b0f97dcf0f91232754603283df5d75a1201337432c04d23e2effd8799f581c8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1ffd8799f581c97e0f6d6c86dbebf15cc8fdf0981f939b2f2b70928a46511edd49df2ffffff1a00138800d8799fd8799fd87a9f581c32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dffd8799fd8799fd87a9f581c32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dffffffffd87980ffd87a9f9f40401a025c6d9cff9f581cc48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad480014df105553444d1a00989680ffffd87980ff
   - address: addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk
-    coin: 3.422443 ADA
-    assets:
-      - <urn:cardano:id:AssetClass:c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d>: 1664173527
-  - address: addr1q8qrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59j6xz3vs0hnfaz9nhje8z34kfnds4jyk7hs6dnrag6e2lfgqtyf4rl
-    coin: 1.189560 ADA
-    assets:
-      - <urn:cardano:id:AssetClass:c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d>: 18750000000
+    coin: 1449833.102132 ADA
   - address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz
-    coin: 89.406649 ADA
+    coin: 99.092459 ADA
 withdrawals:
   - account: <urn:cardano:id:StakeScript:a64d1b9e1aeffe54056034d84977061b45a92691efc282fbee3fc094>
     amount: 0.000000 ADA
 collateral:
-  - txOutRef: 44454ed0def64621ef645958830f599b488b699b28e3797cc37c4f4dd1463a79#2
-fee: 0.516135 ADA
+  - txOutRef: dfd355530e2d3baef6fc4cb22369c8b64aa117b0a84ff2cdaadc24cdc3fbc7bc#3
+fee: 0.454317 ADA
 ```
 
-Opaque hex, raw bech32 addresses, an asset identified only by its policy and
-name bytes. This is exactly what every block explorer already shows. Useful,
-but it tells you *nothing* about what the transaction means to the treasury.
+</div>
+
+Raw bech32 addresses, two outputs locked at a script with an inline datum
+that is just a wall of CBOR. This is what every explorer shows. It is
+faithful, but it tells you *nothing* about what the transaction means to
+the treasury: which scope is spending, what contract those datums belong
+to, what's being bought.
 
 ## Pipeline 2 — typed: the same tx, with the operator overlay
 
-Add `--rules`, pointing at the operator-authored
-[`rules.yaml`](case-studies/2026-05-amaru-treasury/case.md) — a small file that
-declares the treasury's scopes, vendors, and assets, plus the blueprint
-registry for the on-chain scripts.
+The overlay is a small, operator-authored
+[`rules.yaml`](case-studies/2026-05-amaru-treasury/case.md): a flat
+declaration of the treasury's scopes, the asset it trades, the vendors it
+pays, and the on-chain contracts it engages. `tx-graph --rules` merges it
+into the graph. The file we end at is the one the Amaru operator actually
+uses; rather than drop it on you whole, we add it **one feature at a time**
+and watch each line earn its keep.
 
-```bash
-tx-graph --provider koios \
-  --rules docs/case-studies/2026-05-amaru-treasury/rules.yaml \
-  "$C150" \
-| tx-view --graph - --view cli-tree
+### Rung 1 — name the scopes
+
+```yaml
+entities:
+  - name: amaru-treasury.network_compliance
+    from-address: addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk
+  - name: amaru.network-wallet
+    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz
+  - name: amaru.swap.v2                       # the SundaeSwap order script, by hash
+    script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077
 ```
+
+Re-run with `--rules`, and the addresses in the **same** transaction
+resolve to the operator's own names:
+
+<div class="scrollbox" markdown>
 
 ```text
 outputs:
+  - address: amaru.swap.v2
+    coin: 42.891805 ADA
+    datum:
+      hash: 7c413435da13eabb7117a425f3a495f84ddfc2f8eb9caf8f00d512995bfaf299
+      rawBytes: d8799fd8799f581c64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540ef…
+  - address: amaru.swap.v2
+    coin: 42.891804 ADA
+    datum:
+      hash: 0ef54f5a163374af92cd46099e7a092857ed5d16ff48f1a0db91b476feae827d
+      rawBytes: d8799fd8799f581c64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540ef…
   - address: amaru-treasury.network_compliance
-    coin: 3.422443 ADA
-    assets:
-      - <urn:cardano:id:AssetClass:c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d>: 1664173527
-  - address: amaru.cag-payee
-    coin: 1.189560 ADA
-    assets:
-      - <urn:cardano:id:AssetClass:c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d>: 18750000000
+    coin: 1449833.102132 ADA
   - address: amaru.network-wallet
-    coin: 89.406649 ADA
+    coin: 99.092459 ADA
 ```
 
-Same bytes, same transaction — but the three outputs now read in the
-operator's own vocabulary:
+</div>
 
-| bare (pipeline 1)        | typed (pipeline 2)                  | meaning                                           |
-|--------------------------|-------------------------------------|---------------------------------------------------|
-| `addr1xyezq8w…8thzgk`    | `amaru-treasury.network_compliance` | the treasury scope being disbursed from           |
-| `addr1q8qrds2…tyf4rl`    | `amaru.cag-payee`                   | the vendor-payment bridge — receives 18,750 USDM  |
-| `addr1qx9aqvsf…znjcrz`   | `amaru.network-wallet`              | change back to the network wallet                 |
+The two opaque script outputs are now plainly the treasury *placing two
+swap orders* at `amaru.swap.v2`; the 1.45M ADA is *change back to its own
+operating scope*; the 99 ADA is the *network wallet*. One transaction, now
+legible. (Entities can be matched by full address, like the scopes, or by
+script hash, like `amaru.swap.v2` — which is why all of the protocol's
+order UTxOs collapse to that one name.)
 
-That single substitution — `addr1q8qrds2…` → `amaru.cag-payee` — is the whole
-point of the overlay: the disbursement of **18,750 USDM** to the vendor bridge
-is now legible at a glance instead of being one anonymous address among
-millions. The redeemers and datums are carried in the graph as raw CBOR
-(`cardano:hasRawBytes`); where a script's blueprint is registered and its datum
-matches the schema, `tx-graph` also decodes it into typed fields (see the
-[blueprint fixtures](tx-graph.md)).
+### Rung 2 — resolve the asset
+
+The swap is buying USDM, but USDM on-chain is just a policy id plus a
+hex-encoded name. Declare it once:
+
+```yaml
+  - name: usdm
+    asset:
+      policy: c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad
+      name: USDM
+```
+
+Now a query can ask for `usdm` and report human units instead of matching
+[`c48cbb…0014df10·USDM`](https://cardanoscan.io/token/c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d)
+and dividing raw quantities by a million by hand. We lean on this in every
+money query below — it is what turns `18750000000` into **18,750 USDM**.
+
+### Rung 3 — map the vendor bridge and its paperwork
+
+Vendor payments leave the treasury through one bridge address,
+`amaru.cag-payee`. Name it, declare who is paid through it, and attach the
+off-chain attestations (IPFS-pinned invoices and contracts) that back each
+one:
+
+```yaml
+  - name: amaru.cag-payee
+    from-address: addr1q8qrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59j6xz3vs0hnfaz9nhje8z34kfnds4jyk7hs6dnrag6e2lfgqtyf4rl
+  - name: amaru.antithesis
+    label: Antithesis Operations LLC
+    role: fuzz-testing vendor
+    paid-via: amaru.cag-payee
+  - name: amaru.castellum
+    label: Castellum Labs
+    role: engineering vendor
+    paid-via: amaru.cag-payee
+
+attestations:
+  - ipfs: ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam
+    label: Invoice INV-635
+    of: amaru.antithesis
+  # … contract, invoice, cycle-review for amaru.castellum
+```
+
+This is what makes the on-chain payment ↔ off-chain accountability join
+(below) answerable: the bridge, the vendors behind it, and the documents
+behind them are now all in the graph.
+
+### Rung 4 — register the contract blueprint
+
+Finally, register the contract's CIP-57 blueprint. The script at
+`fa6a58bb…` is SundaeSwap V3's order validator, so we register its real
+upstream blueprint:
+
+```yaml
+blueprints:
+  - script: amaru.swap.v2
+    datum: …/blueprints/sundaeswap-v3/plutus.json
+```
+
+This puts the contract's schema in the graph: the raw script hash is now
+known to be the named SundaeSwap V3 order contract, and its on-chain data
+is carried losslessly as `cardano:hasRawBytes` for anyone to inspect or
+decode. Where a registered schema matches a datum, `tx-graph` emits the
+fields as typed triples (e.g. `:SwapOrder_recipient …`) — exercised on a
+matching shape by the [blueprint fixtures](tx-graph.md).
+
+!!! note "Honest limit on the live order datum"
+    SundaeSwap's own blueprint types the order datum as opaque `Data`, and
+    its surrounding CIP-57 definitions are recursive — which the current
+    decoder does not resolve. So the live six-field V3 order above is
+    **named and carried verbatim as raw CBOR, not decoded into fields**.
+    This is a known gap, tracked alongside the case study (see its
+    [limitations](case-studies/2026-05-amaru-treasury/case.md), gap #5),
+    not a claim this page makes. Typed decode lands today on contracts
+    whose schema is concrete; the recursive V3 datum is future work.
+
+The complete file — every rung stacked together — is what we use for the
+batch:
+
+<div class="scrollbox" markdown>
+
+```yaml
+--8<-- "docs/case-studies/2026-05-amaru-treasury/rules.yaml"
+```
+
+</div>
 
 !!! note "Why `--graph -`"
     `tx-view` reads the canonical Turtle graph from `--graph FILE`, or from
-    **stdin** with `--graph -`. The `-` is what lets `tx-graph … | tx-view`
-    work as a pipe. Diagnostics (e.g. "parent tx not in lattice", expected when
-    you emit a single tx without its parents) ride **stderr**, so the Turtle on
-    stdout stays clean for the next stage.
+    **stdin** with `--graph -` — that `-` is what lets `tx-graph … | tx-view`
+    work as a pipe. Diagnostics (e.g. "parent tx not in lattice", expected
+    when you emit one tx without its parents) ride **stderr**, so the Turtle
+    on stdout stays clean for the next stage.
 
-## Pipeline 3 — compose the batch into one lattice
+## Pipeline 3 — compose transactions into one lattice
 
-A single transaction is the entry point; the real story is how *N* of them
-compose. Concatenating per-transaction Turtle **is** the merge — outputs and
-inputs that refer to the same UTxO share a content-addressed IRI
-([#56](https://github.com/lambdasistemi/cardano-ledger-rdf/pull/56),
-[#57](https://github.com/lambdasistemi/cardano-ledger-rdf/pull/57)), so the
-graphs join on contact.
+### What's behind a TX-in?
+
+Look back at the bare swap. Its first input is
+`dfd355530e2d…#2`. That reference is the whole story of composition:
+**behind every TX-in there is a transaction that created it as a TX-out.**
+So ask the obvious question — *what produced `dfd355530e2d…#2`?* — and emit
+that transaction too:
 
 ```bash
-cd docs/case-studies/2026-05-amaru-treasury
-
-# overlay once (entities, vendors, attestations, blueprints)
-tx-graph --rules rules.yaml > /tmp/may.ttl
-
-# then one transaction body per line of the selection
-while read -r txid; do
-  case "$txid" in \#*|"") continue ;; esac
-  tx-graph --provider koios "$txid"            # or: --provider blockfrost --token "$BLOCKFROST_PROJECT_ID"
-done < selections.txt >> /tmp/may.ttl
+tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  dfd355530e2d3baef6fc4cb22369c8b64aa117b0a84ff2cdaadc24cdc3fbc7bc > parent.ttl
+tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  10a5c1dafe7dd8d4ab680e35dc53b8b550da90bea55f2c758f36474064f2e598 > child.ttl
+cat parent.ttl child.ttl > pair.ttl
 ```
 
-If you already hold the signed CBORs locally, skip the indexer entirely:
+Concatenating the two Turtle files **is** the merge. The parent's output
+and the child's input both refer to the same UTxO, and they were emitted
+as the same content-addressed `urn:cardano:utxo:` IRI
+([#56](https://github.com/lambdasistemi/cardano-ledger-rdf/pull/56),
+[#57](https://github.com/lambdasistemi/cardano-ledger-rdf/pull/57)), so the
+two graphs join on contact — no database, no foreign keys. Two
+transactions are now one graph, linked by the UTxO one spent from the
+other.
+
+### From a pair to a history — by address
+
+You found that parent by following a txid. But an auditor rarely has the
+txid; they have the **wallet**: *show me everything this treasury did.* A
+public indexer answers that directly — "which transactions touched this
+address?" — so instead of chasing txids one hop at a time, enumerate every
+transaction in or out of each treasury scope and emit them all. That set,
+de-duplicated, is [`docs/demo/selections.txt`](https://github.com/lambdasistemi/cardano-ledger-rdf/blob/main/docs/demo/selections.txt)
+— 88 transactions:
+
+| operating scope enumerated | transactions |
+| --- | ---: |
+| `amaru-treasury.network_compliance` | 85 |
+| `amaru-treasury.contingency` | 2 |
+| `amaru.swap-order` | 76 |
+| `amaru.network-wallet` | 35 |
+| **union, de-duplicated** | **88** |
+
+(The vendor bridge `amaru.cag-payee` is a long-lived address shared across
+many months, so it is *not* enumerated on its own — that would pull in
+other cycles. Its two May payments spend `network_compliance`, so they are
+already in the set. This by-address selection is the demo's own dataset;
+the [case study](case-studies/2026-05-amaru-treasury/case.md) uses a
+seed-plus-closure selection for a different purpose.)
+
+```bash
+# overlay once (entities, asset, vendors, attestations, blueprints)
+tx-graph --rules docs/case-studies/2026-05-amaru-treasury/rules.yaml > /tmp/may.ttl
+
+# then one transaction body per line of the by-address selection
+while read -r txid; do
+  case "$txid" in \#*|"") continue ;; esac
+  tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" "$txid"
+done < docs/demo/selections.txt >> /tmp/may.ttl
+```
+
+Hold the signed CBORs locally instead? Drop the provider and pass paths —
+same graph:
 
 ```bash
 for f in cbor/*.cbor; do tx-graph "$f"; done >> /tmp/may.ttl
 ```
 
-!!! info "Dataset for the figures below"
-    `selections.txt` lists the 101 transactions of the May 2026 batch (30
-    disbursement seeds + 71 closure parents). The numbers on this page were
-    produced from the **67 of those transactions** available in the operator's
-    local CBOR archive at capture time; fetching the full selection through a
-    provider reproduces the same per-transaction graphs and the complete
-    figures reported in the
-    [case study](case-studies/2026-05-amaru-treasury/case.md).
+The hand-expanded pair from a moment ago is just two nodes of the lattice
+this builds. Now every query ranges over the treasury's whole month at
+once.
 
-### Where did the USDM go?
+## Queries — visible SPARQL, auditable numbers
+
+A number you can't see the query for is a number you have to trust. So each
+query below is shown **exactly as it runs** (the real `.rq`, not a
+paraphrase) next to its result. They go simple → complex, and every one is
+a question an operator would actually ask. Run any of them with:
 
 ```bash
-arq --data /tmp/may.ttl --query docs/demo/queries/usdm-received-per-scope.rq
+arq --data /tmp/may.ttl --query docs/demo/queries/<name>.rq
+```
+
+### How big is the month?
+
+```sparql
+--8<-- "docs/demo/queries/batch-scope.rq"
 ```
 
 ```text
--------------------------------------------------------------------
-| scope                               | usdm_received   | outputs |
-===================================================================
-| "other (pool / batcher / external)" | 27449731.870652 | 69      |
-| "amaru-treasury.network_compliance" | 1556199.505786  | 58      |
-| "amaru.cag-payee"                   | 418750.0        | 2       |
--------------------------------------------------------------------
+----------------
+| transactions |
+================
+| 88           |
+----------------
 ```
 
-Across the batch, **418,750 USDM** reached the vendor-payment bridge
-(`amaru.cag-payee`), **1.56M USDM** cycled through the network_compliance
-scope, and **27.4M USDM** moved through SundaeSwap pools and batchers (the
-`other` row) as the treasury swapped to and from the stablecoin. The query
-ranges over every output in the lattice and groups by the scope each recipient
-address resolves to — no per-transaction bookkeeping.
+The whole audit surface: 88 transactions. Everything below ranges over
+exactly this set.
 
-### Which transaction spent which? (cross-tx join)
+### Value transferred out of each operator scope
 
-```bash
-arq --data /tmp/may.ttl --query docs/demo/queries/spends-graph.rq | head -12
+The headline number for an auditor: what *left* each operator scope this
+month, by asset. For every transaction T spending one of scope S's
+outputs we compute
+
+    per_tx_outflow(S, T)  =  inputs_from_S_in_T  -  outputs_back_to_S_in_T
+
+clamped at zero, then sum across the month. Change UTxOs returning to the
+same scope subtract cleanly — so the 3,852,000 ADA that came back to
+contingency in [`18d57a4f…`](https://cardanoscan.io/transaction/18d57a4f104df4cc776104ce626958e2110122392e4c4c7671edc8861b48452e)
+doesn't inflate its outflow; only the 205,000 that actually left does —
+and a co-funder's contribution to a tx only moves the co-funder's own
+row, never the other scope's. The scope filter is the `amaru*` prefix:
+the two treasuries, the working wallet, and the swap-order intermediate.
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/value-out-per-scope.rq"
+```
+
+</div>
+
+```text
+-----------------------------------------------------------------------
+| scope                               | asset  | outflow        | txs |
+=======================================================================
+| "amaru-treasury.contingency"        | "ADA"  | 205000.0       | 1   |
+| "amaru-treasury.network_compliance" | "ADA"  | 1707820.240061 | 31  |
+| "amaru-treasury.network_compliance" | "USDM" | 418750.0       | 7   |
+| "amaru.network-wallet"              | "ADA"  | 20.816875      | 33  |
+| "amaru.swap-order"                  | "ADA"  | 1707817.860941 | 52  |
+-----------------------------------------------------------------------
+```
+
+Five rows — and read together they tell the whole flow:
+
+- **205,000 ADA out of `contingency`** — the mid-cycle reserve top-up to
+  the operating scope (one transaction; see *How much ADA came in from
+  contingency?*).
+- **1,707,820 ADA out of `network_compliance` ≈ 1,707,817.86 ADA out of
+  `swap-order`** — the same ADA traced through the swap intermediate.
+  NC places the orders, swap-order forwards them to SundaeSwap pools as
+  the chain converts ADA to USDM. The 2.38 ADA gap is exactly the
+  min-UTxO that accompanied the two `cag-payee` USDM payments. The
+  leg-by-leg view is *Which transaction spent which? — the swap chain*.
+- **418,750 USDM out of `network_compliance`** — the two vendor payments
+  through the `cag-payee` bridge (see *What did we pay out, and to
+  whom?*).
+- **20.82 ADA out of `network-wallet` across 33 txs** — the working
+  wallet's *entire* spend for the month is the fee budget. Zero
+  principal: `SUM(cardano:hasFee)` over the same 33 txs is exactly
+  20.816875 ADA. This is why source-to-destination attribution from the
+  graph alone is structurally ambiguous — the working wallet is on every
+  transaction as a fee/collateral co-funder, so a row-by-row "who paid
+  whom" attribution would have to guess every multi-input tx. The
+  per-scope outflow above is honest precisely because it doesn't try.
+
+Destination isn't aggregated in the headline for the same reason. The
+drill-downs each pick a transaction shape where the chain itself makes
+the recipient unambiguous.
+
+### Where did the USDM end up?
+
+The complementary lens — *destination*-side, USDM only. Resolve each
+USDM output to a named scope **through the overlay entities** — so
+SundaeSwap pools, batchers and external addresses (which carry no
+entity) drop out entirely — and count only what was *not* spent
+again inside the batch, which nets out the change that cycled through the
+swaps:
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/usdm-received-per-scope.rq"
+```
+
+</div>
+
+```text
+-----------------------------------------------------
+| scope                               | usdm        |
+=====================================================
+| "amaru.cag-payee"                   | 418750.0    |
+| "amaru-treasury.network_compliance" | 6381.618692 |
+-----------------------------------------------------
+```
+
+Two rows, and they reconcile the entire stablecoin position:
+**418,750 USDM** went out the vendor bridge, **6,381.62 USDM** remains in
+the operating scope. Their sum, **425,131.62 USDM**, is everything the
+treasury ever acquired. No millions, no pools — those were never a
+destination, only plumbing the swaps passed through.
+
+### What did we pay out, and to whom?
+
+The 418,750 splits into exactly two on-chain payments:
+
+```sparql
+--8<-- "docs/demo/queries/vendor-bridge-disbursements.rq"
 ```
 
 ```text
-| prod           | ix | cons           | scope                               |
-==============================================================================
-| "013329ee0504" | 0  | "7e0d63c45ed7" | "amaru.swap-order"                  |
-| "013329ee0504" | 1  | "0f9818a51aad" | "amaru.swap-order"                  |
-| "013329ee0504" | 2  | "432eef5e39ad" | "amaru.swap-order"                  |
-| "013329ee0504" | 3  | "7fa113e90232" | "amaru.swap-order"                  |
-| "013329ee0504" | 4  | "d0dba5b8f18f" | "amaru.swap-order"                  |
-| "013329ee0504" | 5  | "ad6ac0a18897" | "amaru-treasury.network_compliance" |
-| "013329ee0504" | 6  | "ad6ac0a18897" | "other"                             |
-| "019586ee09f5" | 0  | "71ff129b5e0b" | "amaru-treasury.network_compliance" |
-| "019586ee09f5" | 1  | "71ff129b5e0b" | "other"                             |
-| "021e6b48610d" | 0  | "affe90d1fa9a" | "amaru-treasury.network_compliance" |
-| "021e6b48610d" | 1  | "affe90d1fa9a" | "other"                             |
-| "02fce56796d2" | 1  | "65bfd93936ab" | "amaru-treasury.network_compliance" |
+-----------------------------
+| tx_id          | usdm     |
+=============================
+| "affe90d1fa9a" | 400000.0 |
+| "c150d5c5c676" | 18750.0  |
+-----------------------------
 ```
 
-(txids truncated to first 12 hex chars for display; the query returns them in
-full via `SUBSTR(?txhash, 1, 12)`.) Each row is one **realised spend edge**:
-consumer transaction *B* spent output `#ix` of producer transaction *A*,
-where *both* transactions are in the lattice. The first row in the result —
-`013329ee0504` output 0 spent by `7e0d63c45ed7` — is the per-response join
-working live: each side was emitted by an independent `tx-graph` invocation,
-catted into one Turtle, joined through the shared `urn:cardano:utxo:` IRI by
-SPARQL with no synthetic fixtures involved.
+[`affe90d1…`](https://cardanoscan.io/transaction/affe90d1fa9a93b3e2a48009ef80634e9de8428640f5d673e85b002a86399982)
+is the **400,000 USDM** payment to **Antithesis**;
+[`c150d5c5…`](https://cardanoscan.io/transaction/c150d5c5c67658c8f2a3bc24e16a4852257d46a03224257ac990fcca6f6fde78)
+is the **18,750 USDM** payment to **Castellum**. Both land on the same
+bridge address, so the *split by vendor* is the operator's knowledge, not
+the chain's — and it is exactly what the overlay's vendor declarations and
+their backing paperwork make auditable:
 
-### Where did the biggest single USDM movements land?
-
-```bash
-arq --data /tmp/may.ttl --query docs/demo/queries/top-usdm-outputs.rq
-```
-
-```text
--------------------------------------------------------------------------
-| tx_id          | scope                               | usdm           |
-=========================================================================
-| "245d6a8ed9e6" | "other (pool / batcher / external)" | 3331363.867442 |
-| "8f60266b475f" | "other (pool / batcher / external)" | 493470.382567  |
-| "26542f223ee2" | "other (pool / batcher / external)" | 491489.726018  |
-| "4e2642080c8d" | "other (pool / batcher / external)" | 490819.149109  |
-| "ee9d02118fce" | "other (pool / batcher / external)" | 490763.540646  |
-| "e96ce306b486" | "other (pool / batcher / external)" | 490713.336606  |
-| "375c82a8a316" | "other (pool / batcher / external)" | 490549.550744  |
-| "432eef5e39ad" | "other (pool / batcher / external)" | 490145.268246  |
--------------------------------------------------------------------------
-```
-
-Every top-eight USDM movement in the batch landed in the **`other`** scope —
-the SundaeSwap batcher and pool addresses the treasury swapped through. The
-single biggest event was **3,331,363 USDM** in tx `245d6a8ed9e6`: a pool
-recombination event captured on its way through the batch. The remaining
-seven are all ~490K USDM each — the **same swap-order pattern repeated eight
-times**, visible at a glance because the per-output query bypasses the
-producer/consumer chain and just looks at recipient values. Cross-scope
-movements into the treasury appear further down the result set; the top
-band belongs entirely to the DEX intermediary.
-
-### On-chain payment ↔ off-chain accountability
-
-The overlay also carries the audit trail: which vendors are paid through the
-bridge, and the IPFS-pinned invoices and contracts that back them. One query
-joins it to everything above:
-
-```bash
-arq --data /tmp/may.ttl --query docs/demo/queries/vendor-attestations.rq
+```sparql
+--8<-- "docs/demo/queries/vendor-attestations.rq"
 ```
 
 ```text
@@ -269,17 +515,129 @@ arq --data /tmp/may.ttl --query docs/demo/queries/vendor-attestations.rq
 ==========================================================================================================
 | "amaru.antithesis" | "fuzz-testing vendor" | "Invoice INV-635"      | <ipfs://bafkreicnoadl…>    |
 | "amaru.castellum"  | "engineering vendor"  | "Contract"             | <ipfs://bafybeib3jef3…>    |
-| "amaru.castellum"  | "engineering vendor"  | "Invoice"              | <ipfs://bafybeigy37ui…>    |
+| "amaru.castellum"  | "engineering vendor"  | "Invoice #3508"        | <ipfs://bafybeigy37ui…>    |
 | "amaru.castellum"  | "engineering vendor"  | "May2026 cycle review" | <ipfs://bafybeihdmnit…>    |
 ```
 
-These attestations are written by the overlay in the W3C Turtle
-blank-node-property-list form (`[] a cardano:Attestation ; …`) — the form that
-now round-trips cleanly through `tx-view`.
+Each vendor's payment is backed by an IPFS-pinned invoice or contract,
+queryable right alongside the chain.
+
+### How much ADA came in from contingency?
+
+Mid-cycle the swaps ran short of ADA. The reserve scope topped them up —
+a real business event, worth its own question:
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/contingency-inflow.rq"
+```
+
+</div>
+
+```text
+-----------------------------
+| from_tx        | ada_in   |
+=============================
+| "18d57a4f104d" | 205000.0 |
+-----------------------------
+```
+
+**205,000 ADA** moved from `amaru-treasury.contingency` into
+`network_compliance` in
+[`18d57a4f…`](https://cardanoscan.io/transaction/18d57a4f104df4cc776104ce626958e2110122392e4c4c7671edc8861b48452e):
+a 4,057,000 ADA reserve UTxO was spent, 3,852,000 returned as change, and
+205,000 forwarded to keep the swaps going. Contingency is touched by only
+two transactions ever, so this is the complete inflow.
+
+### Which transaction spent which? — the swap chain
+
+The composability proof, and the shape of the whole operation. Each row is
+a realised spend edge A`#ix` → B where *both* ends are in the lattice,
+joined only through the shared UTxO IRI:
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/spends-graph.rq"
+```
+
+</div>
+
+```text
+-----------------------------------------------------------------------------------------------
+| producer       | ix | consumer       | scope                               | ada            |
+===============================================================================================
+| "46c11538f39b" | 0  | "18d57a4f104d" | "amaru-treasury.contingency"        | 4057000.0      |
+| "64f27254f3c0" | 0  | "dfd355530e2d" | "amaru-treasury.network_compliance" | 1450000.0      |
+| "dfd355530e2d" | 2  | "10a5c1dafe7d" | "amaru-treasury.network_compliance" | 1449918.885741 |
+| "10a5c1dafe7d" | 2  | "b5716ae98bb4" | "amaru-treasury.network_compliance" | 1449833.102132 |
+| "b5716ae98bb4" | 2  | "26ef34aa02ae" | "amaru-treasury.network_compliance" | 1410976.503281 |
+| "26ef34aa02ae" | 2  | "f2791967f99a" | "amaru-treasury.network_compliance" | 1372563.060767 |
+| "f2791967f99a" | 2  | "2695f20941ac" | "amaru-treasury.network_compliance" | 1293332.892131 |
+| "2695f20941ac" | 2  | "b63aa2dd78c2" | "amaru-treasury.network_compliance" | 1215626.254430 |
+| "b63aa2dd78c2" | 2  | "5fc04113da63" | "amaru-treasury.network_compliance" | 1137012.611931 |
+| "5fc04113da63" | 2  | "5262be893119" | "amaru-treasury.network_compliance" | 1058398.969432 |
+| "5262be893119" | 2  | "a38cb99bab8e" | "amaru-treasury.network_compliance" |  979785.326933 |
+| "a38cb99bab8e" | 2  | "107e439f247f" | "amaru-treasury.network_compliance" |  901171.684434 |
+-----------------------------------------------------------------------------------------------
+```
+
+Read it top to bottom and the **sequential swap chain** falls out: each row
+consumes the previous swap's change (output `#2` at `network_compliance`)
+and the ADA steps down — `dfd35553` → `10a5c1da` (our hero swap) →
+`b5716ae9` → `26ef34aa` → … — as each step is converted to USDM. The
+contingency top-up (`18d57a4f`, first row) seeds the same pattern on a
+second leg. This is the auditor's "show me everything this wallet did, in
+order," reconstructed from transactions that were each emitted in complete
+isolation.
+
+### What rate did we actually get?
+
+Each SundaeSwap settlement *is* a price tick: a transaction that spends
+the swap-order UTxO (the ADA the operator committed) and pays USDM back
+to `network_compliance`. Read straight off the chain — no oracle, no
+off-chain price — `ada_in` is the swap-order input and `usdm_out` is the
+USDM landing on NC in the same tx:
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/swap-rate.rq"
+```
+
+</div>
+
+```text
+----------------------------------------------------------------------------------------------------------
+| tx_id          | ada_in       | usdm_out     | usdm_per_ada               | ada_per_usdm               |
+==========================================================================================================
+| "02fce56796d2" | 39306.82125  | 10057.846145 | 0.255880425461776561237447 | 3.90807541528564513550729  |
+| "04bb08742e4a" | 20411.443265 | 5057.330292  | 0.247769362819724154376205 | 4.036011509330939305001992 |
+| "0f9818a51aad" | 38120.299249 | 10016.057124 | 0.262748648917354672889074 | 3.805918714027493998944968 |
+| …              | …            | …            | …                          | …                          |
+| "ee9d02118fce" | 38120.299249 | 10014.718939 | 0.262713544654629476568304 | 3.806427267823696634648011 |
+----------------------------------------------------------------------------------------------------------
+```
+
+**52 settlements** across the month. Aggregated they reconcile the entire
+position: **1,654,998 ADA spent**, **425,131.62 USDM received**, average
+**0.256877 USDM/ADA** (or **3.8929 ADA/USDM**). Per-leg the rate spreads
+~0.243 → 0.264 USDM/ADA as the pool moved through the month. The
+425,131.62 USDM in the right column ties out exactly to *Where did the
+USDM end up?* above — the same coins, seen at the moment they were
+created.
 
 ## Watch it run
 
-A 38-second `asciinema rec` capture of the three pipelines above, run live against the binaries from this PR — bare cli-tree, typed cli-tree with operator scopes, multi-tx lattice + SPARQL — no fabrication, the numbers in the prose match the cast frame-for-frame.
+A live `asciinema` capture of the workflow above, run against the
+published binaries — the operator treats the directory as a laboratory
+(look around, read the inputs, confirm what's in scope), then runs a swap
+settling USDM into the treasury — bare, then typed — followed by the
+lattice build and the truthful queries.
+The full `rules.yaml` and the full txid list scroll past uncut: the
+faithful inputs are the proof the downstream numbers are honest. The
+`BLOCKFROST_PROJECT_ID` is shown to be *set*, never printed.
 
 <div class="asciinema-demo">
 
@@ -296,33 +654,36 @@ A 38-second `asciinema rec` capture of the three pipelines above, run live again
 
 </div>
 
-## Reproduce
+## Closing — write your own query
 
-```bash
-nix develop
-cabal build exe:tx-graph exe:tx-view -O0
-export PATH="$(dirname "$(cabal list-bin exe:tx-graph -O0)"):$(dirname "$(cabal list-bin exe:tx-view -O0)"):$PATH"
+The queries above are examples, not the ceiling. The lattice is plain RDF,
+so the fastest way to ask your own question is to hand an LLM the
+vocabulary and describe what you want in English.
 
-C150=c150d5c5c67658c8f2a3bc24e16a4852257d46a03224257ac990fcca6f6fde78
+Paste the machine-readable vocabulary —
+[`vocab/cardano/transactions.ttl`](https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions.ttl)
+— alongside your question. It defines every term the emitter uses
+(`cardano:hasOutput`, `cardano:atAddress`, `cardano:hasAssetValue`,
+`cardano:fromTxOutRef`, …), which is what an LLM needs to emit valid SPARQL
+against `/tmp/may.ttl`. A prompt that works:
 
-# 1 — bare
-tx-graph --provider koios "$C150" | tx-view --graph - --view cli-tree
+> Here is an RDF vocabulary for Cardano transactions *(paste
+> `transactions.ttl`)*. Over a Turtle graph of merged transactions using
+> this vocabulary, write a SPARQL query that answers: **\<your question>**.
+> Note that operator scopes are `cardano:Entity` nodes carrying
+> `rdfs:label` and `cardano:bech32`; join outputs to them by bech32 to
+> work in named scopes.
 
-# 2 — typed
-tx-graph --provider koios \
-  --rules docs/case-studies/2026-05-amaru-treasury/rules.yaml "$C150" \
-| tx-view --graph - --view cli-tree
+Three questions to start from — each a real treasury question, each a few
+lines of SPARQL:
 
-# 3 — lattice + SPARQL
-cd docs/case-studies/2026-05-amaru-treasury
-tx-graph --rules rules.yaml > /tmp/may.ttl
-while read -r t; do case "$t" in \#*|"") continue ;; esac
-  tx-graph --provider koios "$t"; done < selections.txt >> /tmp/may.ttl
-arq --data /tmp/may.ttl --query ../../demo/queries/usdm-received-per-scope.rq
-arq --data /tmp/may.ttl --query ../../demo/queries/spends-graph.rq
-arq --data /tmp/may.ttl --query ../../demo/queries/vendor-attestations.rq
-```
+- *"Every payment to a named vendor, with the backing invoice or contract
+  from its attestations."*
+- *"Which transactions spent the treasury's own change — the internal swap
+  chain — and how did the ADA balance step down?"*
+- *"Total ADA that entered the operating scope from the contingency
+  reserve."*
 
-Swap `--provider koios` for `--provider blockfrost --token "$BLOCKFROST_PROJECT_ID"`,
-or drop the provider flag and pass local CBOR paths — the graphs, and the
-answers, are the same.
+If the generated query references a term that isn't in the vocabulary,
+that's your signal it guessed — paste the error back and it will correct
+against the real schema.

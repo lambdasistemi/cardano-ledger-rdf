@@ -1,0 +1,28 @@
+# How much ADA came in from the contingency scope?
+#
+# Mid-cycle the swaps ran short of ADA, so the operator topped them up
+# from the contingency scope. This finds every transaction that spends a
+# contingency output and pays the network_compliance operating scope, and
+# reports the ADA delivered. Both scopes are resolved through the overlay
+# entities, so the query reads in the operator's own vocabulary.
+#
+# Result: 205,000 ADA, in tx 18d57a4f… — the contingency UTxO of
+# 4,057,000 ADA was spent, 3,852,000 returned to contingency as change and
+# 205,000 forwarded to network_compliance. Contingency is touched by only
+# two transactions in its entire history, so this is the complete picture.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?from_tx (?lov / 1000000.0 AS ?ada_in)
+WHERE {
+  ?cont a cardano:Entity ; rdfs:label "amaru-treasury.contingency"        ; cardano:bech32 ?cAddr .
+  ?dest a cardano:Entity ; rdfs:label "amaru-treasury.network_compliance" ; cardano:bech32 ?dAddr .
+  ?tx a cardano:Transaction ; cardano:hasTxId/cardano:bytesHex ?txid ;
+      cardano:hasInput/cardano:fromTxOutRef ?ref ;
+      cardano:hasOutput ?o .
+  ?ref cardano:hasTxId/cardano:bytesHex ?ptx ; cardano:hasIndex ?pix .
+  ?ptxn a cardano:Transaction ; cardano:hasTxId/cardano:bytesHex ?ptx ; cardano:hasOutput ?po .
+  ?po cardano:hasIndex ?pix ; cardano:atAddress/cardano:bech32 ?cAddr .
+  ?o cardano:atAddress/cardano:bech32 ?dAddr ; cardano:lovelace ?lov .
+  BIND (SUBSTR(?txid, 1, 12) AS ?from_tx)
+}

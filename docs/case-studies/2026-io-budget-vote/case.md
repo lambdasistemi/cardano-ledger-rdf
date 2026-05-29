@@ -93,13 +93,12 @@ The IO vote set contains **928 vote rationales with anchors**. The top host is *
 ## How to reproduce
 
 ```sh
-# 1. Assemble cbor/ - see Dataset selection above for the Koios calls.
-# 2. Concatenate one overlay and one graph per CBOR into the lattice:
-tx-graph --rules rules.yaml > lattice.ttl
-for f in cbor/*.cbor; do tx-graph "$f"; done >> lattice.ttl
+# 1. Fetch each txid in selections.txt from Koios and emit one lattice.ttl
+#    (overlay from rules.yaml + one graph per CBOR), written to <out_dir>:
+KOIOS_TOKEN=... ./pipeline.sh out
 
-# 3. Run any of the 7 documented queries after saving its SPARQL block:
-arq --data lattice.ttl --query q1-asks.rq
+# 2. Run any of the 7 documented queries after saving its SPARQL block:
+arq --data out/lattice.ttl --query q1-asks.rq
 ```
 
 In `lattice.ttl`, every per-transaction-position blank node is namespaced

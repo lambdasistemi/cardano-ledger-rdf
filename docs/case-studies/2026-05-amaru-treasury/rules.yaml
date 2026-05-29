@@ -7,7 +7,7 @@ entities:
     from-address: addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk
   - name: amaru.swap-order
     from-address: addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n
-  - name: amaru.swap.v2
+  - name: sundae.swap.v3.order
     script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077
   - name: amaru.network-wallet
     from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz
@@ -31,7 +31,7 @@ blueprints:
     datum: ../../../test/fixtures/tx-graph/blueprints/amaru-treasury.cip57.json
   - script: amaru-treasury.network_compliance
     datum: ../../../test/fixtures/tx-graph/blueprints/amaru-treasury.cip57.json
-  - script: amaru.swap.v2
+  - script: sundae.swap.v3.order
     datum: ../../../test/fixtures/tx-graph/blueprints/sundaeswap-v3/plutus.json
 
 attestations:
@@ -42,7 +42,7 @@ attestations:
     label: Contract
     of: amaru.castellum
   - ipfs: ipfs://bafybeigy37ui2ikn7bim2vw6cojcbxkcndpjwh7cj5fv3vzs4cszezipxu
-    label: Invoice #3508
+    label: "Invoice #3508"
     of: amaru.castellum
   - ipfs: ipfs://bafybeihdmnitrbu2oir3r2fefnpqy3bk7zdz42olzmltmxyt5xag4i2t5a
     label: May2026 cycle review

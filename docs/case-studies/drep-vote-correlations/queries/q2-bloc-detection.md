@@ -5,6 +5,8 @@ created when two DReps share at least 12 selected actions and agree on at
 least 90% of them. Connected components over those edges yield **4 blocs**
 with at least two DReps.
 
+Bloc table [sidecar analysis, not a single displayed query]:
+
 | Bloc | DReps | Epoch span | Verdict mix inside bloc observations |
 | ---: | ---: | --- | --- |
 | 1 | 142 | 576-632 | 1,999 Yes / 303 No / 109 Abstain |
@@ -15,7 +17,11 @@ with at least two DReps.
 The edge extract is the Q1 pairwise agreement query materialised without
 `LIMIT`, then filtered to `common >= 12` and `agreementRate >= 0.90`. The
 connected-component labelling is a small graph post-process over that edge
-table.
+table. The per-bloc **verdict mix** (Yes/No/Abstain tallies of bloc-member
+observations) and the **epoch span** are computed by joining bloc
+membership back to the per-vote verdicts and submission epochs of the 20
+selected actions — that join is a sidecar SPARQL, not the displayed
+post-processing rule below.
 
 Post-processing rule:
 

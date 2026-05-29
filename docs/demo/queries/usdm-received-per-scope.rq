@@ -1,32 +1,45 @@
-# Per-scope USDM received across the May 2026 Amaru treasury batch.
+# Where did the treasury's USDM end up? — net standing per scope.
 #
-# Walks EVERY transaction output in the lattice, keeps the ones paying the
-# USDM asset class (policy c48cbb… + CIP-67 asset name 0014df10·USDM), and
-# sums the quantity grouped by the operator scope the recipient address
-# resolves to. The bech32 → scope mapping mirrors the entity names declared
-# in rules.yaml, so the answer is in the operator's own vocabulary rather
-# than raw addresses. USDM carries 6 decimals.
+# The honest "where did the money go" question. For every USDM-bearing
+# output, we resolve the recipient to an operator scope BY JOINING TO THE
+# OVERLAY ENTITIES (cardano:bech32) — so only addresses the operator has
+# named (the treasury scopes and the vendor bridge) are counted at all.
+# SundaeSwap pool, batcher and external addresses carry no entity, so they
+# drop out automatically: no "other" bucket, no pool liquidity, no
+# double-counted swap-chain change.
+#
+# An output is counted only if it is NOT spent again inside the lattice
+# (EXISTS over the producer/consumer join). That nets out cycling change:
+# the ~1.5M USDM that bounced through network_compliance as the swaps
+# consolidated cancels to the standing balance. What survives is where the
+# USDM actually came to rest:
+#
+#   amaru.cag-payee                    418750.0   (paid out to vendors)
+#   amaru-treasury.network_compliance    6381.62  (remainder still held)
+#
+# Sum = 425,131.62 USDM ever acquired = 418,750 paid + 6,381.62 retained.
+# USDM carries 6 decimals.
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
-PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?scope
-       (SUM(?usdm) AS ?usdm_received)
-       (COUNT(?out) AS ?outputs)
+SELECT ?scope (SUM(?standing) AS ?usdm)
 WHERE {
-  ?tx  a cardano:Transaction ; cardano:hasOutput ?out .
-  ?out cardano:atAddress/cardano:bech32 ?bech ;
+  ?entity a cardano:Entity ; rdfs:label ?scope ; cardano:bech32 ?addr .
+  ?tx a cardano:Transaction ; cardano:hasTxId/cardano:bytesHex ?ptxid ; cardano:hasOutput ?out .
+  ?out cardano:atAddress/cardano:bech32 ?addr ;
+       cardano:hasIndex ?ix ;
        cardano:hasAssetValue/rdf:rest*/rdf:first ?asset .
-  ?asset cardano:hasIdentifier ?id ; cardano:quantity ?raw .
-  ?id  cardano:bytesHex
-         "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" .
-  BIND (?raw / 1000000.0 AS ?usdm)
-  BIND (
-    IF(?bech = "addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk", "amaru-treasury.network_compliance",
-    IF(?bech = "addr1x8ndhlcfy30t38z0tql64fpg8ply93r37xrgvdagfpsz5nhxm0lsjfz7hzwy7kpl42jzswr7gtz8ruvxscm6sjrq9f8qruq0ae", "amaru-treasury.contingency",
-    IF(?bech = "addr1q8qrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59j6xz3vs0hnfaz9nhje8z34kfnds4jyk7hs6dnrag6e2lfgqtyf4rl", "amaru.cag-payee",
-    IF(?bech = "addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n", "amaru.swap-order",
-    IF(?bech = "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz", "amaru.network-wallet",
-       "other (pool / batcher / external)"))))) AS ?scope)
+  ?asset cardano:hasIdentifier/cardano:bytesHex
+           "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" ;
+         cardano:quantity ?raw .
+  BIND (?raw / 1000000.0 AS ?received)
+  BIND (EXISTS {
+          ?c cardano:hasInput/cardano:fromTxOutRef ?ref .
+          ?ref cardano:hasTxId/cardano:bytesHex ?ptxid ; cardano:hasIndex ?ix .
+        } AS ?spentAgain)
+  BIND (IF(?spentAgain, 0.0, ?received) AS ?standing)
 }
 GROUP BY ?scope
-ORDER BY DESC(?usdm_received)
+HAVING (SUM(?standing) > 0)
+ORDER BY DESC(?usdm)

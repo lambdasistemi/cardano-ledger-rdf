@@ -76,9 +76,13 @@ Observed result:
 ```text
 anchorCoverage>=50% = 109
 anchorCoverage<50% = 204
-anchored singleton observations = 1,672
-all singleton observations = 4,563
 ```
+
+[sidecar analysis, not the displayed query] Anchored singleton observations
+**1,672** out of **4,563** total singleton observations. These two totals
+are not produced by the displayed SELECT (which buckets DReps, not raw
+observations); they are computed from the same unambiguous-observation
+set as a sidecar sum of `?hasAnchor` and a count of `?actionKey`.
 
 The typed certificate walker also makes DRep registration and update
 anchors queryable when those certificates are present in the lattice. The

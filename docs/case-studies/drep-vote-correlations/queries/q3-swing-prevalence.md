@@ -67,12 +67,16 @@ monoVerdictDReps = 84
 swingDReps = 229
 ```
 
-Mono-verdict detail:
+Mono-verdict detail [sidecar analysis, not the displayed query]:
 
-Observed detail: **82 Yes-only** and **2 No-only**.
+Observed detail: **82 Yes-only** and **2 No-only**. This split is a
+sidecar post-process — it requires an additional `GROUP BY` on the
+sampled verdict for the mono-verdict cohort, computed outside the
+displayed SPARQL.
 
-Epoch-local swing rates, using selected actions submitted in the same
-proposal epoch and requiring at least two observations in that epoch:
+Epoch-local swing rates [sidecar analysis, not the displayed query], using
+selected actions submitted in the same proposal epoch and requiring at
+least two observations in that epoch:
 
 | Proposal epoch | Eligible DReps | Swing DReps | Swing rate |
 | ---: | ---: | ---: | ---: |
@@ -80,5 +84,10 @@ proposal epoch and requiring at least two observations in that epoch:
 | 603 | 212 | 10 | 4.7% |
 | 612 | 196 | 12 | 6.1% |
 | 632 | 261 | 126 | 48.3% |
+
+The epoch-local table is a sidecar post-process: the displayed SPARQL
+emits only the three global scalars above, and the per-epoch breakdown
+is computed from the same unambiguous-observation set joined to proposal
+epochs outside this query.
 
 Return to the [presentation](../case.md).

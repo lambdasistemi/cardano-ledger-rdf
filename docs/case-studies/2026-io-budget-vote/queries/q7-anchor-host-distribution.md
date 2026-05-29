@@ -50,4 +50,10 @@ WHERE {
 Observed result: top host `most-brass-sun.quicknode-ipfs.com = 422`;
 denominator `totalAnchoredVotes = 928`.
 
+The host regex `^[a-z]+://([^/]+).*` extracts the authority component of
+URLs with a `host/path` shape. For `ipfs://<cid>` URLs there is no host
+segment, so `REPLACE` leaves the input unchanged and the row's "host"
+appears as the bare CID (e.g. `bafkrei...` or `Qm...`). Those rows are
+the gatewayless IPFS rationales; they are not a real per-host bucket.
+
 Return to the [presentation](../case.md).

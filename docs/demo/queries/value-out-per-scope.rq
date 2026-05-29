@@ -1,0 +1,113 @@
+# Value transferred OUT of each operator scope — net per scope per asset.
+#
+# For every operator-named scope S (anything under the amaru.* / amaru-
+# treasury.* prefixes — the treasuries, the working wallet, the swap-order
+# intermediate, the vendor bridge, the vendors themselves) and every
+# transaction T spending one of S's outputs, we compute
+#
+#   per_tx_out(S, T) = inputs_from_S_in_T  -  outputs_back_to_S_in_T
+#
+# clamped at 0, then summed across the month. Change UTxOs returning to
+# the same scope subtract cleanly, so the 3,852,000 ADA that came back to
+# contingency in 18d57a4f… does NOT inflate its outflow (only the 205,000
+# that actually left does); and a co-funder's contribution to a tx only
+# moves the co-funder's own per_tx_out, never the other scope's.
+#
+# Destination is deliberately NOT aggregated here: the working wallet
+# co-funds the fee on essentially every transaction, so a single
+# source-to-destination attribution from the UTxO graph alone would have
+# to guess on every multi-input tx. The drill-down queries below cover
+# destination one row at a time, where the chain itself disambiguates.
+#
+# Result, May 2026:
+#
+#   amaru-treasury.contingency        | ADA  |     205,000.00 | 1 tx
+#   amaru-treasury.network_compliance | ADA  |   1,707,820.24 | 31 tx
+#   amaru-treasury.network_compliance | USDM |     418,750.00 | 7 tx
+#   amaru.network-wallet              | ADA  |          20.82 | 33 tx
+#   amaru.swap-order                  | ADA  |   1,707,817.86 | 52 tx
+#
+# Reading the table:
+#   - 205,000 ADA — the contingency → operating top-up (one event)
+#     — see contingency-inflow.rq
+#   - 1,707,820 ADA out of NC ≈ 1,707,817.86 out of swap-order: the same
+#     ADA traced through the swap intermediate, sold to SundaeSwap for
+#     USDM as the chain stepped down (gap of 2.38 ADA = the min-UTxO
+#     companion to the two cag-payee USDM payments)
+#     — see spends-graph.rq for the leg-by-leg view
+#   - 418,750 USDM — the two vendor payments through the cag-payee bridge
+#     — see vendor-bridge-disbursements.rq
+#   - 20.82 ADA out of the working wallet across 33 txs: this is the
+#     entire fee budget for the month — zero principal. Cross-check:
+#     SUM(cardano:hasFee) over those 33 txs is exactly 20.816875 ADA.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?scope ?asset
+       (SUM(?per_tx_out) AS ?outflow)
+       (COUNT(DISTINCT ?tx) AS ?txs)
+WHERE {
+  ?entity a cardano:Entity ; rdfs:label ?scope ; cardano:bech32 ?addr .
+  FILTER (STRSTARTS(?scope, "amaru"))
+  {
+    # ADA, per tx: gross spent from scope minus gross returned to scope.
+    {
+      SELECT ?addr ?tx (SUM(?lov)/1000000.0 AS ?in_sum) WHERE {
+        ?tx a cardano:Transaction ;
+            cardano:hasInput/cardano:fromTxOutRef ?ref .
+        ?ref cardano:hasTxId/cardano:bytesHex ?ptx ;
+             cardano:hasIndex ?pix .
+        ?ptxn cardano:hasTxId/cardano:bytesHex ?ptx ;
+              cardano:hasOutput ?po .
+        ?po cardano:hasIndex ?pix ;
+            cardano:atAddress/cardano:bech32 ?addr ;
+            cardano:lovelace ?lov .
+      } GROUP BY ?addr ?tx
+    }
+    OPTIONAL {
+      SELECT ?addr ?tx (SUM(?lov)/1000000.0 AS ?out_sum) WHERE {
+        ?tx a cardano:Transaction ; cardano:hasOutput ?o .
+        ?o cardano:atAddress/cardano:bech32 ?addr ;
+           cardano:lovelace ?lov .
+      } GROUP BY ?addr ?tx
+    }
+    BIND ("ADA" AS ?asset)
+    BIND (COALESCE(?out_sum, 0.0) AS ?out_)
+    BIND (IF (?in_sum > ?out_, ?in_sum - ?out_, 0.0) AS ?per_tx_out)
+  } UNION {
+    # USDM, per tx: same shape, restricted to the USDM asset id.
+    {
+      SELECT ?addr ?tx (SUM(?q)/1000000.0 AS ?in_sum) WHERE {
+        ?tx a cardano:Transaction ;
+            cardano:hasInput/cardano:fromTxOutRef ?ref .
+        ?ref cardano:hasTxId/cardano:bytesHex ?ptx ;
+             cardano:hasIndex ?pix .
+        ?ptxn cardano:hasTxId/cardano:bytesHex ?ptx ;
+              cardano:hasOutput ?po .
+        ?po cardano:hasIndex ?pix ;
+            cardano:atAddress/cardano:bech32 ?addr ;
+            cardano:hasAssetValue/rdf:rest*/rdf:first ?av .
+        ?av cardano:hasIdentifier/cardano:bytesHex
+              "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" ;
+            cardano:quantity ?q .
+      } GROUP BY ?addr ?tx
+    }
+    OPTIONAL {
+      SELECT ?addr ?tx (SUM(?q)/1000000.0 AS ?out_sum) WHERE {
+        ?tx a cardano:Transaction ; cardano:hasOutput ?o .
+        ?o cardano:atAddress/cardano:bech32 ?addr ;
+           cardano:hasAssetValue/rdf:rest*/rdf:first ?av .
+        ?av cardano:hasIdentifier/cardano:bytesHex
+              "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" ;
+            cardano:quantity ?q .
+      } GROUP BY ?addr ?tx
+    }
+    BIND ("USDM" AS ?asset)
+    BIND (COALESCE(?out_sum, 0.0) AS ?out_)
+    BIND (IF (?in_sum > ?out_, ?in_sum - ?out_, 0.0) AS ?per_tx_out)
+  }
+}
+GROUP BY ?scope ?asset
+HAVING (SUM(?per_tx_out) > 0)
+ORDER BY ?scope DESC(?outflow)
