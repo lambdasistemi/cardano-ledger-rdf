@@ -1,0 +1,23 @@
+/* Internal-scroll for large code / output blocks on the demo page.
+ * The reader scrolls WITHIN the block to inspect; nothing is ever
+ * truncated. Wrap a fenced block in:
+ *   <div class="scrollbox" markdown>
+ *   ```text
+ *   …
+ *   ```
+ *   </div>
+ */
+.scrollbox {
+  max-height: 26rem;
+  overflow: auto;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.2rem;
+}
+.scrollbox > .highlight pre,
+.scrollbox > pre {
+  margin: 0;
+}
+/* Keep the long lines (datum rawBytes, txid lists) intact and scrollable. */
+.scrollbox code {
+  white-space: pre;
+}

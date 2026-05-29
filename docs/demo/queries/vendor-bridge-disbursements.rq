@@ -1,0 +1,30 @@
+# What did the treasury pay out through the vendor bridge?
+#
+# Every USDM output that landed on the cag-payee bridge (resolved through
+# the overlay entity, not a hard-coded address), with the transaction it
+# rode on. Two payments make up the whole May cycle:
+#
+#   400000.0  in tx affe90d1…  (the Antithesis settlement)
+#    18750.0  in tx c150d5c5…  (the Castellum settlement)
+#
+# Total 418,750 USDM. Note the chain shows two payments to ONE bridge
+# address — it cannot, by itself, say which vendor each belongs to. That
+# attribution lives in the operator overlay (paid-via + attestations) and
+# in the off-chain invoices; see vendor-attestations.rq.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?tx_id ?usdm
+WHERE {
+  ?bridge a cardano:Entity ; rdfs:label "amaru.cag-payee" ; cardano:bech32 ?addr .
+  ?tx a cardano:Transaction ; cardano:hasTxId/cardano:bytesHex ?txid ; cardano:hasOutput ?o .
+  ?o cardano:atAddress/cardano:bech32 ?addr ;
+     cardano:hasAssetValue/rdf:rest*/rdf:first ?asset .
+  ?asset cardano:hasIdentifier/cardano:bytesHex
+           "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" ;
+         cardano:quantity ?raw .
+  BIND (?raw / 1000000.0 AS ?usdm)
+  BIND (SUBSTR(?txid, 1, 12) AS ?tx_id)
+}
+ORDER BY DESC(?usdm)

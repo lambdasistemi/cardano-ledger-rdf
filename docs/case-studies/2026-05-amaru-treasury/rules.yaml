@@ -42,7 +42,7 @@ attestations:
     label: Contract
     of: amaru.castellum
   - ipfs: ipfs://bafybeigy37ui2ikn7bim2vw6cojcbxkcndpjwh7cj5fv3vzs4cszezipxu
-    label: Invoice #3508
+    label: "Invoice #3508"
     of: amaru.castellum
   - ipfs: ipfs://bafybeihdmnitrbu2oir3r2fefnpqy3bk7zdz42olzmltmxyt5xag4i2t5a
     label: May2026 cycle review

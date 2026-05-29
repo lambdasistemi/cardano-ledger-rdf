@@ -1,35 +1,32 @@
-# Cross-transaction spend graph — the composability proof on live mainnet.
+# Which transaction spent which? — the cross-tx join, and the swap chain.
 #
-# Joins consumer transaction B's input back to the producer transaction A's
-# output, entirely within the merged lattice: B's fromTxOutRef names A's txid
-# and output index, and A's matching output is present because cat-merging
-# the per-tx Turtle put both in one graph (#56/#57 content-addressed IRIs).
-# Each row is one realised edge A#ix → B, with the recipient scope and any
-# USDM riding on the consumed UTxO. No edge can appear unless BOTH ends are
-# in the lattice, so the result set IS the internal flow of the batch.
+# Each row is one realised spend edge: consumer transaction B spent output
+# #ix of producer transaction A, where BOTH are in the lattice. The edge
+# exists only because cat-merging the per-tx Turtle put A's output and B's
+# input on the same content-addressed urn:cardano:utxo: IRI (#56/#57), so
+# SPARQL joins them with no synthetic fixtures. The producer's recipient
+# scope is resolved through the overlay entities.
+#
+# Sorted by ADA, the result lays the sequential swap chain bare: each swap
+# spends the previous swap's change output (#2 at network_compliance) and
+# the ADA steps down as it is converted to USDM —
+#   64f27254 → dfd35553 → 10a5c1da → b5716ae9 → 26ef34aa → …
+# This is exactly the auditor's "show me everything this wallet did, in
+# order" — reconstructed from independent per-transaction graphs.
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
-PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?prod ?ix ?cons ?scope
+SELECT ?producer ?ix ?consumer ?scope (?lov / 1000000.0 AS ?ada)
 WHERE {
-  ?consumerTx a cardano:Transaction ;
-              cardano:hasTxId/cardano:bytesHex ?consumer ;
-              cardano:hasInput ?in .
-  ?in  cardano:fromTxOutRef ?ref .
-  ?ref cardano:hasTxId/cardano:bytesHex ?producer ;
-       cardano:hasIndex ?ix .
-  ?producerTx a cardano:Transaction ;
-              cardano:hasTxId/cardano:bytesHex ?producer ;
-              cardano:hasOutput ?utxo .
-  ?utxo cardano:hasIndex ?ix ;
-        cardano:atAddress/cardano:bech32 ?bech .
-  FILTER (?producer != ?consumer)
-  BIND (SUBSTR(?producer, 1, 12) AS ?prod)
-  BIND (SUBSTR(?consumer, 1, 12) AS ?cons)
-  BIND (
-    IF(?bech = "addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk", "amaru-treasury.network_compliance",
-    IF(?bech = "addr1x8ax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqaejyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxst7gy3n", "amaru.swap-order",
-       "other")) AS ?scope)
+  ?ptxn a cardano:Transaction ; cardano:hasTxId/cardano:bytesHex ?ptx ; cardano:hasOutput ?o .
+  ?o cardano:hasIndex ?ix ; cardano:lovelace ?lov ; cardano:atAddress/cardano:bech32 ?addr .
+  ?entity a cardano:Entity ; rdfs:label ?scope ; cardano:bech32 ?addr .
+  ?ctxn a cardano:Transaction ; cardano:hasTxId/cardano:bytesHex ?ctx ;
+        cardano:hasInput/cardano:fromTxOutRef ?ref .
+  ?ref cardano:hasTxId/cardano:bytesHex ?ptx ; cardano:hasIndex ?ix .
+  FILTER (?ptx != ?ctx)
+  BIND (SUBSTR(?ptx, 1, 12) AS ?producer)
+  BIND (SUBSTR(?ctx, 1, 12) AS ?consumer)
 }
-ORDER BY ?prod ?ix
-LIMIT 20
+ORDER BY DESC(?ada)
+LIMIT 12

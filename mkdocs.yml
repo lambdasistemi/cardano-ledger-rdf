@@ -35,6 +35,7 @@ plugins:
 
 markdown_extensions:
   - admonition
+  - md_in_html
   - tables
   - footnotes
   - def_list
@@ -51,6 +52,9 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
+
+extra_css:
+  - stylesheets/extra.css
 
 extra_javascript:
   - https://cdn.jsdelivr.net/gh/paolino/dev-assets@main/mkdocs/docs/js/read-aloud.js

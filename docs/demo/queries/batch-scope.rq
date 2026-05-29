@@ -1,0 +1,10 @@
+# How big is this month? — the on-ramp question.
+#
+# Before any money question, an auditor asks "how much am I even looking
+# at?" This counts the transactions in the merged lattice: the full set
+# of treasury-address activity for the May 2026 cycle. One triple pattern,
+# one aggregate — the simplest possible SPARQL over the graph.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+
+SELECT (COUNT(DISTINCT ?tx) AS ?transactions)
+WHERE { ?tx a cardano:Transaction . }
