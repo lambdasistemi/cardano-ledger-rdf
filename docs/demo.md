@@ -386,12 +386,75 @@ arq --data /tmp/may.ttl --query docs/demo/queries/<name>.rq
 The whole audit surface: 88 transactions. Everything below ranges over
 exactly this set.
 
+### Value transferred out of each operator scope
+
+The headline number for an auditor: what *left* each operator scope this
+month, by asset. For every transaction T spending one of scope S's
+outputs we compute
+
+    per_tx_outflow(S, T)  =  inputs_from_S_in_T  -  outputs_back_to_S_in_T
+
+clamped at zero, then sum across the month. Change UTxOs returning to the
+same scope subtract cleanly — so the 3,852,000 ADA that came back to
+contingency in [`18d57a4f…`](https://cardanoscan.io/transaction/18d57a4f104df4cc776104ce626958e2110122392e4c4c7671edc8861b48452e)
+doesn't inflate its outflow; only the 205,000 that actually left does —
+and a co-funder's contribution to a tx only moves the co-funder's own
+row, never the other scope's. The scope filter is the `amaru*` prefix:
+the two treasuries, the working wallet, and the swap-order intermediate.
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/value-out-per-scope.rq"
+```
+
+</div>
+
+```text
+-----------------------------------------------------------------------
+| scope                               | asset  | outflow        | txs |
+=======================================================================
+| "amaru-treasury.contingency"        | "ADA"  | 205000.0       | 1   |
+| "amaru-treasury.network_compliance" | "ADA"  | 1707820.240061 | 31  |
+| "amaru-treasury.network_compliance" | "USDM" | 418750.0       | 7   |
+| "amaru.network-wallet"              | "ADA"  | 20.816875      | 33  |
+| "amaru.swap-order"                  | "ADA"  | 1707817.860941 | 52  |
+-----------------------------------------------------------------------
+```
+
+Five rows — and read together they tell the whole flow:
+
+- **205,000 ADA out of `contingency`** — the mid-cycle reserve top-up to
+  the operating scope (one transaction; see *How much ADA came in from
+  contingency?*).
+- **1,707,820 ADA out of `network_compliance` ≈ 1,707,817.86 ADA out of
+  `swap-order`** — the same ADA traced through the swap intermediate.
+  NC places the orders, swap-order forwards them to SundaeSwap pools as
+  the chain converts ADA to USDM. The 2.38 ADA gap is exactly the
+  min-UTxO that accompanied the two `cag-payee` USDM payments. The
+  leg-by-leg view is *Which transaction spent which? — the swap chain*.
+- **418,750 USDM out of `network_compliance`** — the two vendor payments
+  through the `cag-payee` bridge (see *What did we pay out, and to
+  whom?*).
+- **20.82 ADA out of `network-wallet` across 33 txs** — the working
+  wallet's *entire* spend for the month is the fee budget. Zero
+  principal: `SUM(cardano:hasFee)` over the same 33 txs is exactly
+  20.816875 ADA. This is why source-to-destination attribution from the
+  graph alone is structurally ambiguous — the working wallet is on every
+  transaction as a fee/collateral co-funder, so a row-by-row "who paid
+  whom" attribution would have to guess every multi-input tx. The
+  per-scope outflow above is honest precisely because it doesn't try.
+
+Destination isn't aggregated in the headline for the same reason. The
+drill-downs each pick a transaction shape where the chain itself makes
+the recipient unambiguous.
+
 ### Where did the USDM end up?
 
-The headline question, and the one the previous version of this page got
-wrong. Resolve each USDM output to a named scope **through the overlay
-entities** — so SundaeSwap pools, batchers and external addresses (which
-carry no entity) drop out entirely — and count only what was *not* spent
+The complementary lens — *destination*-side, USDM only. Resolve each
+USDM output to a named scope **through the overlay entities** — so
+SundaeSwap pools, batchers and external addresses (which carry no
+entity) drop out entirely — and count only what was *not* spent
 again inside the batch, which nets out the change that cycled through the
 swaps:
 
@@ -528,6 +591,42 @@ contingency top-up (`18d57a4f`, first row) seeds the same pattern on a
 second leg. This is the auditor's "show me everything this wallet did, in
 order," reconstructed from transactions that were each emitted in complete
 isolation.
+
+### What rate did we actually get?
+
+Each SundaeSwap settlement *is* a price tick: a transaction that spends
+the swap-order UTxO (the ADA the operator committed) and pays USDM back
+to `network_compliance`. Read straight off the chain — no oracle, no
+off-chain price — `ada_in` is the swap-order input and `usdm_out` is the
+USDM landing on NC in the same tx:
+
+<div class="scrollbox" markdown>
+
+```sparql
+--8<-- "docs/demo/queries/swap-rate.rq"
+```
+
+</div>
+
+```text
+----------------------------------------------------------------------------------------------------------
+| tx_id          | ada_in       | usdm_out     | usdm_per_ada               | ada_per_usdm               |
+==========================================================================================================
+| "02fce56796d2" | 39306.82125  | 10057.846145 | 0.255880425461776561237447 | 3.90807541528564513550729  |
+| "04bb08742e4a" | 20411.443265 | 5057.330292  | 0.247769362819724154376205 | 4.036011509330939305001992 |
+| "0f9818a51aad" | 38120.299249 | 10016.057124 | 0.262748648917354672889074 | 3.805918714027493998944968 |
+| …              | …            | …            | …                          | …                          |
+| "ee9d02118fce" | 38120.299249 | 10014.718939 | 0.262713544654629476568304 | 3.806427267823696634648011 |
+----------------------------------------------------------------------------------------------------------
+```
+
+**52 settlements** across the month. Aggregated they reconcile the entire
+position: **1,654,998 ADA spent**, **425,131.62 USDM received**, average
+**0.256877 USDM/ADA** (or **3.8929 ADA/USDM**). Per-leg the rate spreads
+~0.243 → 0.264 USDM/ADA as the pool moved through the month. The
+425,131.62 USDM in the right column ties out exactly to *Where did the
+USDM end up?* above — the same coins, seen at the moment they were
+created.
 
 ## Watch it run
 

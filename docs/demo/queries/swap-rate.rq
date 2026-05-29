@@ -1,0 +1,60 @@
+# Actual settled ADA→USDM rate, per swap settlement.
+#
+# Each row is one SundaeSwap settlement: a transaction that spends a
+# swap-order UTxO (the order NC placed) and pays USDM back to NC. We
+# read the rate straight off the chain:
+#
+#   ada_in   = sum(ADA on swap-order inputs of the settlement tx)
+#   usdm_out = sum(USDM on NC outputs of the same tx)
+#   rate     = usdm_out / ada_in   (USDM per ADA)
+#
+# Both legs are joined on the same tx, so the rate is what the operator
+# actually realised on chain — no oracle, no off-chain price, just
+# (USDM received) / (ADA spent) per event.
+#
+# 52 settlements observed across the May 2026 lattice. Aggregated they
+# reconcile the whole stablecoin position:
+#
+#   sum(ada_in)   =  1,654,998.00 ADA
+#   sum(usdm_out) =    425,131.62 USDM   (= the 425,131.62 NC ever acquired)
+#   avg rate      =  0.256877 USDM / ADA   (3.8929 ADA / USDM)
+#
+# Per-leg the rate spreads ~0.243 → 0.264 USDM/ADA (~3.79 → 4.11 ADA/USDM)
+# as the pool moved across the month.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?tx_id ?ada_in ?usdm_out
+       (?usdm_out / ?ada_in AS ?usdm_per_ada)
+       (?ada_in   / ?usdm_out AS ?ada_per_usdm)
+WHERE {
+  ?so a cardano:Entity ; rdfs:label "amaru.swap-order"                  ; cardano:bech32 ?soAddr .
+  ?nc a cardano:Entity ; rdfs:label "amaru-treasury.network_compliance" ; cardano:bech32 ?ncAddr .
+  {
+    SELECT ?tx ?txid ?soAddr (SUM(?lov)/1000000.0 AS ?ada_in) WHERE {
+      ?tx a cardano:Transaction ;
+          cardano:hasTxId/cardano:bytesHex ?txid ;
+          cardano:hasInput/cardano:fromTxOutRef ?ref .
+      ?ref cardano:hasTxId/cardano:bytesHex ?ptx ;
+           cardano:hasIndex ?pix .
+      ?ptxn cardano:hasTxId/cardano:bytesHex ?ptx ;
+            cardano:hasOutput ?po .
+      ?po cardano:hasIndex ?pix ;
+          cardano:atAddress/cardano:bech32 ?soAddr ;
+          cardano:lovelace ?lov .
+    } GROUP BY ?tx ?txid ?soAddr
+  }
+  {
+    SELECT ?tx ?ncAddr (SUM(?q)/1000000.0 AS ?usdm_out) WHERE {
+      ?tx cardano:hasOutput ?o .
+      ?o cardano:atAddress/cardano:bech32 ?ncAddr ;
+         cardano:hasAssetValue/rdf:rest*/rdf:first ?av .
+      ?av cardano:hasIdentifier/cardano:bytesHex
+            "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" ;
+          cardano:quantity ?q .
+    } GROUP BY ?tx ?ncAddr
+  }
+  BIND (SUBSTR(?txid, 1, 12) AS ?tx_id)
+}
+ORDER BY ?tx_id
