@@ -2,22 +2,16 @@
 
 ## Unreleased
 
+## [0.2.5.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.4.0...v0.2.5.0) (2026-05-29)
+
 ### Features
 
-* **demo:** end-to-end pipeline demo (`docs/demo.md`) with rules + blueprints
-  and cross-tx SPARQL on real mainnet — bare vs typed contrast on the May 2026
-  Amaru network_compliance disbursement, plus a multi-tx lattice (closes #61)
-* **tx-view:** `--graph -` reads the canonical Turtle graph from stdin, so
-  `tx-graph … | tx-view --view cli-tree` works without a temp file (#61)
+* **demo:** end-to-end pipeline demo with rules + blueprints + cross-tx SPARQL on real mainnet (#62) ([cd7a9dd](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/cd7a9dd3d86572a3623e69145d3f632ed27e7e1b))
 
-### Bug Fixes
+### Documentation
 
-* **tx-view:** accept the W3C Turtle `[]` / `[ predicateObjectList ]`
-  blank-node-property-list form the overlay emitter uses for off-chain
-  attestations; the reader no longer rejects `[` (#61)
-* **tx-view:** resolve output addresses and assets to operator entity labels
-  when the overlay links them through content-addressed `urn:cardano:id:` IRIs
-  (post-#57); `--rules` cli-tree output was previously identical to bare (#61)
+* **demo:** per-scope value-out and per-settlement swap-rate queries; wallet outflow ties to `SUM(cardano:hasFee)` exactly (#64) ([9f15abd](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/9f15abdea76bfa5804e9b718d4b4c2da84088d28))
+* **case-studies:** replace fantasies with verified SPARQL — drop fabricated `cardano:hasLatticeRole`, fix Q5 `amaru:` prefix and Q6 truncated bech32, correct fee narrative (`71ff129b` 1.572508 ADA, not the 4-of-4 contingency disburse), label sidecar analyses (#64) ([9f15abd](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/9f15abdea76bfa5804e9b718d4b4c2da84088d28))
 
 ## [0.2.4.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.3.0...v0.2.4.0) (2026-05-29)
 
