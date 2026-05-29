@@ -439,15 +439,12 @@ Five rows — and read together they tell the whole flow:
 - **20.82 ADA out of `network-wallet` across 33 txs** — the working
   wallet's *entire* spend for the month is the fee budget. Zero
   principal: `SUM(cardano:hasFee)` over the same 33 txs is exactly
-  20.816875 ADA. This is why source-to-destination attribution from the
-  graph alone is structurally ambiguous — the working wallet is on every
-  transaction as a fee/collateral co-funder, so a row-by-row "who paid
-  whom" attribution would have to guess every multi-input tx. The
-  per-scope outflow above is honest precisely because it doesn't try.
-
-Destination isn't aggregated in the headline for the same reason. The
-drill-downs each pick a transaction shape where the chain itself makes
-the recipient unambiguous.
+  20.816875 ADA. Because the working wallet appears as a fee/collateral
+  co-funder on essentially every transaction, source-to-destination
+  attribution from the UTxO graph alone is structurally ambiguous on
+  multi-input txs — which is why the headline aggregates outflow per
+  scope and leaves destination to the drill-downs, each of which picks
+  a transaction shape where the chain itself names the recipient.
 
 ### Where did the USDM end up?
 
@@ -634,10 +631,10 @@ A live `asciinema` capture of the workflow above, run against the
 published binaries — the operator treats the directory as a laboratory
 (look around, read the inputs, confirm what's in scope), then runs a swap
 settling USDM into the treasury — bare, then typed — followed by the
-lattice build and the truthful queries.
-The full `rules.yaml` and the full txid list scroll past uncut: the
-faithful inputs are the proof the downstream numbers are honest. The
-`BLOCKFROST_PROJECT_ID` is shown to be *set*, never printed.
+lattice build and the queries. The full `rules.yaml` and the full txid
+list scroll past uncut so the inputs to every downstream answer are
+visible end to end. The `BLOCKFROST_PROJECT_ID` is shown to be *set*,
+never printed.
 
 <div class="asciinema-demo">
 
