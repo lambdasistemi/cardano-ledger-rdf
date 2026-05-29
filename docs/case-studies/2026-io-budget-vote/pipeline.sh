@@ -1,31 +1,23 @@
 #!/usr/bin/env bash
-# Dev artifact: download CBORs from Koios for the txids in selections.txt,
-# then emit a single SPARQL-queryable lattice.ttl via tx-graph.
-# Usage: ./pipeline.sh <out_dir>
+# Dev artifact: emit a single SPARQL-queryable lattice.ttl for the txids in
+# selections.txt by fetching each transaction's CBOR from Koios via
+# `tx-graph --provider koios` — no intermediate cbor/ directory.
+# Usage: [KOIOS_TOKEN=...] ./pipeline.sh <out_dir>
 set -euo pipefail
 
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 OUT="${1:-./out}"
 SELECTIONS="$SCRIPT_DIR/selections.txt"
+KOIOS_TOKEN="${KOIOS_TOKEN:-}"
 
-mkdir -p "$OUT/cbor"
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+mkdir -p "$OUT"
 
-split -l 50 "$SELECTIONS" "$TMP/chunk-"
+# overlay once
+tx-graph --rules "$SCRIPT_DIR/rules.yaml" > "$OUT/lattice.ttl"
 
-for chunk in "$TMP"/chunk-*; do
-  jq -R -s \
-    '{_tx_hashes: (split("\n") | map(select(length > 0 and (startswith("#") | not))))}' \
-    "$chunk" > "$TMP/body.json"
-
-  curl -sS -X POST https://api.koios.rest/api/v1/tx_cbor \
-    -H "Content-Type: application/json" \
-    -d @"$TMP/body.json" \
-    | jq -r '.[] | [.tx_hash, .cbor] | @tsv' \
-    | while IFS=$'\t' read -r hash cbor; do
-        printf '%s' "$cbor" > "$OUT/cbor/$hash.cbor"
-      done
-done
-
-tx-graph --rules "$SCRIPT_DIR/rules.yaml" --in-dir "$OUT/cbor" --out "$OUT/lattice.ttl"
+# bodies fetched + emitted in one shot per txid
+while IFS= read -r txid; do
+  [ -n "$txid" ] || continue
+  case "$txid" in \#*) continue ;; esac
+  tx-graph --provider koios ${KOIOS_TOKEN:+--token "$KOIOS_TOKEN"} "$txid"
+done < "$SELECTIONS" >> "$OUT/lattice.ttl"

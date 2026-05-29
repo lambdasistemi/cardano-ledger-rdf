@@ -18,12 +18,12 @@ ipfs://QmUnSimkwuaXX357ugYxDkiUMzsKTYgcWvV74xWbiXUt3Y
 
 ```sparql
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
-SELECT ?proposal ?url
+SELECT ?url
 WHERE {
   ?proposal a cardano:Proposal ;
             cardano:hasAnchor/cardano:anchorUrl ?url .
 }
-ORDER BY ?proposal ?url
+ORDER BY ?url
 ```
 
 Observed result: **9 IPFS URLs**.

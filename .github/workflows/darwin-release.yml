@@ -54,9 +54,6 @@ jobs:
           - name: tx-graph
             usage-grep: "operator-entity overlay + body emitter"
             dev-tag: dev-homebrew-tx-graph
-          - name: tx-fetch
-            usage-grep: "closure-walking Conway CBOR fetcher"
-            dev-tag: dev-homebrew-tx-fetch
           - name: tx-view
             usage-grep: "canonical Turtle graph file"
             dev-tag: dev-homebrew-tx-view

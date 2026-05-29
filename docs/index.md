@@ -1,8 +1,8 @@
 # cardano-ledger-rdf
 
 `cardano-ledger-rdf` is the graph/RDF backend for Cardano transaction data.
-It owns the `cardano:` ontology and the tools that fetch transaction CBOR,
-emit canonical graphs, and project those graphs through packaged views.
+It owns the `cardano:` ontology and the tools that emit canonical graphs
+from transaction CBOR and project those graphs through packaged views.
 
 ## Vocabulary
 
@@ -12,10 +12,10 @@ The `cardano:` namespace is defined by an ontology hosted from this repo at
 
 ## Tools
 
-- [**tx-fetch**](tx-fetch.md) fetches seed transaction ids and their
-  parent CBOR closure into a local lattice.
 - [**tx-graph**](tx-graph.md) turns Conway transaction CBOR plus
-  operator [`rules.yaml`](rules-yaml.md) into Turtle or JSON-LD.
+  operator [`rules.yaml`](rules-yaml.md) into Turtle or JSON-LD. It reads
+  CBOR from a local file or fetches it by txid from an HTTP indexer
+  (`--provider koios|blockfrost|http`).
 - [**tx-view**](tx-view.md) projects a generated Turtle graph through
   packaged views (`cli-tree`, `asset-flow`, `entity-occurrences`,
   `json-ld`).
@@ -27,13 +27,17 @@ this repository when their backend is a generated graph.
 ## Pipeline
 
 ```bash
-tx-fetch --out-dir lattice/cbor --depth 1 <seed-txid> ...
-tx-graph --rules rules/amaru-treasury.yaml --in-dir lattice/cbor --out lattice.ttl
+tx-graph --rules rules/amaru-treasury.yaml > lattice.ttl
+while read -r txid; do
+  tx-graph --provider koios "$txid"
+done < selections.txt >> lattice.ttl
 arq --data lattice.ttl --query my.rq    # consume directly via Apache Jena, or any SPARQL engine
 ```
 
-The graph and SPARQL stages are offline and deterministic. `tx-fetch`
-is the boundary that talks to Blockfrost-compatible chain APIs.
+The SPARQL stage is offline and deterministic. The only network boundary
+is `tx-graph --provider`, which fetches CBOR by txid from a koios /
+blockfrost / generic-HTTP indexer; with `--provider file` (the default)
+`tx-graph` reads CBOR from a local path instead.
 
 ## Library Surface
 
@@ -50,5 +54,5 @@ applications.
 
 ## Release
 
-Release automation packages `tx-graph`, `tx-fetch`, and `tx-view`.
+Release automation packages `tx-graph` and `tx-view`.
 Workflow secrets are populated by operators outside agent sessions.

@@ -133,17 +133,6 @@
           sourceRevision =
             self.shortRev or (self.dirtyShortRev or "dirty");
           devArtifactVersion = "${packageVersion}-${sourceRevision}";
-          txFetch = pkgs.symlinkJoin {
-            name = "tx-fetch";
-            paths = [ components.exes.tx-fetch ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              wrapProgram $out/bin/tx-fetch \
-                --set-default SSL_CERT_FILE \
-                  ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-            '';
-            meta.mainProgram = "tx-fetch";
-          };
           exeSpecs = [
             {
               name = "tx-graph";
@@ -158,22 +147,6 @@
               usageGreps = [
                 "Usage:"
                 "operator-entity overlay + body emitter"
-              ];
-            }
-            {
-              name = "tx-fetch";
-              package = txFetch;
-              darwinPackage = components.exes.tx-fetch;
-              desc =
-                "Walk a closure of Conway transactions over Blockfrost and write one CBOR per tx";
-              formulaClass = "TxFetch";
-              formulaTest = ''
-                output = shell_output("#{bin}/tx-fetch 2>&1", 1)
-                assert_match "Usage:", output
-              '';
-              usageGreps = [
-                "Usage:"
-                "closure-walking Conway CBOR fetcher"
               ];
             }
             {
@@ -286,7 +259,6 @@
           packages = {
             default = components.exes.tx-graph;
             tx-graph = components.exes.tx-graph;
-            tx-fetch = txFetch;
             tx-view = components.exes.tx-view;
           } // darwinReleasePackages // linuxReleasePackages;
           checks = checkSuite.checks // {
@@ -313,10 +285,6 @@
             tx-graph = {
               type = "app";
               program = "${components.exes.tx-graph}/bin/tx-graph";
-            };
-            tx-fetch = {
-              type = "app";
-              program = "${txFetch}/bin/tx-fetch";
             };
             tx-view = {
               type = "app";

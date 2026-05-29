@@ -1,18 +1,19 @@
 # Q3 — Per-scope ADA flow
 
 ```sparql
-# Body of the query — full version uses VALUES + IF mapping; see
-# queries/03-scope-flow.rq. The "other" bucket holds every bech32
-# NOT in the four named scopes so conservation holds across the
-# whole table.
+PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+
 SELECT ?scope (SUM(?lovIn) AS ?ada_in) (SUM(?lovOut) AS ?ada_out)
        ((SUM(?lovIn) - SUM(?lovOut)) AS ?net)
 WHERE {
-  { ?seed cardano:hasLatticeRole "seed" ; cardano:hasOutput ?out .
+  {
+    ?seed cardano:hasLatticeRole "seed" ; cardano:hasOutput ?out .
     ?out cardano:atAddress/cardano:bech32 ?bech ; cardano:lovelace ?lovIn .
-    BIND (0 AS ?lovOut) }
+    BIND (0 AS ?lovOut)
+  }
   UNION
-  { ?seed cardano:hasLatticeRole "seed" ; cardano:hasInput ?in .
+  {
+    ?seed cardano:hasLatticeRole "seed" ; cardano:hasInput ?in .
     ?in cardano:fromTxOutRef ?ref .
     ?ref cardano:hasTxId ?h ; cardano:hasIndex ?ix .
     ?h cardano:bytesHex ?parentHex .
@@ -20,10 +21,22 @@ WHERE {
     ?parentOut cardano:hasIndex ?ix ;
                cardano:atAddress/cardano:bech32 ?bech ;
                cardano:lovelace ?lovOut .
-    BIND (0 AS ?lovIn) }
-  BIND ( IF(?bech = "...", "amaru-treasury.contingency", ... "other") AS ?scope )
+    BIND (0 AS ?lovIn)
+  }
+  BIND (
+    IF(?bech = "addr1x8ndhlcfy30t38z0tql64fpg8ply93r37xrgvdagfpsz5nhxm0lsjfz7hzwy7kpl42jzswr7gtz8ruvxscm6sjrq9f8qruq0ae",
+       "amaru-treasury.contingency",
+    IF(?bech = "addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk",
+       "amaru-treasury.network_compliance",
+    IF(?bech = "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz",
+       "amaru.network-operator",
+    IF(?bech = "addr1q8qrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59j6xz3vs0hnfaz9nhje8z34kfnds4jyk7hs6dnrag6e2lfgqtyf4rl",
+       "amaru.cag-payee",
+       "other")))) AS ?scope
+  )
 }
 GROUP BY ?scope
+ORDER BY ?scope
 ```
 
 | scope                                     | ADA in        | ADA out       | net           |

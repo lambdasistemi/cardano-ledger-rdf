@@ -16,6 +16,7 @@ module Cardano.Tx.Graph.Emit.GovAction (
 ) where
 
 import Data.ByteString (ByteString)
+import Data.ByteString.Base16 qualified as Base16
 import Data.Map.Strict qualified as Map
 import Data.Ratio (denominator, numerator)
 import Data.Set qualified as Set
@@ -627,4 +628,4 @@ scriptHashBytes (ScriptHash h) = hashToBytes h
 
 hexText :: ByteString -> Text
 hexText =
-    TextEncoding.decodeLatin1
+    TextEncoding.decodeLatin1 . Base16.encode

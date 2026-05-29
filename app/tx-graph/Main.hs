@@ -1,34 +1,36 @@
 {- |
 Module      : Main
-Description : tx-graph executable — pure (rules + [cbor]) → ttl transformation.
+Description : tx-graph executable — pure (rules + cbor) → ttl transformation.
 License     : Apache-2.0
 
 Renders an operator-authored rules overlay and/or one Turtle (or
-JSON-LD) graph per Conway transaction CBOR.
+JSON-LD) graph for one Conway transaction CBOR.
 
 CLI surface (see issue #114 — operator-led role audit consolidation):
 
 * @--rules FILE@ — operator overlay + blueprints + attestations.
   Used alone, emits overlay-only Turtle to stdout. Combined with
   inputs, merged into the joint graph(s).
-* @--in-dir DIR@ — directory of @*.cbor@ files; each file is one
-  Conway transaction in the input lattice.
-* Positional @CBOR …@ — one or more Conway transaction CBOR files.
-* @-@ in the positional slot — read a single Conway tx from stdin.
-* @--out-dir DIR@ — write one @\<txid-hex\>.ttl@ per input. If
-  exactly one input is given and @--out-dir@ / @--out@ is absent,
-  the graph goes to stdout (back-compat with the pre-#114 single-tx
-  invocation).
-* @--out FILE@ — write one graph to @FILE@. With @--in-dir DIR@,
-  writes one merged Turtle lattice file for every @*.cbor@ in @DIR@.
+* @--provider koios|blockfrost|http@ — fetch the input CBOR from an
+  HTTP indexer instead of reading a file. With a fetching provider the
+  positional argument / @--in@ is a 64-hex txid. Default @file@ keeps
+  the positional as a CBOR path.
+* @--token TOKEN@ — bearer / API token (blockfrost @project_id@;
+  optional koios / http bearer).
+* @--url URL@ — provider base URL (required for @http@; overrides the
+  default for koios / blockfrost).
+* Positional @CBOR@ — one Conway transaction CBOR file (file mode) or a
+  txid (provider mode).
+* @-@ in the positional slot — read a single Conway tx from stdin
+  (file mode only).
+* @--out FILE@ — write one graph to @FILE@ instead of stdout.
 * @--format turtle|json-ld@ — output format (default @turtle@).
 
-Inside, every input CBOR is parsed and indexed by its computed
+Inside, the input CBOR is parsed and indexed by its computed
 @TxId@ (@hashAnnotated . bodyTxL@). The resolver looks each
-spending / reference / collateral input up in that map; when an
-input's parent CBOR isn't in the lattice the resolver returns
-@Nothing@ and the emitter falls back to raw-bytes (the operator's
-bug to fix by widening the lattice, not a silent default).
+spending / reference / collateral input up in that one-transaction
+map; when an input's parent CBOR is not the same transaction the
+resolver returns @Nothing@ and the emitter falls back to raw-bytes.
 
 Exit codes:
 
@@ -36,7 +38,7 @@ Exit codes:
 * 1 — structured 'Cardano.Tx.Graph.Rules.Load.RulesLoadError' or
   'Cardano.Tx.Graph.Emit.EmitError'.
 * >=2 — @optparse-applicative@ usage error or invalid flag
-  combination (e.g. multiple inputs without @--out-dir@ / @--out@).
+  combination (e.g. multiple positional inputs).
 -}
 module Main (main) where
 
@@ -76,6 +78,7 @@ import Options.Applicative (
     long,
     many,
     metavar,
+    option,
     optional,
     parserFailure,
     progDesc,
@@ -85,9 +88,7 @@ import Options.Applicative (
     (<**>),
  )
 import Options.Applicative.Types (ParseError (ErrorMsg))
-import System.Directory (createDirectoryIfMissing, doesDirectoryExist, listDirectory)
 import System.Exit (ExitCode (..), exitSuccess, exitWith)
-import System.FilePath (takeExtension, (</>))
 import System.IO (hPutStrLn, stderr, stdin, stdout)
 import System.IO.Error (catchIOError)
 
@@ -105,23 +106,34 @@ import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.TxIn (TxId (..), TxIn (..))
 import Data.ByteString.Base16 qualified as Base16
 import Data.Foldable (toList)
-import Data.List (sort)
 import Data.Set qualified as Set
 import Data.Text.Encoding qualified as TextEncoding
 import Lens.Micro ((^.))
 
+import Data.Char (isHexDigit)
+import Network.HTTP.Client.TLS (newTlsManager)
+
 import Cardano.Tx.Decode (decodeConwayTxInput)
+import Cardano.Tx.Graph.Provider (
+    CborProvider,
+    ProviderConfig (..),
+    fetchCbor,
+    parseProviderArg,
+    renderProviderError,
+ )
 import Cardano.Tx.Graph.Resolve (Resolver (..), resolveChain)
 import Cardano.Tx.Ledger (ConwayTx)
 
-{- | Command-line options. Post-#114 consolidation: @--rules@ + one of
-@--in-dir@ / positional / stdin + @--out-dir@ / @--out@ + @--format@.
+{- | Command-line options. Issue #59 consolidation: @--rules@,
+optional single positional CBOR / stdin, @--out@, and @--format@.
 -}
 data Options = Options
     { optRulesFile :: !(Maybe FilePath)
-    , optInDir :: !(Maybe FilePath)
+    , optProvider :: !(Maybe CborProvider)
+    , optToken :: !(Maybe Text)
+    , optUrl :: !(Maybe Text)
     , optPositional :: ![InputSource]
-    , optOutDir :: !(Maybe FilePath)
+    , optIn :: !(Maybe FilePath)
     , optOut :: !(Maybe FilePath)
     , optFormat :: !String
     }
@@ -146,43 +158,66 @@ optionsParser =
                         ( "Operator-authored rules file (.yaml/"
                             <> ".yml or .ttl). Used alone, emits "
                             <> "overlay-only Turtle to stdout. "
-                            <> "Combined with inputs, merged into "
-                            <> "the joint graph(s)."
+                            <> "Combined with input, merged into "
+                            <> "the graph."
                         )
                 )
             )
+        <*> option
+            (eitherReader parseProviderArg)
+            ( long "provider"
+                <> metavar "PROVIDER"
+                <> value Nothing
+                <> help
+                    ( "CBOR source: file | koios | blockfrost | "
+                        <> "http (default: file). With a fetching "
+                        <> "provider the positional argument / --in "
+                        <> "is a 64-hex txid, not a CBOR path."
+                    )
+            )
         <*> optional
-            ( strOption
-                ( long "in-dir"
-                    <> metavar "DIR"
-                    <> help
-                        ( "Directory of *.cbor files; each is one "
-                            <> "Conway transaction in the input "
-                            <> "lattice. Mutually exclusive with "
-                            <> "positional arguments."
-                        )
-                )
+            ( Text.pack
+                <$> strOption
+                    ( long "token"
+                        <> metavar "TOKEN"
+                        <> help
+                            ( "Bearer / API token for the provider "
+                                <> "(blockfrost project_id; optional "
+                                <> "koios / http bearer)."
+                            )
+                    )
+            )
+        <*> optional
+            ( Text.pack
+                <$> strOption
+                    ( long "url"
+                        <> metavar "URL"
+                        <> help
+                            ( "Provider base URL. Required for the "
+                                <> "'http' provider; overrides the "
+                                <> "default for koios / blockfrost."
+                            )
+                    )
             )
         <*> many
             ( argument
                 readInputSource
-                ( metavar "CBOR..."
+                ( metavar "CBOR"
                     <> help
                         ( "Conway tx CBOR file paths. '-' reads "
-                            <> "one tx from stdin. Mutually "
-                            <> "exclusive with --in-dir."
+                            <> "one tx from stdin."
                         )
                 )
             )
         <*> optional
             ( strOption
-                ( long "out-dir"
-                    <> metavar "DIR"
+                ( long "in"
+                    <> metavar "FILE"
                     <> help
-                        ( "Write one <txid-hex>.ttl per input "
-                            <> "into DIR. If absent and exactly "
-                            <> "one input is given, emits to "
-                            <> "stdout."
+                        ( "Read one Conway tx CBOR from FILE "
+                            <> "instead of the positional argument "
+                            <> "or stdin. Mutually exclusive with "
+                            <> "the positional CBOR."
                         )
                 )
             )
@@ -190,10 +225,7 @@ optionsParser =
             ( strOption
                 ( long "out"
                     <> metavar "FILE"
-                    <> help
-                        ( "Write one graph to FILE. With --in-dir, "
-                            <> "write one merged Turtle lattice file."
-                        )
+                    <> help "Write one graph to FILE instead of stdout."
                 )
             )
         <*> strOption
@@ -214,17 +246,17 @@ optionsInfo =
     info
         (optionsParser <**> helper)
         ( fullDesc
-            <> header "tx-graph — pure (rules + [cbor]) → ttl transformation"
+            <> header "tx-graph — pure (rules + cbor) → ttl transformation"
             <> progDesc
                 ( "tx-graph — operator-entity overlay + body "
                     <> "emitter. Loads operator-authored rules "
-                    <> "(overlay-only mode) or drives the joint-"
-                    <> "graph body emitter on a lattice of Conway "
-                    <> "transactions (--in-dir / positional / "
-                    <> "stdin). The lattice resolves itself "
-                    <> "internally — no node, no UTxO file, no "
-                    <> "external chain source. Output format "
-                    <> "defaults to Turtle."
+                    <> "(overlay-only mode) or emits one graph "
+                    <> "from one Conway transaction CBOR "
+                    <> "(positional path / stdin, or a txid fetched "
+                    <> "via --provider koios|blockfrost|http). "
+                    <> "Output format defaults to Turtle; operators "
+                    <> "compose multiple tx graphs by concatenating "
+                    <> "stdout."
                 )
         )
 
@@ -239,54 +271,42 @@ present.
 -}
 dispatch :: Options -> IO ()
 dispatch opts = do
-    inputs <- collectAllInputs opts
-    case (optRulesFile opts, inputs) of
-        (Just rulesPath, []) ->
+    input <- collectInput opts
+    case (optRulesFile opts, input) of
+        (Just rulesPath, Nothing) ->
             overlayOnly rulesPath
-        (_, []) ->
+        (_, Nothing) ->
             usageError
                 ( "missing input: pass --rules (overlay-only), "
-                    <> "--in-dir DIR, or one or more positional "
-                    <> "CBOR files (see --help)."
+                    <> "or one positional CBOR file (see --help)."
                 )
-        (_, sources) ->
-            latticeEmit opts sources
+        (_, Just source) ->
+            emitOne opts source
 
-{- | Resolve the input sources into the final ordered list of
-'InputSource' values to process. Rejects the @--in-dir DIR@ +
-positional combo; expands @--in-dir@ to its @*.cbor@ contents in
-sorted order; pass-through for positional + stdin.
+{- | Resolve positional input to zero or one 'InputSource'. Multiple
+positional CBOR files are intentionally rejected; operators compose
+multiple transactions with a shell loop and stdout concatenation.
 -}
-collectAllInputs :: Options -> IO [InputSource]
-collectAllInputs opts =
-    case (optInDir opts, optPositional opts) of
-        (Just _, _ : _) -> do
+collectInput :: Options -> IO (Maybe InputSource)
+collectInput opts =
+    case (optPositional opts, optIn opts) of
+        ([], Nothing) -> pure Nothing
+        ([], Just path) -> pure (Just (TxFromFile path))
+        ([source], Nothing) -> pure (Just source)
+        ([_], Just _) -> do
             usageError
-                ( "--in-dir and positional CBOR arguments are "
-                    <> "mutually exclusive."
+                ( "--in is mutually exclusive with the "
+                    <> "positional CBOR argument."
                 )
-            pure []
-        (Just dir, []) ->
-            expandInDir dir
-        (Nothing, ps) ->
-            pure ps
-
-{- | List the @*.cbor@ children of @dir@ in sorted order and wrap
-each as a 'TxFromFile' input source.
--}
-expandInDir :: FilePath -> IO [InputSource]
-expandInDir dir = do
-    isDir <- doesDirectoryExist dir
-    if not isDir
-        then do
-            hPutStrLn
-                stderr
-                ("tx-graph: --in-dir: not a directory: " <> dir)
-            exitWith (ExitFailure 2)
-        else do
-            entries <- listDirectory dir
-            let cbors = sort [e | e <- entries, takeExtension e == ".cbor"]
-            pure [TxFromFile (dir </> e) | e <- cbors]
+            pure Nothing
+        (sources, _) -> do
+            usageError
+                ( "expected at most one CBOR input, got "
+                    <> show (length sources)
+                    <> ". Compose multiple transactions with a "
+                    <> "shell loop and stdout concatenation."
+                )
+            pure Nothing
 
 {- | Pretty usage error: print one line on stderr and let
 @optparse-applicative@ render help with exit code 2.
@@ -318,62 +338,87 @@ overlayOnly rulesPath = do
             hPutStrLn stderr (renderRulesLoadError err)
             exitWith (ExitFailure 1)
 
-{- | Body-emitting mode for an N-tx lattice. Parses every input,
-indexes them by computed 'TxId', and emits one Turtle (or JSON-LD)
-graph per input, or one merged Turtle lattice for @--in-dir@ +
-@--out@. Single-input + no @--out-dir@ / @--out@ goes to stdout;
-multi-input requires @--out-dir@ or @--in-dir@ + @--out@.
+{- | Body-emitting mode for one transaction. Parses the input,
+indexes it by computed 'TxId', and emits one Turtle (or JSON-LD)
+graph to stdout or @--out@.
 -}
-latticeEmit :: Options -> [InputSource] -> IO ()
-latticeEmit opts sources = do
+emitOne :: Options -> InputSource -> IO ()
+emitOne opts source = do
     fmtChecked <- exitOnEmitError (parseFormat (optFormat opts))
     (entities, blueprints, overlay) <- case optRulesFile opts of
         Nothing -> pure ([], [], BS.empty)
         Just p -> loadOverlayAndEntitiesOrExit p
-    txs <- traverse loadOne sources
-    let lattice = Map.fromList [(txIdOf tx, tx) | (_, tx) <- txs]
-    case (optOutDir opts, optOut opts, optInDir opts, txs) of
-        (Just _, Just _, _, _) -> do
-            usageError "--out-dir and --out are mutually exclusive."
-        (Nothing, Just outPath, Just _, _) -> do
-            unlessTurtle fmtChecked
-            bytes <-
-                renderLatticeMerged
-                    entities
-                    blueprints
-                    overlay
-                    lattice
-                    txs
+    entry@(_, tx) <- loadTx opts source
+    let lattice = Map.singleton (txIdOf tx) tx
+    bytes <- renderOne fmtChecked entities blueprints overlay lattice entry
+    case optOut opts of
+        Just outPath ->
             BS.writeFile outPath bytes
-        (Nothing, Just outPath, Nothing, [entry]) -> do
-            bytes <- renderOne fmtChecked entities blueprints overlay lattice entry
-            BS.writeFile outPath bytes
-        (Nothing, Just _, Nothing, _) -> do
-            usageError
-                ( "multiple positional inputs ("
-                    <> show (length txs)
-                    <> ") require --out-dir DIR; --out FILE is reserved "
-                    <> "for single-input mode and --in-dir lattices."
-                )
-        (Nothing, Nothing, _, [entry]) -> do
-            bytes <- renderOne fmtChecked entities blueprints overlay lattice entry
+        Nothing ->
             BS.hPut stdout bytes
-        (Nothing, Nothing, _, _) -> do
-            usageError
-                ( "multiple inputs ("
-                    <> show (length txs)
-                    <> ") require --out-dir DIR or --in-dir DIR "
-                    <> "--out FILE."
-                )
-        (Just dir, Nothing, _, _) -> do
-            createDirectoryIfMissing True dir
-            mapM_ (emitToDir fmtChecked entities blueprints overlay lattice dir) txs
 
-unlessTurtle :: EmitFormat -> IO ()
-unlessTurtle = \case
-    Turtle -> pure ()
-    JsonLd ->
-        usageError "--in-dir DIR --out FILE emits merged Turtle only."
+{- | Decode one transaction, dispatching on @--provider@. In file mode
+(no provider, or @--provider file@) the input source is a local CBOR
+path / stdin, handled by 'loadOne'. With a fetching provider the source
+is a 64-hex txid that is fetched over HTTP and then decoded.
+-}
+loadTx :: Options -> InputSource -> IO (String, ConwayTx)
+loadTx opts source =
+    case optProvider opts of
+        Nothing -> loadOne source
+        Just provider -> do
+            txid <- txidFromSource source
+            manager <- newTlsManager
+            let cfg =
+                    ProviderConfig
+                        { providerKind = provider
+                        , providerUrl = optUrl opts
+                        , providerToken = optToken opts
+                        }
+            fetched <- fetchCbor manager cfg txid
+            case fetched of
+                Left err ->
+                    exitOnEmitError
+                        ( Left
+                            ( MalformedTxCbor
+                                (Text.unpack txid)
+                                (renderProviderError err)
+                            )
+                        )
+                Right bytes ->
+                    case decodeConwayTxInput bytes of
+                        Right tx -> pure (Text.unpack txid, tx)
+                        Left decErr ->
+                            exitOnEmitError
+                                ( Left
+                                    ( MalformedTxCbor
+                                        (Text.unpack txid)
+                                        (Text.pack (show decErr))
+                                    )
+                                )
+
+{- | Interpret an 'InputSource' as a lowercase-hex txid for provider
+mode. Rejects stdin and any value that is not exactly 64 hex chars.
+-}
+txidFromSource :: InputSource -> IO Text
+txidFromSource = \case
+    TxFromStdin -> do
+        usageError
+            ( "stdin input is not supported with --provider; "
+                <> "pass a 64-hex txid."
+            )
+        pure Text.empty
+    TxFromFile raw ->
+        let lower = Text.toLower (Text.pack raw)
+         in if Text.length lower == 64 && Text.all isHexDigit lower
+                then pure lower
+                else do
+                    usageError
+                        ( "expected a 64-hex txid with --provider, "
+                            <> "got: "
+                            <> raw
+                        )
+                    pure Text.empty
 
 {- | Decode one input source into @(label, ConwayTx)@. The label
 is the file path (or @\<stdin\>@) and is used in error messages
@@ -438,63 +483,6 @@ renderOne ::
     (String, ConwayTx) ->
     IO BS.ByteString
 renderOne fmt entities blueprints overlay lattice (label, tx) = do
-    utxo <- resolveAgainstLattice lattice tx
-    warnOnMissingParents label tx lattice
-    g <- exitOnEmitError (emit tx utxo entities blueprints)
-    mapM_ (hPutStrLn stderr) (decodeErrorWarnings g)
-    let joint = g{graphOverlayTurtle = overlay}
-    pure (serialize fmt defaultSlug joint)
-
-{- | Emit every tx in the lattice into one merged Turtle document.
-The input order is the same sorted order produced by 'expandInDir'.
--}
-renderLatticeMerged ::
-    [EntityDecl] ->
-    [(ScriptHash, Blueprint, Text)] ->
-    BS.ByteString ->
-    Map TxId ConwayTx ->
-    [(String, ConwayTx)] ->
-    IO BS.ByteString
-renderLatticeMerged entities blueprints overlay lattice entries = do
-    graphs <- traverse renderOneGraph entries
-    pure (serializeLatticeTurtle defaultSlug overlay graphs)
-  where
-    renderOneGraph (label, tx) = do
-        utxo <- resolveAgainstLattice lattice tx
-        warnOnMissingParents label tx lattice
-        g <- exitOnEmitError (emit tx utxo entities blueprints)
-        mapM_ (hPutStrLn stderr) (decodeErrorWarnings g)
-        pure (Text.pack (txIdHex (txIdOf tx)), g)
-
--- | Emit one tx into @\<out-dir\>/\<txid-hex\>.ttl@.
-emitToDir ::
-    EmitFormat ->
-    [EntityDecl] ->
-    [(ScriptHash, Blueprint, Text)] ->
-    BS.ByteString ->
-    Map TxId ConwayTx ->
-    FilePath ->
-    (String, ConwayTx) ->
-    IO ()
-emitToDir fmt entities blueprints overlay lattice dir entry@(_, tx) = do
-    let hex = txIdHex (txIdOf tx)
-        outPath = dir </> (hex <> ".ttl")
-    bytes <- renderOneScoped fmt entities blueprints overlay lattice entry
-    BS.writeFile outPath bytes
-
-{- | Render one graph for per-file lattice output. Unlike standalone
-single-input output, these files are intended to compose under SPARQL
-when loaded together, so positional bnodes are tx-scoped.
--}
-renderOneScoped ::
-    EmitFormat ->
-    [EntityDecl] ->
-    [(ScriptHash, Blueprint, Text)] ->
-    BS.ByteString ->
-    Map TxId ConwayTx ->
-    (String, ConwayTx) ->
-    IO BS.ByteString
-renderOneScoped fmt entities blueprints overlay lattice (label, tx) = do
     utxo <- resolveAgainstLattice lattice tx
     warnOnMissingParents label tx lattice
     g <- exitOnEmitError (emit tx utxo entities blueprints)

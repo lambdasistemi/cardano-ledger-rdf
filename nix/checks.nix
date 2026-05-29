@@ -44,7 +44,6 @@ let
       name = "build";
       text = ''
         test -e ${components.library}
-        test -e ${components.exes.tx-fetch}
         test -e ${components.exes.tx-graph}
         test -e ${components.exes.tx-view}
         test -e ${components.tests."unit-tests"}

@@ -11,9 +11,8 @@ the post-#114 dispatcher modes:
   emits one Turtle graph to stdout.
 * joint (@--rules@ + positional @CBOR@) — overlay merged into the
   body graph.
-* @--in-dir@ multi-input mode — one @\<txid-hex\>.ttl@ per input
-  cbor into @--out-dir@.
-* @--in-dir@ vs positional mutual exclusion.
+* removed batch flags are absent from @--help@.
+* multiple positional inputs are rejected.
 * Structured error rendering — a missing positional file surfaces
   'Cardano.Tx.Graph.Emit.MalformedTxCbor'; an unknown @--format@
   argument surfaces 'Cardano.Tx.Graph.Emit.UnknownFormat'.
@@ -31,13 +30,12 @@ fixture is needed.
 -}
 module Cardano.Tx.Graph.TxGraphExeSpec (spec) where
 
-import Control.Monad (unless, when)
+import Control.Monad (unless)
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy qualified as BSL
-import Data.List (isInfixOf, isSuffixOf)
-import System.Directory (createDirectoryIfMissing, listDirectory)
+import Data.List (isInfixOf)
 import System.Environment (lookupEnv)
 import System.Exit (ExitCode (..))
 import System.FilePath ((</>))
@@ -66,7 +64,6 @@ import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Core (eraProtVerLow)
 
 import Fixtures.TxGraph.S02_AliceBobAda qualified as S02
-import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03
 import Fixtures.TxGraph.S14BlueprintDecodeFail qualified as S14
 
 ----------------------------------------------------------------------
@@ -209,25 +206,38 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                         `shouldSatisfy` ("# Transaction body." `isInfixOf`)
 
             it
-                ( "(7) --in-dir + positional are mutually exclusive —"
-                    <> " non-zero exit, stderr explains"
+                ( "(7) --help documents the single-CBOR surface and"
+                    <> " does not mention removed batch flags"
                 )
-                $ withSystemTempDirectory "tx-graph-mutex"
+                $ do
+                    (code, out, _err) <-
+                        runExe
+                            txGraphPath
+                            ["--help"]
+                    code `shouldBe` ExitSuccess
+                    BS8.unpack out `shouldSatisfy` not . ("--in-dir" `isInfixOf`)
+                    BS8.unpack out `shouldSatisfy` not . ("--out-dir" `isInfixOf`)
+
+            it
+                ( "(8) multiple positional CBORs are rejected —"
+                    <> " non-zero exit, stderr explains the single-input shape"
+                )
+                $ withSystemTempDirectory "tx-graph-multi"
                 $ \dir -> do
-                    let txPath = dir </> "tx.cbor"
-                    BS.writeFile txPath s02CborBytes
+                    let txPath1 = dir </> "tx1.cbor"
+                        txPath2 = dir </> "tx2.cbor"
+                    BS.writeFile txPath1 s02CborBytes
+                    BS.writeFile txPath2 s02CborBytes
                     (code, _out, err) <-
                         runExe
                             txGraphPath
-                            ["--in-dir", dir, txPath]
+                            [txPath1, txPath2]
                     code `shouldSatisfy` isFailure
                     BS8.unpack err
-                        `shouldSatisfy` ( "mutually exclusive"
-                                            `isInfixOf`
-                                        )
+                        `shouldSatisfy` ("expected at most one CBOR input" `isInfixOf`)
 
             it
-                ( "(8) fixture 14-blueprint-decode-fail — exit 0,"
+                ( "(9) fixture 14-blueprint-decode-fail — exit 0,"
                     <> " stderr carries the FR-014 WARN line matching"
                     <> " expected.stderr (T105 / S5)"
                 )
@@ -252,64 +262,6 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                     let needle = BS8.unpack (stripTrailingNewline expectedTxt)
                     BS8.unpack err `shouldSatisfy` (needle `isInfixOf`)
 
-            it
-                ( "(9) --in-dir + --out-dir mode — exit 0, writes one"
-                    <> " SPARQL-composable <txid-hex>.ttl per input cbor"
-                )
-                $ withSystemTempDirectory "tx-graph-in-dir"
-                $ \tmp -> do
-                    let cborDir = tmp </> "cbor"
-                        outDir = tmp </> "ttl"
-                    createDirectoryIfMissing True cborDir
-                    BS.writeFile (cborDir </> "s02.cbor") s02CborBytes
-                    (code, _out, _err) <-
-                        runExe
-                            txGraphPath
-                            ["--in-dir", cborDir, "--out-dir", outDir]
-                    code `shouldBe` ExitSuccess
-                    ttls <- listDirectory outDir
-                    let ttlNames = filter (".ttl" `isSuffixOf`) ttls
-                    length ttlNames `shouldBe` 1
-                    case ttlNames of
-                        [ttlName] -> do
-                            ttlBytes <- BS.readFile (outDir </> ttlName)
-                            BS8.unpack ttlBytes
-                                `shouldSatisfy` ("<urn:cardano:tx:" `isInfixOf`)
-                            BS8.unpack ttlBytes
-                                `shouldSatisfy` not . ("_:tx " `isInfixOf`)
-                        _ ->
-                            expectationFailure "expected exactly one TTL file"
-
-            it
-                ( "(10) --in-dir + --out mode — exit 0, writes one"
-                    <> " merged Turtle lattice with tx-scoped bnodes"
-                )
-                $ withSystemTempDirectory "tx-graph-in-dir-out"
-                $ \tmp -> do
-                    let fixtureDir =
-                            "test/fixtures/tx-graph"
-                                </> "16-lattice-merged"
-                        cborDir = fixtureDir </> "cbor"
-                        outPath = tmp </> "lattice.ttl"
-                        expectedPath = fixtureDir </> "expected.lattice.ttl"
-                    regen <- lookupEnv "TX_GRAPH_LATTICE_GOLDEN_REGEN"
-                    when (regen == Just "1") $ do
-                        createDirectoryIfMissing True cborDir
-                        BS.writeFile (cborDir </> "s02.cbor") s02CborBytes
-                        BS.writeFile (cborDir </> "s03.cbor") s03CborBytes
-                    (code, out, _err) <-
-                        runExe
-                            txGraphPath
-                            ["--in-dir", cborDir, "--out", outPath]
-                    code `shouldBe` ExitSuccess
-                    out `shouldBe` BS.empty
-                    actual <- BS.readFile outPath
-                    if regen == Just "1"
-                        then BS.writeFile expectedPath actual
-                        else do
-                            expected <- BS.readFile expectedPath
-                            actual `shouldBe` expected
-
 ----------------------------------------------------------------------
 -- Tx fixture bytes
 ----------------------------------------------------------------------
@@ -322,13 +274,6 @@ can read them via a positional argument without a new on-disk fixture.
 s02CborBytes :: ByteString
 s02CborBytes =
     BSL.toStrict (serialize (eraProtVerLow @ConwayEra) S02.tx)
-
-{- | Serialized ConwayEra CBOR of fixture 03. Used with fixture 02
-to exercise lattice merge renaming across two independent tx graphs.
--}
-s03CborBytes :: ByteString
-s03CborBytes =
-    BSL.toStrict (serialize (eraProtVerLow @ConwayEra) S03.tx)
 
 {- | Serialized ConwayEra CBOR of the fixture-14 @S14.tx@ builder
 (T105 / S5). Same datum body as fixtures 12 + 13; the behaviour
