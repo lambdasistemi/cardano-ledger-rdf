@@ -1,30 +1,36 @@
 # Vocabulary
 
-The `cardano:` predicates emitted by [`tx-graph`](tx-graph.md) are defined by
-an ontology owned by this repository. Treasury accountability overlays use the
-separate `treasury:` namespace so application terms do not pollute the
-ledger-level Cardano vocabulary.
+The `cardano:` predicates emitted by [`cq-rdf body`](cq-rdf.md) are defined
+by an ontology owned by this repository. Treasury-accountability overlays
+use the separate `treasury:` namespace so application terms do not pollute
+the ledger-level Cardano vocabulary; treasury predicates are emitted by
+[`cq-rdf overlay`](cq-rdf.md) when an operator `overlay.yaml` imports them.
 
-## IRI
+## Namespaces and dereference URLs
 
-```text
-https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#
-https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#
-```
+| Prefix | Namespace IRI | Ontology file |
+|---|---|---|
+| `cardano:` | `https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#` | [`vocab/cardano/transactions.ttl`][cardano-deployed] |
+| `treasury:` | `https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#` | [`vocab/treasury/overlay.ttl`][treasury-deployed] |
 
-The IRI is hosted by the GitHub Pages site of
-[`lambdasistemi/cardano-ledger-rdf`][repo]. The TTL source lives at
-[`vocab/cardano/transactions.ttl`][ttl] and is published verbatim under
-[`/vocab/cardano/transactions.ttl`][deployed] of the deployed docs site, so
-the IRI dereferences.
+The namespace IRI ends in `#`; stripping the fragment yields the *base*
+URL of the namespace. Each base URL serves a small landing page that
+links to the canonical Turtle document, so an LLM, an RDF tool, or a
+human pasting the IRI into a browser always lands on something useful:
 
-The treasury overlay vocabulary lives at
-[`vocab/treasury/overlay.ttl`][treasury-ttl] and is published under
-[`/vocab/treasury/overlay.ttl`][treasury-deployed].
+- [`/vocab/cardano/`](vocab/cardano/index.md) — `cardano:` landing page,
+  links to [`transactions.ttl`][cardano-deployed].
+- [`/vocab/treasury/`](vocab/treasury/index.md) — `treasury:` landing
+  page, links to [`overlay.ttl`][treasury-deployed].
+
+The TTL sources are mirrored from the repository root verbatim:
+
+- `vocab/cardano/transactions.ttl` (source) → [`/vocab/cardano/transactions.ttl`][cardano-deployed]
+- `vocab/treasury/overlay.ttl` (source) → [`/vocab/treasury/overlay.ttl`][treasury-deployed]
 
 [repo]: https://github.com/lambdasistemi/cardano-ledger-rdf
-[ttl]: https://github.com/lambdasistemi/cardano-ledger-rdf/blob/main/vocab/cardano/transactions.ttl
-[deployed]: vocab/cardano/transactions.ttl
+[cardano-ttl]: https://github.com/lambdasistemi/cardano-ledger-rdf/blob/main/vocab/cardano/transactions.ttl
+[cardano-deployed]: vocab/cardano/transactions.ttl
 [treasury-ttl]: https://github.com/lambdasistemi/cardano-ledger-rdf/blob/main/vocab/treasury/overlay.ttl
 [treasury-deployed]: vocab/treasury/overlay.ttl
 
@@ -42,12 +48,14 @@ the ontology now travels with the code that emits its predicates.
 ## Standard prefix in SPARQL
 
 ```sparql
-PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX cardano:  <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
 PREFIX treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#>
 ```
 
 Every query under [Case studies](case-studies/index.md) opens with this
-PREFIX line.
+PREFIX line. Case-study `overlay.yaml` files opt in to the treasury
+namespace via an `imports: [treasury]` block; predicates from
+non-imported ontologies fail the YAML parser with a clear error.
 
 ## Validation
 

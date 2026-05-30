@@ -15,10 +15,10 @@ party that the chain really says what we say it does.
 
 ## Setup
 
-You need two executables — `tx-graph` (CBOR → RDF) and `tx-view` (RDF →
-human views) — plus `arq` (the SPARQL CLI from Apache Jena) for the query
-section. Pick the install path that fits you; they all produce identical
-graphs.
+You need two executables — `cq-rdf` (the RDF runtime: overlay, body,
+blueprint, shacl) and `tx-view` (RDF → human views) — plus `arq` (the
+SPARQL CLI from Apache Jena) for the query section. Pick the install
+path that fits you; they all produce identical graphs.
 
 === "Prebuilt binary (recommended)"
 
@@ -28,15 +28,16 @@ graphs.
     ```bash
     # Linux x86_64 — AppImage (also .deb / .rpm on the releases page)
     base=https://github.com/lambdasistemi/cardano-ledger-rdf/releases/latest/download
-    curl -L "$base/tx-graph-x86_64-linux.AppImage" -o tx-graph && chmod +x tx-graph
-    curl -L "$base/tx-view-x86_64-linux.AppImage"  -o tx-view  && chmod +x tx-view
-    # macOS arm64 — tarball: tx-graph-aarch64-darwin.tar.gz (and tx-view-…)
+    curl -L "$base/cq-rdf-x86_64-linux.AppImage" -o cq-rdf && chmod +x cq-rdf
+    curl -L "$base/tx-view-x86_64-linux.AppImage" -o tx-view && chmod +x tx-view
+    # macOS arm64 — tarball: cq-rdf-aarch64-darwin.tar.gz (and tx-view-…)
     ```
 
     Browse [the latest release](https://github.com/lambdasistemi/cardano-ledger-rdf/releases/latest)
-    for the exact asset names and your architecture. (There is no
-    container image or Homebrew bottle yet — if a container would help
-    your workflow, that's a fair gap to raise.)
+    for the exact asset names and your architecture. The same release
+    still ships a deprecated `tx-graph` compatibility symlink for one
+    cycle so existing scripts keep working; new work should target
+    `cq-rdf` directly.
 
 === "Build from source (Nix)"
 
@@ -44,14 +45,14 @@ graphs.
 
     ```bash
     flake=github:lambdasistemi/cardano-ledger-rdf
-    nix run $flake#tx-graph -- --help
-    nix run $flake#tx-view  -- --help
+    nix run $flake#cq-rdf  -- --help
+    nix run $flake#tx-view -- --help
     ```
 
     To put them on `PATH` for a session:
 
     ```bash
-    nix build github:lambdasistemi/cardano-ledger-rdf#tx-graph github:lambdasistemi/cardano-ledger-rdf#tx-view -o result-bins
+    nix build github:lambdasistemi/cardano-ledger-rdf#cq-rdf github:lambdasistemi/cardano-ledger-rdf#tx-view -o result-bins
     export PATH="$PWD/result-bins/bin:$PATH"
     ```
 
@@ -60,17 +61,17 @@ distro's `jena` package).
 
 ### Where the transaction comes from
 
-`tx-graph` reads one Conway transaction either from a local CBOR file or
-from a chain indexer — **the graph and every answer below are identical
-whichever you pick**:
+`cq-rdf body` reads one Conway transaction either from a local CBOR
+file or from a chain indexer — **the graph and every answer below are
+identical whichever you pick**:
 
 ```bash
 # A. fetch by txid from a public indexer (no local node)
-tx-graph --provider koios <txid>                                  # free, rate-limited
-tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" <txid>
+cq-rdf body --provider koios <txid>                                  # free, rate-limited
+cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" <txid>
 
 # B. read a CBOR you already have on disk
-tx-graph path/to/signed-tx.cbor
+cq-rdf body path/to/signed-tx.cbor
 ```
 
 Provider, token, or local file — the emitter is pure, so swapping the
@@ -89,7 +90,7 @@ Our swap is
 — one rung of the treasury's ADA → USDM swap chain. Bare:
 
 ```bash
-tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
   10a5c1dafe7dd8d4ab680e35dc53b8b550da90bea55f2c758f36474064f2e598 \
 | tx-view --graph - --view cli-tree
 ```
@@ -159,8 +160,9 @@ entities:
     script: fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077
 ```
 
-Re-run with `--rules`, and the addresses in the **same** transaction
-resolve to the operator's own names:
+Concatenate the overlay (`cq-rdf overlay --in overlay.yaml`) onto the
+body, and the addresses in the **same** transaction resolve to the
+operator's own names:
 
 <div class="scrollbox" markdown>
 
@@ -253,9 +255,10 @@ blueprints:
 This puts the contract's schema in the graph: the raw script hash is now
 known to be the named SundaeSwap V3 order contract, and its on-chain data
 is carried losslessly as `cardano:hasRawBytes` for anyone to inspect or
-decode. Where a registered schema matches a datum, `tx-graph` emits the
+decode. Where a registered schema matches a datum, the
+[`cq-rdf blueprint`](cq-rdf.md#blueprint) typed-decode pass emits the
 fields as typed triples (e.g. `:SwapOrder_recipient …`) — exercised on a
-matching shape by the [blueprint fixtures](tx-graph.md).
+matching shape by the [blueprint fixtures](cq-rdf.md).
 
 !!! note "Honest limit on the live order datum"
     SundaeSwap's own blueprint types the order datum as opaque `Data`, and
@@ -280,7 +283,7 @@ batch:
 
 !!! note "Why `--graph -`"
     `tx-view` reads the canonical Turtle graph from `--graph FILE`, or from
-    **stdin** with `--graph -` — that `-` is what lets `tx-graph … | tx-view`
+    **stdin** with `--graph -` — that `-` is what lets `cq-rdf body … | tx-view`
     work as a pipe. Diagnostics (e.g. "parent tx not in lattice", expected
     when you emit one tx without its parents) ride **stderr**, so the Turtle
     on stdout stays clean for the next stage.
@@ -296,9 +299,9 @@ So ask the obvious question — *what produced `dfd355530e2d…#2`?* — and emi
 that transaction too:
 
 ```bash
-tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
   dfd355530e2d3baef6fc4cb22369c8b64aa117b0a84ff2cdaadc24cdc3fbc7bc > parent.ttl
-tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
   10a5c1dafe7dd8d4ab680e35dc53b8b550da90bea55f2c758f36474064f2e598 > child.ttl
 cat parent.ttl child.ttl > pair.ttl
 ```
@@ -638,6 +641,16 @@ The full `overlay.yaml` and the full txid list scroll past uncut: the
 faithful inputs are the proof the downstream numbers are honest. The
 `BLOCKFROST_PROJECT_ID` is shown to be *set*, never printed.
 
+!!! note "Cast pre-dates the cq-rdf rename"
+    The cast was recorded against the `tx-graph` CLI before epic
+    [#66](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/66)
+    split it into `cq-rdf {overlay,body,blueprint,shacl}`. The
+    invocations on screen still work via the one-release compatibility
+    symlink: every `tx-graph <txid>` you see is equivalent to `cq-rdf
+    body <txid>`, and every `tx-graph --rules X` to
+    `cq-rdf overlay --in X`. The shapes of the graphs and queries are
+    unchanged.
+
 <div class="asciinema-demo">
 
 ```asciinema-player
@@ -657,21 +670,32 @@ faithful inputs are the proof the downstream numbers are honest. The
 
 The queries above are examples, not the ceiling. The lattice is plain RDF,
 so the fastest way to ask your own question is to hand an LLM the
-vocabulary and describe what you want in English.
+vocabularies and describe what you want in English.
 
-Paste the machine-readable vocabulary —
-[`vocab/cardano/transactions.ttl`](https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions.ttl)
-— alongside your question. It defines every term the emitter uses
-(`cardano:hasOutput`, `cardano:atAddress`, `cardano:hasAssetValue`,
-`cardano:fromTxOutRef`, …), which is what an LLM needs to emit valid SPARQL
-against `/tmp/may.ttl`. A prompt that works:
+Two ontology files cover the lattice end-to-end — paste both alongside
+your question:
 
-> Here is an RDF vocabulary for Cardano transactions *(paste
-> `transactions.ttl`)*. Over a Turtle graph of merged transactions using
-> this vocabulary, write a SPARQL query that answers: **\<your question>**.
-> Note that operator scopes are `cardano:Entity` nodes carrying
-> `rdfs:label` and `cardano:bech32`; join outputs to them by bech32 to
-> work in named scopes.
+- [`vocab/cardano/transactions.ttl`](https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions.ttl)
+  defines the ledger-level vocabulary: every term the body emitter
+  uses (`cardano:hasOutput`, `cardano:atAddress`,
+  `cardano:hasAssetValue`, `cardano:fromTxOutRef`, …).
+- [`vocab/treasury/overlay.ttl`](https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury/overlay.ttl)
+  defines the treasury-overlay vocabulary used by `cq-rdf overlay` when
+  the case study imports it: `treasury:OffChainEntity`,
+  `treasury:Attestation`, `treasury:paidVia`, `treasury:attests`,
+  `treasury:role`, `treasury:ipfs`.
+
+Together they cover everything in `/tmp/may.ttl` — the body triples
+plus the operator's overlay. A prompt that works:
+
+> Here are two RDF vocabularies for a Cardano on-chain lattice with a
+> treasury overlay *(paste `transactions.ttl` and `overlay.ttl`)*. Over
+> a Turtle graph of merged transactions using these vocabularies, write
+> a SPARQL query that answers: **\<your question>**. Operator scopes
+> are `cardano:Entity` nodes carrying `rdfs:label` and `cardano:bech32`;
+> join outputs to them by bech32 to work in named scopes. Off-chain
+> vendors paid via a bridge address are `treasury:OffChainEntity`
+> nodes carrying `treasury:paidVia` and `treasury:attests`.
 
 Three questions to start from — each a real treasury question, each a few
 lines of SPARQL:

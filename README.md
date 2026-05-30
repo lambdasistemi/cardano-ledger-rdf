@@ -20,24 +20,27 @@ Documentation: <https://lambdasistemi.github.io/cardano-ledger-rdf/>.
 ## Workflow
 
 ```bash
-cq-rdf overlay --in rules/amaru-treasury.yaml > lattice.ttl
-while read -r txid; do
-  cq-rdf body --provider koios "$txid"
-done < selections.txt >> lattice.ttl
-arq --data lattice.ttl --query my.rq    # consume directly via Apache Jena, or any SPARQL engine
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl \
+  | cq-rdf blueprint --blueprints blueprints/ \
+  > package.ttl
+cq-rdf shacl --shapes shapes/ < package.ttl     # exits non-zero on violations
+arq --data package.ttl --query my.rq            # consume via Apache Jena or any SPARQL engine
 ```
 
-`cq-rdf body --provider` is the only network boundary in the core pipeline:
-it fetches CBOR by txid from a koios / blockfrost / generic-HTTP indexer.
-With `--provider file` (the default) `cq-rdf body` reads CBOR from a local
-path, and the overlay + SPARQL stages are offline transformations over
-local files.
+`cq-rdf body --provider` is the only network boundary in the core
+pipeline: it fetches CBOR by txid from a koios / blockfrost /
+generic-HTTP indexer. With `--provider file` (the default) `cq-rdf
+body` reads CBOR from a local path, and the overlay, blueprint, shacl,
+and SPARQL stages are offline transformations over local files.
 
 `tx-graph --rules X` is deprecated for one release. Use
 `cq-rdf overlay --in X` for the operator overlay and concatenate that
 with one or more `cq-rdf body ...` outputs; the compatibility symlink
 still accepts the old positional and provider forms while downstream
-scripts migrate.
+scripts migrate. See [docs/tx-graph.md](docs/tx-graph.md) for the
+migration table.
 
 ## Library
 

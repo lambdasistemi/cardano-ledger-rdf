@@ -102,6 +102,15 @@ let
         python3 scripts/owl-smoke.py
       '';
     };
+
+    vocab-accessibility = {
+      name = "vocab-accessibility";
+      runtimeInputs = [ pythonEnv ];
+      text = ''
+        cd ${src}
+        python3 scripts/vocab-accessibility.py
+      '';
+    };
   };
 
   gates = lib.mapAttrs (_: mkGate) gateSpecs;

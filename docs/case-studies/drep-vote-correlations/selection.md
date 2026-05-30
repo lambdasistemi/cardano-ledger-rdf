@@ -33,7 +33,7 @@ epochs represented are 576, 579, 580, 586, 588, 603, 605, 612, and 632.
 
 The `gov_action1...` identifiers were treated as CIP-129 identifiers. Koios
 also returns the decoded transaction hash and proposal index, which are the
-fields used by tx-graph's typed `cardano:GovActionId` blocks.
+fields used by the body-emitter's typed `cardano:GovActionId` blocks.
 
 | Action | Type | Tx index | DRep rows | Title |
 | --- | --- | ---: | ---: | --- |
@@ -74,9 +74,10 @@ curl -sS "https://api.koios.rest/api/v1/proposal_list?limit=250&order=block_time
 ### Step 4 - enumerate voting transactions via Koios vote_list
 
 For each selected `proposal_id`, `vote_list` returned the voting
-transactions, voter role, verdict, epoch, and Koios block time. The tx-graph
-lattice only uses CBOR transaction bodies; the Koios `block_time` field is
-kept as sidecar evidence for the arrival-time limitation in Q6.
+transactions, voter role, verdict, epoch, and Koios block time. The
+`cq-rdf` lattice only uses CBOR transaction bodies; the Koios
+`block_time` field is kept as sidecar evidence for the arrival-time
+limitation in Q6.
 
 ```sh
 curl -sS -G "https://api.koios.rest/api/v1/vote_list" \

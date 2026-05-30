@@ -62,11 +62,15 @@ extra_javascript:
 nav:
   - Home: index.md
   - Demo: demo.md
-  - Vocabulary: vocab.md
+  - Vocabulary:
+      - Overview: vocab.md
+      - "cardano: namespace": vocab/cardano/index.md
+      - "treasury: namespace": vocab/treasury/index.md
   - Tools:
-      - tx-graph: tx-graph.md
+      - cq-rdf: cq-rdf.md
       - tx-view: tx-view.md
-      - rules.yaml: rules-yaml.md
+      - overlay.yaml: overlay-yaml.md
+      - tx-graph (deprecated): tx-graph.md
   - Case studies:
       - Overview: case-studies/index.md
       - Template:

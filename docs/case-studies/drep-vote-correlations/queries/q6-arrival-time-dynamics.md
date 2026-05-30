@@ -1,10 +1,10 @@
 # Q6 - Arrival-time dynamics
 
-The current tx-graph lattice cannot answer early-vs-late voter dynamics by
-itself. Vote CBOR carries the voting procedure, voter, action id, verdict,
-and optional anchor, but the transaction block time used for arrival order
-comes from the chain indexer. `tx-graph` does not emit that
-indexer-side field.
+The current `cq-rdf` lattice cannot answer early-vs-late voter dynamics
+by itself. Vote CBOR carries the voting procedure, voter, action id,
+verdict, and optional anchor, but the transaction block time used for
+arrival order comes from the chain indexer. The body emitter does not
+emit that indexer-side field.
 
 The SPARQL boundary check is:
 
@@ -27,8 +27,8 @@ LIMIT 20
 Observed result: vote rows expose the fields above, but no
 `cardano:blockTime`, `cardano:blockHeight`, or equivalent transaction-time
 predicate is present in the lattice. The arrival-time question therefore
-needs either a follow-up tx-graph provenance field or an explicit Koios
-sidecar joined outside RDF.
+needs either a follow-up body-emitter provenance field or an explicit
+Koios sidecar joined outside RDF.
 
 The Koios sidecar used for dataset selection can compute the exploratory
 number: across the selected actions, first-quartile DRep votes aligned with

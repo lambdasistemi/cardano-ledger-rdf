@@ -1,9 +1,10 @@
 # Amaru Treasury May 2026
 
 This case study runs twelve SPARQL queries over a real Amaru Treasury
-May 2026 on-chain lattice built end-to-end from `tx-graph`, the
-closure fetched by transaction CBOR, and Apache Jena, and validates
-two invariants on that lattice via SHACL shapes.
+May 2026 on-chain lattice built end-to-end from the `cq-rdf` runtime
+pipe (`overlay` + `body` + `blueprint`), the closure fetched by
+transaction CBOR, and Apache Jena, and validates two invariants on
+that lattice via SHACL shapes.
 
 The dataset is the 101-transaction lattice rooted in the May 2026
 operator batch: 30 seed transactions and 71 closure parents. The seed
@@ -118,19 +119,20 @@ exit is also a clean invariant check.
 Each of these is a real gap in the present-day pipeline that
 limits SPARQL expressiveness; each has a known fix path.
 
-### 1. `tx-graph` does not emit `cardano:hasIndex` on outputs
+### 1. Body emitter did not emit `cardano:hasIndex` on outputs
 
 **Impact**: a tx output's index in its parent tx is needed for
-the closure JOIN (`?orderOut cardano:hasIndex ?ix`) but tx-graph
-encodes the index only in the bnode label (`_:output1`,
-`_:output2`, …). Blank-node labels are not semantic in RDF.
+the closure JOIN (`?orderOut cardano:hasIndex ?ix`) but the
+prior body emitter encoded the index only in the bnode label
+(`_:output1`, `_:output2`, …). Blank-node labels are not
+semantic in RDF.
 
 **Resolved** (#100, in `Cardano.Tx.Graph.Emit.Project.emitOutput`):
 the body emitter now emits `cardano:hasIndex` (zero-based) on every
 output as part of the canonical Turtle. The `scripts/tx-lattice`
 post-processing block has been removed.
 
-### 2. `tx-graph` does not emit the tx's own hash
+### 2. Body emitter did not emit the tx's own hash
 
 **Resolved** (#100, in `Cardano.Tx.Graph.Emit.Project.emitTxBlock`):
 the body emitter now hashes the Conway tx body via
@@ -180,8 +182,8 @@ subcommand pipe:
 (The original #112 fix was an on-disk `--closure-dir DIR`
 resolver that read parent CBORs from disk at emit time. #114
 reduced that disk handshake into the pure-transformation
-contract: tx-graph now sees the whole lattice as its input,
-not as a side-channel directory.)
+contract: the body emitter now sees the whole lattice as its
+input, not as a side-channel directory.)
 
 Verified on a 7-tx closure of contingency disburse
 `18d57a4f…`: the seed's redeemerData bnodes now carry

@@ -24,7 +24,7 @@ one page per question: [Q1 pairwise agreement](queries/q1-pairwise-agreement.md)
 The correlation queries use **unambiguous DRep/action observations**:
 DRep/action groups with exactly one vote row. That leaves **4,563**
 observations after excluding **538** revote rows, because the current
-tx-graph lattice does not carry block time and therefore cannot choose the
+`cq-rdf` lattice does not carry block time and therefore cannot choose the
 latest vote deterministically.
 
 ## Entity rules
@@ -87,8 +87,8 @@ See [Q5](queries/q5-anchor-coverage.md).
 
 ### Arrival-time dynamics
 
-The current tx-graph lattice cannot answer early-vs-late voter dynamics on
-its own because vote transaction block time is not emitted into RDF. The
+The current `cq-rdf` lattice cannot answer early-vs-late voter dynamics
+on its own because vote transaction block time is not emitted into RDF. The
 Koios sidecar used during selection can compute the comparison, but Q6
 documents it as a follow-up boundary rather than presenting it as a
 SPARQL-native case-study claim. Block-context emission is tracked in #46.
