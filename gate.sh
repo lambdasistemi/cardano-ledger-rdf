@@ -10,7 +10,7 @@ commit_gate() {
       echo "✗ $sha subject not conventional-commit: $subject" >&2; fail=1
     fi
     if [ "$(git log -1 --format=%P "$sha" | wc -w)" -eq 1 ]; then
-      if ! echo "$body" | grep -qE '^Tasks: (drep-rerun|T005-S1|T006-S1|T007-S1|T013-S1|T014-S1|T017-S1|T022-(S[1-2]|F)|T026-(S1|F)|T028-S1|T030-S1|T031-S1|T040-S1|T056-S1|T059-S1|T061-S1|T066-(P2|P3|P4|P5|P6|DOCS)|T076-(S1|S2|S3|S3a|S3b|S3c|S4|S5))(, (drep-rerun|T005-S1|T006-S1|T007-S1|T013-S1|T014-S1|T017-S1|T022-(S[1-2]|F)|T026-(S1|F)|T028-S1|T030-S1|T031-S1|T040-S1|T056-S1|T059-S1|T061-S1|T066-(P2|P3|P4|P5|P6|DOCS)|T076-(S1|S2|S3|S3a|S3b|S3c|S4|S5)))*$'; then
+      if ! echo "$body" | grep -qE '^Tasks: (drep-rerun|T005-S1|T006-S1|T007-S1|T013-S1|T014-S1|T017-S1|T022-(S[1-2]|F)|T026-(S1|F)|T028-S1|T030-S1|T031-S1|T040-S1|T056-S1|T059-S1|T061-S1|T066-(P2|P3|P4|P5|P6|DOCS|CAST)|T076-(S1|S2|S3|S3a|S3b|S3c|S4|S5))(, (drep-rerun|T005-S1|T006-S1|T007-S1|T013-S1|T014-S1|T017-S1|T022-(S[1-2]|F)|T026-(S1|F)|T028-S1|T030-S1|T031-S1|T040-S1|T056-S1|T059-S1|T061-S1|T066-(P2|P3|P4|P5|P6|DOCS|CAST)|T076-(S1|S2|S3|S3a|S3b|S3c|S4|S5)))*$'; then
         if echo "$subject" | grep -qE '^(chore|docs)\(spec[s]?\): '; then
           :
         else
