@@ -872,7 +872,7 @@ buildEntity file subjectLines groups subj = do
             , entitySlug = slug
             , entityIdentifiers = idents
             , -- Turtle-shape rules don't currently expose
-              -- @cardano:bech32@ / @cardano:role@ / @cardano:paidVia@
+              -- @cardano:bech32@ / @treasury:role@ / @treasury:paidVia@
               -- triples at the entity subject — those syntaxes are
               -- YAML-only sugar (issues #100, #105). Leave them
               -- 'Nothing' for the Turtle path; a follow-up can

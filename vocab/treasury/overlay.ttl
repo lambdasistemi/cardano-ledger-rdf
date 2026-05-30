@@ -1,0 +1,48 @@
+# overlay.ttl - treasury overlay RDF vocabulary
+@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> .
+@prefix cardano:  <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix rdf:      <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury/overlay>
+  a owl:Ontology ;
+  rdfs:label "Treasury Overlay Vocabulary" ;
+  rdfs:comment "Treasury/accountability overlay terms used by operator-authored rules files. These terms are intentionally separate from the ledger-level cardano: namespace." ;
+  owl:versionInfo "0.1.0" ;
+  owl:imports
+    <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
+
+treasury:OffChainEntity a rdfs:Class ;
+  rdfs:subClassOf cardano:Entity ;
+  rdfs:label "OffChainEntity" ;
+  rdfs:comment "An operator-declared accounting actor that is not identified by an on-chain Cardano credential, script, address, asset, pool, DRep, or other ledger identifier." .
+
+treasury:Attestation a rdfs:Class ;
+  rdfs:label "Attestation" ;
+  rdfs:comment "An operator-declared off-chain artefact, such as an invoice, contract, or review, that supports an accountability claim about a treasury entity." .
+
+treasury:paidVia a rdf:Property ;
+  rdfs:label "paidVia" ;
+  rdfs:comment "Relates a treasury/accountability entity to the operator-declared entity through which payment reaches it." ;
+  rdfs:domain cardano:Entity ;
+  rdfs:range cardano:Entity .
+
+treasury:attests a rdf:Property ;
+  rdfs:label "attests" ;
+  rdfs:comment "Relates an off-chain attestation artefact to the operator-declared entity it supports." ;
+  rdfs:domain treasury:Attestation ;
+  rdfs:range cardano:Entity .
+
+treasury:ipfs a rdf:Property ;
+  rdfs:label "ipfs" ;
+  rdfs:comment "Relates an off-chain attestation to the IPFS URI of the supporting artefact." ;
+  rdfs:domain treasury:Attestation ;
+  rdfs:range rdfs:Resource .
+
+treasury:role a rdf:Property ;
+  rdfs:label "role" ;
+  rdfs:comment "Records an operator-authored free-text role for an entity in a treasury/accountability overlay." ;
+  rdfs:domain cardano:Entity ;
+  rdfs:range xsd:string .

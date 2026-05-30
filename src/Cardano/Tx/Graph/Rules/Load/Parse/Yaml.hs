@@ -747,7 +747,7 @@ parseShape ctx ln slug obj mPaidVia =
                     -- @paid-via:@ (no on-chain identifier shape)
                     -- is an off-chain overlay entry. The overlay
                     -- emitter renders it as
-                    -- @:slug a cardano:OffChainEntity@ rather
+                    -- @:slug a treasury:OffChainEntity@ rather
                     -- than @cardano:Entity@.
                     Right (Nothing, [])
                 | otherwise ->

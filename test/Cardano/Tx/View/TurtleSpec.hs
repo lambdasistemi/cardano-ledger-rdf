@@ -7,7 +7,7 @@ Regression coverage for issue #61 bug 2: the in-repo Turtle reader
 behind 'Cardano.Tx.View.renderView' must accept the W3C Turtle §2.6
 blank-node-property-list forms — @[] predicateObjectList .@ and the
 inline @[ predicateObjectList ] .@ — because the rules overlay emitter
-writes off-chain attestations as @[] a cardano:Attestation ; … .@.
+writes off-chain attestations as @[] a treasury:Attestation ; … .@.
 Before the fix the reader rejected the leading @[@ with
 @malformed Turtle graph: unexpected character: [@, which broke
 @tx-graph --rules … | tx-view@.
@@ -41,7 +41,7 @@ spec =
         )
         $ do
             it
-                ( "accepts the [] a cardano:Attestation ; … . block the "
+                ( "accepts the [] a treasury:Attestation ; … . block the "
                     <> "overlay emitter produces"
                 )
                 $ shouldParse attestationTtl
@@ -83,6 +83,7 @@ isLeft = either (const True) (const False)
 prefixes :: [String]
 prefixes =
     [ "@prefix cardano: <https://example.org/cardano#> ."
+    , "@prefix treasury: <https://example.org/treasury#> ."
     , "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ."
     ]
 
@@ -92,25 +93,25 @@ mkTtl body = BS8.pack (unlines (prefixes <> body))
 attestationTtl :: ByteString
 attestationTtl =
     mkTtl
-        [ "[] a cardano:Attestation ;"
+        [ "[] a treasury:Attestation ;"
         , "  rdfs:label \"Invoice INV-635\" ;"
-        , "  cardano:attests :amaru.antithesis ;"
-        , "  cardano:ipfs <ipfs://bafyfoo> ."
+        , "  treasury:attests :amaru.antithesis ;"
+        , "  treasury:ipfs <ipfs://bafyfoo> ."
         ]
 
 twoAttestationsTtl :: ByteString
 twoAttestationsTtl =
     mkTtl
-        [ "[] a cardano:Attestation ;"
+        [ "[] a treasury:Attestation ;"
         , "  rdfs:label \"first\" ."
         , ""
-        , "[] a cardano:Attestation ;"
+        , "[] a treasury:Attestation ;"
         , "  rdfs:label \"second\" ."
         ]
 
 inlineBracketTtl :: ByteString
 inlineBracketTtl =
-    mkTtl ["[ a cardano:Attestation ; rdfs:label \"x\" ] ."]
+    mkTtl ["[ a treasury:Attestation ; rdfs:label \"x\" ] ."]
 
 strayCloseTtl :: ByteString
-strayCloseTtl = mkTtl ["] a cardano:Attestation ."]
+strayCloseTtl = mkTtl ["] a treasury:Attestation ."]

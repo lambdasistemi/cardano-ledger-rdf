@@ -9,6 +9,7 @@ single SPARQL invocation joins them.
 
 ```sparql
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/#>
@@ -58,9 +59,9 @@ WHERE {
       ?id cardano:bytesHex
             "c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad0014df105553444d" .
   } }
-  ?vendorNode cardano:paidVia :amaru_cag_payee ; rdfs:label ?vendor .
-  ?attestation cardano:attests ?vendorNode ;
-               cardano:ipfs ?ipfs ;
+  ?vendorNode treasury:paidVia :amaru_cag_payee ; rdfs:label ?vendor .
+  ?attestation treasury:attests ?vendorNode ;
+               treasury:ipfs ?ipfs ;
                rdfs:label ?attestationLabel .
 }
 ```
@@ -77,8 +78,8 @@ WHERE {
 USDM total at the bridge in May = **418,750.000000 USDM** (raw
 quantity `418,750,000,000`). The query joins on-chain USDM movement
 (seed batch outputs) to off-chain accountability (overlay) — vendors,
-contracts, invoices, cycle reviews — by walking `cardano:paidVia`
-and `cardano:attests` across the lattice in one SPARQL invocation.
+contracts, invoices, cycle reviews — by walking `treasury:paidVia`
+and `treasury:attests` across the lattice in one SPARQL invocation.
 The fixture-default `:` prefix
 (`https://lambdasistemi.github.io/cardano-rdf/fixtures/#`) is the
 IRI tx-graph emits for `rules.yaml`-declared overlay nodes; the
@@ -87,12 +88,12 @@ vendor IRIs are `:amaru_antithesis` and `:amaru_castellum`.
 ```mermaid
 flowchart LR
   netcomp["network_compliance"] -->|"418,750 USDM<br/>(on-chain, seed batch)"| cag[":amaru_cag_payee"]
-  cag -.->|cardano:paidVia| ant[":amaru_antithesis"]
-  cag -.->|cardano:paidVia| cast[":amaru_castellum"]
-  i1[("ipfs://bafkreicnoadl...<br/>Invoice INV-635")] -.->|cardano:attests| ant
-  i2[("ipfs://bafybeib3jef3...<br/>Contract")] -.->|cardano:attests| cast
-  i3[("ipfs://bafybeigy37ui...<br/>Invoice #3508")] -.->|cardano:attests| cast
-  i4[("ipfs://bafybeihdmnit...<br/>Cycle review")] -.->|cardano:attests| cast
+  cag -.->|treasury:paidVia| ant[":amaru_antithesis"]
+  cag -.->|treasury:paidVia| cast[":amaru_castellum"]
+  i1[("ipfs://bafkreicnoadl...<br/>Invoice INV-635")] -.->|treasury:attests| ant
+  i2[("ipfs://bafybeib3jef3...<br/>Contract")] -.->|treasury:attests| cast
+  i3[("ipfs://bafybeigy37ui...<br/>Invoice #3508")] -.->|treasury:attests| cast
+  i4[("ipfs://bafybeihdmnit...<br/>Cycle review")] -.->|treasury:attests| cast
 ```
 
 ---

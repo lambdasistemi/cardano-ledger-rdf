@@ -108,7 +108,7 @@ data RulesLoadResult = RulesLoadResult
     -- ^ Off-chain attestations declared under the @attestations:@
     -- top-level block (issue #105). Each entry pins an
     -- IPFS-anchored artefact to an operator-named entity by slug.
-    -- The overlay emitter renders one @cardano:Attestation@ block
+    -- The overlay emitter renders one @treasury:Attestation@ block
     -- per entry.
     }
     deriving stock (Eq, Show)

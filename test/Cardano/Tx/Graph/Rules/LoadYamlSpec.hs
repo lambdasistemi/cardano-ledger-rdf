@@ -274,6 +274,13 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
                     expectationFailure $
                         "expected Right [cag-payee, antithesis], got: "
                             <> show other
+            overlay <- runLoaderViaTempFile (TextEncoding.encodeUtf8 yaml)
+            assertByteSubstring
+                overlay
+                "@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> ."
+            assertByteSubstring overlay ":amaru_antithesis a treasury:OffChainEntity"
+            assertByteSubstring overlay "  treasury:role \"fuzz-testing vendor\" ;"
+            assertByteSubstring overlay "  treasury:paidVia :amaru_cag_payee ."
 
     describe "six Conway address classes (FR-005)" $ do
         it "PaymentKey + StakeKey (base, key+key)" $
@@ -365,12 +372,25 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
                 BS.writeFile rulesPath (TextEncoding.encodeUtf8 yaml)
                 result <- loadRulesFile rulesPath
                 case result of
-                    Right RulesLoadResult{rulesAttestations = [a1, a2]} -> do
-                        attestationLabel a1 `shouldBe` "Invoice INV-635"
-                        attestationOf a1 `shouldBe` "amaru_antithesis"
-                        attestationIpfs a1
-                            `shouldBe` "ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam"
-                        attestationOf a2 `shouldBe` "amaru_cag_payee"
+                    Right
+                        RulesLoadResult
+                            { rulesAttestations = [a1, a2]
+                            , rulesOverlayTurtle = overlay
+                            } -> do
+                            attestationLabel a1 `shouldBe` "Invoice INV-635"
+                            attestationOf a1 `shouldBe` "amaru_antithesis"
+                            attestationIpfs a1
+                                `shouldBe` "ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam"
+                            attestationOf a2 `shouldBe` "amaru_cag_payee"
+                            assertByteSubstring
+                                overlay
+                                "[] a treasury:Attestation ;"
+                            assertByteSubstring
+                                overlay
+                                "  treasury:attests :amaru_antithesis ;"
+                            assertByteSubstring
+                                overlay
+                                "  treasury:ipfs <ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam> ."
                     other ->
                         expectationFailure $
                             "expected Right with 2 attestations, got: " <> show other

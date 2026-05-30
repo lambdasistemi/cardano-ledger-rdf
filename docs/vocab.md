@@ -1,13 +1,15 @@
 # Vocabulary
 
-The `cardano:` predicates emitted by [`tx-graph`](tx-graph.md) and referenced
-from every query in the case studies are defined by an ontology owned by this
-repository.
+The `cardano:` predicates emitted by [`tx-graph`](tx-graph.md) are defined by
+an ontology owned by this repository. Treasury accountability overlays use the
+separate `treasury:` namespace so application terms do not pollute the
+ledger-level Cardano vocabulary.
 
 ## IRI
 
 ```text
 https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#
+https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#
 ```
 
 The IRI is hosted by the GitHub Pages site of
@@ -16,9 +18,15 @@ The IRI is hosted by the GitHub Pages site of
 [`/vocab/cardano/transactions.ttl`][deployed] of the deployed docs site, so
 the IRI dereferences.
 
+The treasury overlay vocabulary lives at
+[`vocab/treasury/overlay.ttl`][treasury-ttl] and is published under
+[`/vocab/treasury/overlay.ttl`][treasury-deployed].
+
 [repo]: https://github.com/lambdasistemi/cardano-ledger-rdf
 [ttl]: https://github.com/lambdasistemi/cardano-ledger-rdf/blob/main/vocab/cardano/transactions.ttl
 [deployed]: vocab/cardano/transactions.ttl
+[treasury-ttl]: https://github.com/lambdasistemi/cardano-ledger-rdf/blob/main/vocab/treasury/overlay.ttl
+[treasury-deployed]: vocab/treasury/overlay.ttl
 
 ## Ownership
 
@@ -35,6 +43,7 @@ the ontology now travels with the code that emits its predicates.
 
 ```sparql
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#>
 ```
 
 Every query under [Case studies](case-studies/index.md) opens with this
