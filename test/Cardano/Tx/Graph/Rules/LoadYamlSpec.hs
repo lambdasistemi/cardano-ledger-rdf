@@ -28,6 +28,13 @@ import Cardano.Tx.Graph.Rules.Load (
     loadRulesFile,
     parseRulesYamlText,
  )
+import Cardano.Tx.Graph.Rules.Load.Imports (
+    ImportEntry (..),
+    Imports (..),
+    KeyResolution (..),
+    importEntryName,
+    resolveKey,
+ )
 
 import Cardano.Crypto.Hash (Hash, HashAlgorithm, hashFromBytes)
 import Cardano.Ledger.Address (Addr (..), serialiseAddr)
@@ -40,6 +47,7 @@ import Cardano.Ledger.Hashes (KeyHash (..), ScriptHash (..))
 import Codec.Binary.Bech32 qualified as Bech32
 import Data.ByteString qualified as BS
 import Data.ByteString.Base16 qualified as Base16
+import Data.Map.Strict qualified as Map
 import Data.Maybe (fromJust)
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -255,8 +263,13 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
             -- valid off-chain overlay entry. Round-trips through
             -- the YAML parser with empty 'entityIdentifiers' and
             -- 'entityPaidVia' = Just <slugified-name>.
+            -- Phase 3 (epic #66): treasury overlay keys
+            -- (`paid-via`, `role`, `attests`, `ipfs`) require an
+            -- explicit `imports: [treasury]` block.
             let yaml =
-                    "entities:\n\
+                    "imports:\n\
+                    \  - treasury\n\
+                    \entities:\n\
                     \  - name: amaru.cag-payee\n\
                     \    from-address: addr1q8qrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59j6xz3vs0hnfaz9nhje8z34kfnds4jyk7hs6dnrag6e2lfgqtyf4rl\n\
                     \  - name: amaru.antithesis\n\
@@ -355,7 +368,9 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
             -- End-to-end via the public 'loadRulesFile' surface so
             -- the test exercises the same path the CLI uses.
             let yaml =
-                    "entities:\n\
+                    "imports:\n\
+                    \  - treasury\n\
+                    \entities:\n\
                     \  - name: amaru.cag-payee\n\
                     \    from-address: addr1q8qrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59j6xz3vs0hnfaz9nhje8z34kfnds4jyk7hs6dnrag6e2lfgqtyf4rl\n\
                     \  - name: amaru.antithesis\n\
@@ -394,6 +409,168 @@ spec = describe "Cardano.Tx.Graph.Rules.Load.parseRulesYamlText (T002)" $ do
                     other ->
                         expectationFailure $
                             "expected Right with 2 attestations, got: " <> show other
+
+    describe "vocab imports (Phase 3 of epic #66)" $ do
+        it "imports: [treasury] resolves; paid-via: works" $ do
+            -- Phase 3: a treasury-overlay key (`paid-via`) is
+            -- accepted iff the YAML explicitly imports the treasury
+            -- vocabulary. With the import in place the entry parses
+            -- cleanly and the emitted overlay carries the
+            -- `treasury:paidVia` predicate.
+            let yaml =
+                    "imports:\n\
+                    \  - treasury\n\
+                    \entities:\n\
+                    \  - name: bridge\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n\
+                    \  - name: vendor\n\
+                    \    paid-via: bridge\n"
+            overlay <- runLoaderViaTempFile (TextEncoding.encodeUtf8 yaml)
+            assertByteSubstring overlay "  treasury:paidVia :bridge"
+            assertByteSubstring
+                overlay
+                "@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> ."
+
+        it "without imports: a bare paid-via: surfaces MissingImportForKey" $ do
+            -- Phase 3: same yaml without `imports: [treasury]` is a
+            -- hard parser error pointing the operator at the missing
+            -- import.
+            let yaml =
+                    "entities:\n\
+                    \  - name: bridge\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n\
+                    \  - name: vendor\n\
+                    \    paid-via: bridge\n"
+            case parseRulesYamlText (TextEncoding.encodeUtf8 yaml) of
+                Left (MissingImportForKey _ _ key vocab) -> do
+                    key `shouldBe` "paid-via"
+                    vocab `shouldBe` "treasury"
+                other ->
+                    fail $
+                        "expected Left (MissingImportForKey \"paid-via\" \"treasury\"), got: "
+                            <> show other
+
+        it "unknown bare key (not owned by any import) surfaces UnknownKey" $ do
+            -- Phase 3: a key with no owner anywhere — neither
+            -- cardano nor any imported vocab — is rejected with the
+            -- friendly "did you forget to add it to imports:?" hint.
+            let yaml =
+                    "entities:\n\
+                    \  - name: foo\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n\
+                    \    galactic: yes\n"
+            case parseRulesYamlText (TextEncoding.encodeUtf8 yaml) of
+                Left (UnknownKey _ _ key) ->
+                    key `shouldBe` "galactic"
+                other ->
+                    fail $
+                        "expected Left (UnknownKey \"galactic\"), got: " <> show other
+
+        it "explicit-prefix form (treasury:role:) parses cleanly once treasury is imported" $ do
+            -- Phase 3: once a vocab is imported the operator can
+            -- always write keys in explicit-prefix form
+            -- (`treasury:role:` rather than `role:`). This is the
+            -- disambiguation surface the parser will demand when
+            -- two future vocabs both claim the same local key.
+            let yaml =
+                    "imports:\n\
+                    \  - treasury\n\
+                    \entities:\n\
+                    \  - name: ent\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n\
+                    \    treasury:role: vendor\n"
+            case parseRulesYamlText (TextEncoding.encodeUtf8 yaml) of
+                Right [decl] ->
+                    entityRole decl `shouldBe` Just "vendor"
+                other ->
+                    fail $ "expected Right [decl] with role, got: " <> show other
+
+        it "resolveKey surfaces KeyAmbiguous when two imports own the same key" $ do
+            -- The collision path on resolveKey: two ImportEntries
+            -- claim the same local key. The runtime parser cannot
+            -- naturally produce this with the built-in registry
+            -- containing only `treasury`, so we drive the
+            -- 'Imports' table directly. A second built-in vocab in
+            -- a future slice will surface the AmbiguousKey error to
+            -- operators by the same mechanism this unit exercises.
+            let imports =
+                    Imports
+                        { importsKnown =
+                            [ ImportEntry "treasury" "https://t/"
+                            , ImportEntry "governance" "https://g/"
+                            ]
+                        , importsKeyTable =
+                            Map.fromList
+                                [
+                                    ( "role"
+                                    ,
+                                        [ ImportEntry "treasury" "https://t/"
+                                        , ImportEntry "governance" "https://g/"
+                                        ]
+                                    )
+                                ]
+                        }
+            case resolveKey imports "role" of
+                KeyAmbiguous owners ->
+                    map importEntryName owners
+                        `shouldBe` ["treasury", "governance"]
+                other ->
+                    fail $ "expected KeyAmbiguous, got: " <> show other
+
+        it "unknown short name in imports: surfaces UnknownImport" $ do
+            -- Phase 3: a bare name that the built-in registry
+            -- doesn't know about is rejected, and the error names
+            -- the offending short name.
+            let yaml =
+                    "imports:\n\
+                    \  - madeup\n\
+                    \entities:\n\
+                    \  - name: foo\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n"
+            case parseRulesYamlText (TextEncoding.encodeUtf8 yaml) of
+                Left (UnknownImport _ _ name) ->
+                    name `shouldBe` "madeup"
+                other ->
+                    fail $
+                        "expected Left (UnknownImport \"madeup\"), got: " <> show other
+
+        it "inline ontology import (iri:, as:) parses; explicit-prefix keys work" $ do
+            -- Phase 3: an operator can declare a custom vocabulary
+            -- inline. Keys from that vocab must use the explicit
+            -- prefix `as:key:` form — the loader has no key schema
+            -- for inline ontologies.
+            let yaml =
+                    "imports:\n\
+                    \  - iri: https://example.com/foo/vocab#\n\
+                    \    as: foo\n\
+                    \entities:\n\
+                    \  - name: bar\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n\
+                    \    foo:custom-key: any value\n"
+            overlay <- runLoaderViaTempFile (TextEncoding.encodeUtf8 yaml)
+            assertByteSubstring
+                overlay
+                "@prefix foo: <https://example.com/foo/vocab#> ."
+
+        it "emitted overlay carries owl:imports for cardano and every declared vocab" $ do
+            -- Phase 3 acceptance criterion: the emitted overlay TTL
+            -- declares an owl:Ontology manifest with one
+            -- owl:imports per resolved import. The implicit
+            -- cardano import is always present.
+            let yaml =
+                    "imports:\n\
+                    \  - treasury\n\
+                    \entities:\n\
+                    \  - name: foo\n\
+                    \    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n"
+            overlay <- runLoaderViaTempFile (TextEncoding.encodeUtf8 yaml)
+            assertByteSubstring overlay "  a owl:Ontology ;"
+            assertByteSubstring
+                overlay
+                "owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions>"
+            assertByteSubstring
+                overlay
+                "<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury/overlay>"
 
     describe "structural errors" $ do
         it "rejects an entity with zero identifier shapes (no from-address/script/asset)" $ do

@@ -1,6 +1,14 @@
 # Template entity overlay. The current rules.yaml entity shapes are
 # constrained by src/Cardano/Tx/Graph/Rules/Load/Parse/Yaml.hs::parseShape.
 # Replace these example values with identifiers from the selected dataset.
+#
+# Phase 3 of epic #66 (separate runtime from apps): non-cardano
+# vocabularies are opt-in through this `imports:` block. The treasury
+# vocab owns the `paid-via`, `role`, `attests`, and `ipfs` keys; drop
+# this import if you remove the off-chain accounting entries below.
+imports:
+  - treasury
+
 entities:
   - name: example.from-address
     from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz

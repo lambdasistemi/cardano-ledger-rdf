@@ -53,6 +53,7 @@ module Cardano.Tx.Graph.Rules.Load.Parse.Yaml (
     parseRulesYamlText,
     parseRulesYamlImports,
     parseRulesYamlImportsWithFile,
+    parseRulesYamlImportsWithFileVocab,
     slugify,
     BlueprintStub (..),
 ) where
@@ -61,6 +62,16 @@ import Cardano.Tx.Graph.Rules.Load.Bech32 (
     decodeDrepCip129,
     decodePoolBech32,
     decomposeFromAddress,
+ )
+import Cardano.Tx.Graph.Rules.Load.Imports (
+    ImportEntry (..),
+    Imports (..),
+    KeyResolution (..),
+    addImport,
+    emptyImports,
+    importEntryFromName,
+    importEntryName,
+    resolveKey,
  )
 import Cardano.Tx.Graph.Rules.Load.Types (
     Attestation (..),
@@ -192,7 +203,50 @@ parseRulesYamlImportsWithFile file blob =
                         file
                         (yamlParseExceptionLine err)
                         (Text.pack ("YAML decode failed: " <> show err))
-            Right val -> walkTop ctx val
+            Right val -> do
+                (fileImports, _vocabImports, ents, stubs, atts) <-
+                    walkTopFull ctx val
+                pure (fileImports, ents, stubs, atts)
+
+{- | Variant of 'parseRulesYamlImportsWithFile' that also returns the
+parsed vocab imports — Phase 3 of epic #66. The emitter consumes the
+'Imports' list to mint @owl:imports@ triples at the top of the
+overlay TTL; the resolver continues to consume the file-imports list
+to drive the imports DFS.
+
+The vocab imports include every @imports:@ entry that was a bare
+short name in the built-in registry (e.g. @treasury@) or an inline
+@{iri:, as:}@ object. The file imports list contains every entry
+that looked file-shaped (path with @.yaml@ / @.yml@ / @.ttl@
+suffix, or containing a path separator). This split happens once at
+parse time so the resolver and the emitter consume orthogonal slices.
+-}
+parseRulesYamlImportsWithFileVocab ::
+    FilePath ->
+    ByteString ->
+    Either
+        RulesLoadError
+        ( [Text]
+        , [ImportEntry]
+        , [EntityDecl]
+        , [BlueprintStub]
+        , [Attestation]
+        )
+parseRulesYamlImportsWithFileVocab file blob =
+    let ctx =
+            Ctx
+                { ctxFile = file
+                , ctxEntityLines = entityNameLines blob
+                , ctxBlueprintLines = blueprintScriptLines blob
+                }
+     in case Yaml.decodeEither' blob of
+            Left err ->
+                Left $
+                    ParserError
+                        file
+                        (yamlParseExceptionLine err)
+                        (Text.pack ("YAML decode failed: " <> show err))
+            Right val -> walkTopFull ctx val
 
 {- | Extract a 1-based source line from a 'Yaml.ParseException'. The
 libyaml-level 'YamlMark' is 0-based; we add 1. Any other exception
@@ -207,22 +261,31 @@ yamlParseExceptionLine = \case
     Yaml.InvalidYaml Nothing -> topLevelLine
     _ -> topLevelLine
 
-walkTop ::
+walkTopFull ::
     Ctx ->
     Aeson.Value ->
     Either
         RulesLoadError
-        ([Text], [EntityDecl], [BlueprintStub], [Attestation])
-walkTop ctx = \case
-    Aeson.Null -> Right ([], [], [], [])
+        ( [Text]
+        , [ImportEntry]
+        , [EntityDecl]
+        , [BlueprintStub]
+        , [Attestation]
+        )
+walkTopFull ctx = \case
+    Aeson.Null -> Right ([], [], [], [], [])
     Aeson.Object obj -> do
-        imports <- parseImportsKey ctx obj
+        (fileImports, vocabImports) <- parseImportsKey ctx obj
+        -- The assembled imports table; cardano is always implicit.
+        -- We add every parsed vocab import in source order so
+        -- 'resolveKey' sees the full key surface for each entity.
+        let imports = foldr addImport emptyImports (reverse vocabImports)
         entities <- case KeyMap.lookup (Key.fromText "entities") obj of
             Nothing -> Right []
             Just Aeson.Null -> Right []
             Just (Aeson.Array arr) ->
                 traverseWithLines
-                    (parseEntity ctx)
+                    (parseEntity ctx imports)
                     (foldr (:) [] arr)
                     (ctxEntityLines ctx)
             Just other ->
@@ -241,8 +304,8 @@ walkTop ctx = \case
         -- @attestations:@ is parsed into a typed list; the overlay
         -- emitter renders one block per entry referencing the
         -- entity slug it attests to. Issue #105.
-        attestations <- parseAttestationsKey ctx obj
-        Right (imports, entities, stubs, attestations)
+        attestations <- parseAttestationsKey ctx imports obj
+        Right (fileImports, vocabImports, entities, stubs, attestations)
     other ->
         Left $
             ParserError
@@ -271,39 +334,128 @@ traverseWithLines k (x : xs) [] = do
     ys <- traverseWithLines k xs []
     pure (y : ys)
 
-{- | Walk the top-level @imports:@ value (a list of relative file paths).
-Returns @[]@ when the key is absent or null; surfaces a
-'ParserError' for a non-list shape or a non-string entry. The
-resolver applies its own absolute / HTTPS / missing-file checks
-against the strings returned here.
+{- | Walk the top-level @imports:@ value. Each entry is one of:
+
+* A bare short name (e.g. @treasury@) — resolved against the
+  built-in vocab registry. Unknown names surface as
+  'UnknownImport'.
+* An inline @{iri: \<URL\>, as: \<short-name\>}@ object — a
+  custom vocabulary the operator declares inline. Missing keys
+  surface as 'MalformedImport'.
+* A file-shaped string (path ending in @.yaml@ / @.yml@ /
+  @.ttl@, or containing a path separator) — the legacy file
+  import that drives the cross-file DFS in the resolver.
+
+Returns @([], [])@ when the key is absent or null. The two output
+lists are kept orthogonal so the resolver consumes only file
+imports and the emitter consumes only vocab imports.
 -}
 parseImportsKey ::
-    Ctx -> KeyMap.KeyMap Aeson.Value -> Either RulesLoadError [Text]
+    Ctx ->
+    KeyMap.KeyMap Aeson.Value ->
+    Either RulesLoadError ([Text], [ImportEntry])
 parseImportsKey ctx obj = case KeyMap.lookup (Key.fromText "imports") obj of
-    Nothing -> Right []
-    Just Aeson.Null -> Right []
+    Nothing -> Right ([], [])
+    Just Aeson.Null -> Right ([], [])
     Just (Aeson.Array arr) ->
-        traverse (parseImportEntry ctx) (foldr (:) [] arr)
+        walkEntries (foldr (:) [] arr) [] []
     Just other ->
         Left $
             ParserError
                 (ctxFile ctx)
                 topLevelLine
-                ( "imports: must be a list of relative paths, got: "
+                ( "imports: must be a list, got: "
                     <> typeName other
                 )
+  where
+    walkEntries [] files vocabs = Right (reverse files, reverse vocabs)
+    walkEntries (v : rest) files vocabs = do
+        parsed <- parseImportEntry ctx v
+        case parsed of
+            ImportEntryFile path ->
+                walkEntries rest (path : files) vocabs
+            ImportEntryVocab entry ->
+                walkEntries rest files (entry : vocabs)
 
-parseImportEntry :: Ctx -> Aeson.Value -> Either RulesLoadError Text
+-- | One classified entry from the @imports:@ list.
+data ParsedImport
+    = ImportEntryFile !Text
+    | ImportEntryVocab !ImportEntry
+
+{- | Classify a single @imports:@ entry as either a file import
+(path string) or a vocab import (registry short name or inline
+@{iri:, as:}@ object). Surfaces 'UnknownImport' for a bare name
+not in the registry and 'MalformedImport' for an object missing
+the @iri:@ key.
+-}
+parseImportEntry :: Ctx -> Aeson.Value -> Either RulesLoadError ParsedImport
 parseImportEntry ctx = \case
-    Aeson.String t -> Right t
+    Aeson.String t
+        | isFileShaped t -> Right (ImportEntryFile t)
+        | otherwise -> case importEntryFromName t of
+            Just entry -> Right (ImportEntryVocab entry)
+            Nothing ->
+                Left
+                    ( UnknownImport
+                        (ctxFile ctx)
+                        topLevelLine
+                        t
+                    )
+    Aeson.Object o -> do
+        iri <- requireImportString ctx "iri" o
+        as <- requireImportString ctx "as" o
+        Right
+            ( ImportEntryVocab
+                ImportEntry{importEntryName = as, importEntryNamespace = iri}
+            )
     other ->
         Left $
             ParserError
                 (ctxFile ctx)
                 topLevelLine
-                ( "imports[]: entry must be a string path, got: "
+                ( "imports[]: entry must be a string (file path "
+                    <> "or registry short name) or an object with "
+                    <> "'iri:' and 'as:' keys, got: "
                     <> typeName other
                 )
+
+{- | True iff the raw entry string looks like a file path. We treat
+anything that contains a path separator OR ends in a known YAML/TTL
+extension as a file import. This keeps bare short names like
+@treasury@ unambiguous; a name that collides with a future file
+extension would have to be written with an explicit separator.
+-}
+isFileShaped :: Text -> Bool
+isFileShaped t =
+    Text.isInfixOf "/" t
+        || Text.isSuffixOf ".yaml" t
+        || Text.isSuffixOf ".yml" t
+        || Text.isSuffixOf ".ttl" t
+
+requireImportString ::
+    Ctx -> Text -> KeyMap.KeyMap Aeson.Value -> Either RulesLoadError Text
+requireImportString ctx field o =
+    case KeyMap.lookup (Key.fromText field) o of
+        Just (Aeson.String t) -> Right t
+        Just other ->
+            Left $
+                MalformedImport
+                    (ctxFile ctx)
+                    topLevelLine
+                    ( field
+                        <> ": must be a string, got: "
+                        <> typeName other
+                    )
+        Nothing ->
+            Left $
+                MalformedImport
+                    (ctxFile ctx)
+                    topLevelLine
+                    ( "imports[]: inline ontology entry is missing "
+                        <> "the required '"
+                        <> field
+                        <> ":' field"
+                    )
 
 {- | A 'blueprints:' entry distilled into the metadata the resolver
 needs for its IO stage. Built by the pure YAML walker; consumed by
@@ -500,9 +652,18 @@ lookupScriptHash entities refName = do
     find p = foldr (\x acc -> if p x then Just x else acc) Nothing
 
 parseEntity ::
-    Ctx -> Int -> Aeson.Value -> Either RulesLoadError EntityDecl
-parseEntity ctx ln = \case
+    Ctx ->
+    Imports ->
+    Int ->
+    Aeson.Value ->
+    Either RulesLoadError EntityDecl
+parseEntity ctx imports ln = \case
     Aeson.Object obj -> do
+        -- Phase 3: validate every key in this entry against the
+        -- 'Imports' table. Unknown keys, missing imports, and
+        -- ambiguous collisions all surface as parser errors before
+        -- we try to interpret the entry's shape.
+        validateEntryKeys ctx imports ln (KeyMap.keys obj)
         name <- requireName ctx ln obj
         slug <- slugifyOrError ctx ln name
         mRole <- parseOptionalText ctx ln "role" obj
@@ -525,9 +686,81 @@ parseEntity ctx ln = \case
                 ln
                 ("entity entry must be an object, got: " <> typeName other)
 
+{- | Validate every YAML key on an entity / attestation entry
+against the operator-declared 'Imports' table. Phase 3 of epic 66.
+
+Iterates the keys in source order. For each key:
+
+* If the key contains a @:@ it is an explicit-prefix form
+  (@\<vocab\>:\<key\>:@); the parser splits on the first @:@, looks
+  up @vocab@ in 'importsKnown', and accepts the key if the vocab
+  is declared (its KEY surface is not checked — explicit-prefix
+  forms always succeed once the vocab is imported). An unknown
+  vocab here is 'UnknownImport' with the (vocab) payload.
+
+* Otherwise the key is resolved via 'resolveKey'. The four
+  'KeyResolution' variants map directly onto the four parser
+  error variants ('UnknownKey', 'MissingImportForKey',
+  'AmbiguousKey'); 'KeyResolved' is the only branch that allows
+  the parser to continue.
+-}
+validateEntryKeys ::
+    Ctx ->
+    Imports ->
+    Int ->
+    [Key.Key] ->
+    Either RulesLoadError ()
+validateEntryKeys ctx imports ln = traverse_ validateOne
+  where
+    traverse_ f = foldr (\k acc -> f k >> acc) (Right ())
+    validateOne k =
+        let raw = Key.toText k
+         in case Text.splitOn ":" raw of
+                [_single] -> case resolveKey imports raw of
+                    KeyResolved _ -> Right ()
+                    KeyUnknown -> Left (UnknownKey (ctxFile ctx) ln raw)
+                    KeyAmbiguous owners ->
+                        Left
+                            ( AmbiguousKey
+                                (ctxFile ctx)
+                                ln
+                                raw
+                                (map importEntryName owners)
+                            )
+                    KeyMissingImport vocab ->
+                        Left
+                            ( MissingImportForKey
+                                (ctxFile ctx)
+                                ln
+                                raw
+                                vocab
+                            )
+                (prefix : _ : _) ->
+                    if isKnownVocab imports prefix
+                        then Right ()
+                        else
+                            Left
+                                ( UnknownImport
+                                    (ctxFile ctx)
+                                    ln
+                                    prefix
+                                )
+                _ -> Right () -- impossible: splitOn ":" returns at least one element
+
+isKnownVocab :: Imports -> Text -> Bool
+isKnownVocab imports name =
+    name == "cardano"
+        || any ((== name) . importEntryName) (importsKnown imports)
+
 {- | Read an optional string-valued key from a YAML object. Issue
 #105 — used for the @role:@, @paid-via:@, and @label:@ fields
 which are all simple optional strings.
+
+Phase 3 (epic #66): treasury-overlay keys may be written either
+bare (@paid-via:@) or in explicit-prefix form
+(@treasury:paid-via:@) when the operator needs to disambiguate a
+collision. The lookup tries the bare key first, then falls back
+to the treasury-prefixed variant so both authoring styles work.
 -}
 parseOptionalText ::
     Ctx ->
@@ -536,7 +769,7 @@ parseOptionalText ::
     KeyMap.KeyMap Aeson.Value ->
     Either RulesLoadError (Maybe Text)
 parseOptionalText ctx ln key obj =
-    case KeyMap.lookup (Key.fromText key) obj of
+    case lookupTreasuryAware key obj of
         Nothing -> Right Nothing
         Just Aeson.Null -> Right Nothing
         Just (Aeson.String t) -> Right (Just t)
@@ -546,6 +779,20 @@ parseOptionalText ctx ln key obj =
                     (ctxFile ctx)
                     ln
                     (key <> ": must be a string, got: " <> typeName other)
+
+{- | Look up a YAML key by trying the bare name first, then the
+explicit-prefix form @treasury:\<key\>@. Treasury is the only
+non-cardano vocabulary the loader has schema for, so prefix-aware
+lookup is bounded to that one namespace; inline-imported
+ontologies declare their keys with explicit prefixes only and the
+parser never falls back to those.
+-}
+lookupTreasuryAware ::
+    Text -> KeyMap.KeyMap Aeson.Value -> Maybe Aeson.Value
+lookupTreasuryAware key obj =
+    case KeyMap.lookup (Key.fromText key) obj of
+        Just v -> Just v
+        Nothing -> KeyMap.lookup (Key.fromText ("treasury:" <> key)) obj
 
 {- | Read an optional entity-slug reference (slugified on the fly).
 Issue #105 — used for the @paid-via:@ field whose value should
@@ -569,17 +816,28 @@ entry is an object with @ipfs:@, @label:@, and @of:@ keys; @of:@
 references another entity's name which is slugified on read so
 the cross-link uses the same identifier convention as
 @paid-via:@. Absent / null key → empty list.
+
+Phase 3 (epic #66): each attestation entry's keys are validated
+against the operator's 'Imports' table — the @ipfs:@ and
+@attests:@ keys are owned by the treasury vocabulary, so an
+@attestations:@ block is itself implicit evidence that
+@imports: [treasury]@ should be present. Without that import, the
+block is rejected as a 'MissingImportForKey' on the first
+treasury-owned key encountered (typically @ipfs:@).
 -}
 parseAttestationsKey ::
     Ctx ->
+    Imports ->
     KeyMap.KeyMap Aeson.Value ->
     Either RulesLoadError [Attestation]
-parseAttestationsKey ctx obj =
+parseAttestationsKey ctx imports obj =
     case KeyMap.lookup (Key.fromText "attestations") obj of
         Nothing -> Right []
         Just Aeson.Null -> Right []
         Just (Aeson.Array arr) ->
-            traverse (parseAttestation ctx topLevelLine) (foldr (:) [] arr)
+            traverse
+                (parseAttestation ctx imports topLevelLine)
+                (foldr (:) [] arr)
         Just other ->
             Left $
                 ParserError
@@ -590,9 +848,14 @@ parseAttestationsKey ctx obj =
                     )
 
 parseAttestation ::
-    Ctx -> Int -> Aeson.Value -> Either RulesLoadError Attestation
-parseAttestation ctx ln = \case
+    Ctx ->
+    Imports ->
+    Int ->
+    Aeson.Value ->
+    Either RulesLoadError Attestation
+parseAttestation ctx imports ln = \case
     Aeson.Object obj -> do
+        validateEntryKeys ctx imports ln (KeyMap.keys obj)
         mIpfs <- parseOptionalText ctx ln "ipfs" obj
         ipfs <- case mIpfs of
             Just s -> Right s

@@ -289,6 +289,41 @@ data RulesLoadError
       -- 1-based line of the second @- script:@ declaration + the
       -- conflicting predicate name.
       DuplicateBlueprintPredicate !FilePath !Int !Text
+    | -- | An @imports:@ entry is a bare short name not in the
+      -- built-in vocab registry. Phase 3 (epic #66). Payload =
+      -- rules.yaml path + 1-based line of the @imports:@ key + the
+      -- offending short name. Renders as
+      -- @\<rules-yaml\>:\<line\>: UnknownImport: '\<name\>'; known short
+      -- names: cardano, treasury; supply '{iri: ..., as: ...}' for
+      -- a custom ontology@.
+      UnknownImport !FilePath !Int !Text
+    | -- | An @imports:@ entry of object shape is missing one of the
+      -- two required keys @iri:@ / @as:@. Phase 3 (epic #66).
+      -- Payload = rules.yaml path + 1-based line of the @imports:@
+      -- key + a human-readable explanation of which key is missing.
+      MalformedImport !FilePath !Int !Text
+    | -- | A YAML key on an entity / attestation / blueprint entry is
+      -- not declared by any imported vocabulary. Phase 3 (epic #66).
+      -- Payload = rules.yaml path + 1-based line of the offending
+      -- entry + the offending key. Renders as
+      -- @\<rules-yaml\>:\<line\>: UnknownKey: 'foo'; did you forget
+      -- to add it to imports:?@
+      UnknownKey !FilePath !Int !Text
+    | -- | A YAML key is owned by a vocabulary that the operator did
+      -- not list in @imports:@. Phase 3 (epic #66). Payload =
+      -- rules.yaml path + 1-based line of the offending entry +
+      -- offending key + missing vocab short name (e.g.
+      -- @"treasury"@). Renders as
+      -- @\<rules-yaml\>:\<line\>: MissingImport: key '\<key\>'
+      -- requires 'imports: [\<vocab\>]'@.
+      MissingImportForKey !FilePath !Int !Text !Text
+    | -- | A YAML key is owned by two or more imported vocabularies
+      -- (collision). The operator must rewrite the key in
+      -- explicit-prefix form @\<vocab\>:\<key\>:@. Phase 3
+      -- (epic #66). Payload = rules.yaml path + 1-based line + the
+      -- offending key + the list of vocab short names that claim
+      -- it.
+      AmbiguousKey !FilePath !Int !Text ![Text]
     deriving stock (Eq, Show)
 
 {- | Non-fatal warnings the loader emits while still returning a 'Right'

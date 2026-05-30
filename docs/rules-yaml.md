@@ -13,7 +13,8 @@ overlay format emitted by the loader.
 
 ```yaml
 imports:
-  - common.yaml
+  - treasury        # vocab import (built-in short name)
+  - common.yaml     # file import (legacy DFS composition)
 
 entities:
   - name: amaru-treasury.network_compliance
@@ -37,11 +38,11 @@ attestations:
     of: amaru-treasury.network_compliance
 ```
 
-Top-level keys consumed by `tx-graph`:
+Top-level keys consumed by `cq-rdf overlay`:
 
 | Key | Meaning |
 |--|--|
-| `imports` | Relative YAML/Turtle files to load before the current file. Absolute and HTTP imports are rejected. |
+| `imports` | Vocabularies (bare short name or `{iri:, as:}` object) declaring non-cardano keys, and/or relative YAML/Turtle files to load before the current file. |
 | `entities` | Operator names for addresses, scripts, policies, assets, and off-chain parties. |
 | `blueprints` | CIP-57 datum blueprints keyed by a named script entity. |
 | `attestations` | IPFS-anchored evidence linked to a named entity. |
@@ -143,11 +144,58 @@ way as `entities[].name`.
 
 ## Imports
 
-Imports are resolved depth-first, then deduplicated. Child files are
-loaded before the file that imports them. Cycles, missing files, absolute
-paths, and HTTP(S) imports are errors.
+The `imports:` block carries two orthogonal kinds of entry, both
+classified at parse time by the entry's shape:
 
-If two files declare the same identifier, the first declaration owns the
-identifier blank node and later entities reference it. If two blueprint
-entries target the same script hash, the first one wins and the loader
-emits a warning.
+* **Vocabulary imports** opt the overlay in to a non-cardano
+  ontology so its keys become usable on entity / attestation
+  entries. Two authoring forms:
+
+  ```yaml
+  imports:
+    - treasury                            # built-in short name
+    - { iri: https://example.com/foo/vocab#, as: foo }  # inline
+  ```
+
+  The built-in registry currently contains one entry: `treasury` →
+  `https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#`.
+  Other short names are rejected with `UnknownImport` unless the
+  operator supplies an inline `{iri:, as:}` object.
+
+  Treasury-overlay keys (`paid-via`, `role`, `attests`, `ipfs`) are
+  available only when `imports: [treasury]` is present; using them
+  without the import is a `MissingImport` error pointing the
+  operator at the missing vocabulary.
+
+  Keys from inline-imported ontologies must be written in
+  explicit-prefix form (`foo:custom-key:`); the loader has no
+  schema for them.
+
+  When two imported vocabularies claim the same local key the
+  parser refuses to guess and demands the explicit-prefix form
+  (`treasury:role:` or `foo:role:`).
+
+  The emitted overlay TTL declares one `owl:imports` per resolved
+  vocabulary plus the implicit cardano ontology, so downstream
+  consumers can resolve vocab provenance:
+
+  ```turtle
+  <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/<fixture>#>
+    a owl:Ontology ;
+    owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> ,
+                <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury/overlay> .
+  ```
+
+* **File imports** are relative YAML/Turtle paths the loader reads
+  before the current file. An entry is classified as a file import
+  when its string contains a `/` path separator or ends in `.yaml`
+  / `.yml` / `.ttl`.
+
+  File imports are resolved depth-first, then deduplicated. Child
+  files are loaded before the file that imports them. Cycles,
+  missing files, absolute paths, and HTTP(S) imports are errors.
+
+  If two files declare the same identifier, the first declaration
+  owns the identifier blank node and later entities reference it.
+  If two blueprint entries target the same script hash, the first
+  one wins and the loader emits a warning.
