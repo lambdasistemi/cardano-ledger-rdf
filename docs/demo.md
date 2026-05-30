@@ -650,6 +650,37 @@ this page. The full case-study package, including `overlay.yaml`,
 `selections.txt`, `blueprints/`, and `shapes/`, is in
 [`docs/case-studies/2026-05-amaru-treasury/`](case-studies/2026-05-amaru-treasury/case.md).
 
+## Watch it run
+
+A capture of the workflow above, run against the published binaries on
+the May 2026 Amaru treasury case study. The operator surveys the
+declarative package (overlay, selections, blueprints, shapes), confirms
+that `$BLOCKFROST_PROJECT_ID` is *set* without ever printing it, then
+walks the four-stage pipe: `cq-rdf overlay` compiles the YAML into
+Turtle, `xargs -P8 cq-rdf body` fetches all 101 transaction bodies in
+parallel from Blockfrost, `cq-rdf blueprint` types the Sundae order
+datums, and `cq-rdf shacl` validates the operator-declared invariants
+(empty report, exit 0 — invariants held). The closing scenes run a real
+SPARQL question against `package.ttl` — *how much ADA came in from
+contingency?* lands the **205,000 ADA** number this page already
+quoted — and a typed-datum probe confirms **57** `OrderDatum_destination`
+triples are first-class in the lattice.
+
+<div class="asciinema-demo">
+
+```asciinema-player
+{
+  "file": "demo/cast.cast",
+  "auto_play": false,
+  "speed": 1.0,
+  "theme": "asciinema",
+  "rows": 32,
+  "cols": 100
+}
+```
+
+</div>
+
 ## Closing — write your own query
 
 The queries above are examples, not the ceiling. The lattice is plain RDF,
