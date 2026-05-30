@@ -2,7 +2,8 @@
 
 `tx-view` reads one canonical Turtle graph file and renders a named
 packaged projection. It is the local, offline presentation step after
-[`tx-graph`](tx-graph.md) has emitted `.ttl`.
+[`cq-rdf body`](cq-rdf.md#body) (or its deprecated
+[`tx-graph`](tx-graph.md) compat alias) has emitted `.ttl`.
 
 ```bash
 tx-view --graph lattice.ttl --view cli-tree
@@ -14,7 +15,7 @@ tx-view - packaged-view dispatcher over canonical Turtle graphs
 Usage: tx-view --graph FILE [--view NAME] [--out FILE]
 
 Available options:
-  --graph FILE   Canonical Turtle graph file (from tx-graph).
+  --graph FILE   Canonical Turtle graph file (from cq-rdf body).
   --view NAME    Packaged view name. Default: "cli-tree".
   --out FILE     Output destination. Default: stdout.
   -h,--help      Show the help text.
@@ -23,16 +24,16 @@ Available options:
 ## Inputs
 
 `--graph FILE` must point at a single `.ttl` file in the canonical Turtle
-subset emitted by `tx-graph`. The command has no network access and does
-not read CBOR, rules, or a directory of graphs.
+subset emitted by `cq-rdf body`. The command has no network access and
+does not read CBOR, an overlay, or a directory of graphs.
 
 The file may be a one-transaction graph or a merged lattice assembled by
-concatenating `tx-graph` Turtle output. The `json-ld` and
+concatenating `cq-rdf body` Turtle output. The `json-ld` and
 `entity-occurrences` views project the parsed file as a whole. The
 transaction-shaped text views, `cli-tree` and `asset-flow`, render the
 first `cardano:Transaction` subject found by the current in-repo reader;
 for per-transaction presentation, run them against individual `.ttl`
-files emitted with `tx-graph --out FILE`.
+files emitted with `cq-rdf body --out FILE`.
 
 Use `--out FILE` to write the rendered bytes to a file instead of stdout:
 

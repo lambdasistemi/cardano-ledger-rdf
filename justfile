@@ -49,6 +49,10 @@ vocab-validate:
 vocab-owl-smoke:
     python3 scripts/owl-smoke.py
 
+vocab-accessibility:
+    python3 scripts/vocab-accessibility.py
+    python3 scripts/vocab-accessibility.py --self-test
+
 ci:
     just build
     just unit
@@ -56,6 +60,7 @@ ci:
     just smoke-view
     just vocab-validate
     just vocab-owl-smoke
+    just vocab-accessibility
     cabal-fmt -c cardano-ledger-rdf.cabal
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec fourmolu -m check {} +
     find . -type f -name '*.hs' -not -path '*/dist-newstyle/*' -exec hlint {} +

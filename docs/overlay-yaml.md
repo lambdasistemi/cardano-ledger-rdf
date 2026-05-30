@@ -1,13 +1,18 @@
-# rules.yaml
+# overlay.yaml
 
-`tx-graph --rules FILE` loads an operator-authored RDF overlay. The
-overlay gives stable names to on-chain identifiers, registers optional
-CIP-57 blueprints for typed datum and redeemer decoding, and attaches
-off-chain evidence to named entities.
+`cq-rdf overlay --in FILE` reads an operator-authored RDF overlay and
+emits overlay-only Turtle. The overlay gives stable names to on-chain
+identifiers, registers optional CIP-57 blueprints for typed datum and
+redeemer decoding, and attaches off-chain evidence to named entities.
 
 The loader accepts `.yaml`, `.yml`, and canonical `.ttl` files. YAML is
 the authoring format operators normally edit; Turtle is the canonical
 overlay format emitted by the loader.
+
+By convention case studies name this file `overlay.yaml` and ship it
+alongside their `selections.txt`, `blueprints/`, and `shapes/`. The
+deprecated `tx-graph --rules` entry point reads the same format; new
+work should target [`cq-rdf overlay`](cq-rdf.md#overlay).
 
 ## Shape
 
@@ -87,7 +92,9 @@ entities:
 `from-address` decomposes Conway addresses into payment and stake
 credentials. `script` creates a `PaymentScript` identifier. `asset`
 stores `policy ++ hex(assetName)`. `keys` plus `bytes` lets one byte
-string be declared under multiple Cardano leaf types.
+string be declared under multiple Cardano leaf types. The case-study
+[overlay.yaml](case-studies/2026-05-amaru-treasury/overlay.yaml) is a
+worked example exercising every entity shape.
 
 Supported `keys:` labels are `PaymentKey`, `PaymentScript`, `StakeKey`,
 `StakeScript`, `DRepKey`, `DRepScript`, `PoolId`, `Policy`,
@@ -122,10 +129,11 @@ blueprints:
     datum: ./blueprints/swap-v2-datum.cip57.json
 ```
 
-Paths are relative to the rules file. The referenced `script:` must name
-an entity with a `PaymentScript` identifier. When `tx-graph` encounters a
-datum or redeemer locked by that script, it emits typed predicates from
-the blueprint constructor and field names. Decode failures keep the raw
+Paths are relative to the overlay file. The referenced `script:` must
+name an entity with a `PaymentScript` identifier. When `cq-rdf
+blueprint` (the CIP-57 typed-decode pass) encounters a datum or
+redeemer locked by that script, it emits typed predicates from the
+blueprint constructor and field names. Decode failures keep the raw
 bytes and add `cardano:decodeError`.
 
 ## Attestations
