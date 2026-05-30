@@ -106,3 +106,6 @@ nav:
               - Scoop detection: case-studies/2026-05-amaru-treasury/queries/q8-scoop-detection.md
               - Reference-script reuse: case-studies/2026-05-amaru-treasury/queries/q9-reference-script-reuse.md
               - Scoop-recipient resolution: case-studies/2026-05-amaru-treasury/queries/q10-scoop-recipient-resolution.md
+              - Self-swap validation: case-studies/2026-05-amaru-treasury/queries/q11-self-swap-validation.md
+          - Shapes:
+              - SHACL invariants: case-studies/2026-05-amaru-treasury/shapes/README.md

@@ -246,6 +246,7 @@ test-suite unit-tests
     Cardano.Tx.Graph.Rules.LoadTurtleSpec
     Cardano.Tx.Graph.Rules.LoadValidationSpec
     Cardano.Tx.Graph.Rules.LoadYamlSpec
+    Cardano.Tx.Graph.ShapesAmaruMay2026Spec
     Cardano.Tx.Graph.TxGraphExeSpec
     Cardano.Tx.View.AssetFlowSpec
     Cardano.Tx.View.CliTreeEntitySpec

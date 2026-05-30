@@ -1,0 +1,81 @@
+# Self-swap invariant — Amaru Treasury May 2026
+#
+# Every Sundae OrderDatum emitted by an operator-issued swap-order
+# transaction MUST route its output back to the network_compliance
+# treasury script. "Operator-issued" is signalled by the enclosing
+# transaction consuming at least one network_compliance UTxO; that
+# subsetting matters because the May 2026 lattice closure also
+# contains third-party Sundae orders sharing the same script
+# address (fa6a58bb…), whose destinations we have no business
+# constraining.
+#
+# Script hash pin:
+#   amaru-treasury.network_compliance =
+#     32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d
+#
+# Typed predicates consumed:
+#   tx:OrderDatum_destination       — output of cq-rdf blueprint
+#   tx:_0_address                   — Destination.Fixed constructor field
+#   tx:_0_payment_credential        — Address constructor field
+#   tx:_0_field0                    — VerificationKey/Script Credential payload
+#   cardano:bytesHex                — leaf bytes literal
+#
+# This shape is the machine-enforced form of Q11 (self-swap
+# validation). See queries/q11-self-swap-validation.md for the
+# explanatory SPARQL.
+
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix tx:      <https://lambdasistemi.github.io/cardano-rdf/fixtures/tx#> .
+@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/shapes/2026-05-amaru-treasury/self-swap>
+    a sh:NodeShape ;
+    rdfs:label "Amaru Treasury May 2026 — self-swap invariant" ;
+    sh:targetSubjectsOf tx:OrderDatum_destination ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Operator-issued Sundae OrderDatum {?this} has destination payment credential {?value}, which is not the network_compliance script hash (32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d)." ;
+        sh:severity sh:Violation ;
+        sh:prefixes <https://lambdasistemi.github.io/cardano-ledger-rdf/shapes/2026-05-amaru-treasury/prefixes> ;
+        sh:select """
+            PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+            PREFIX tx: <https://lambdasistemi.github.io/cardano-rdf/fixtures/tx#>
+            SELECT $this ?value
+            WHERE {
+                # Anchor: enclosing tx that emits this OrderDatum at one
+                # of its outputs.
+                ?enclosingTx a cardano:Transaction ;
+                             cardano:hasOutput ?out .
+                ?out cardano:hasDatum $this .
+
+                # Scope to operator-issued orders: the enclosing tx
+                # consumes at least one network_compliance UTxO.
+                ?enclosingTx cardano:hasInput ?in .
+                ?in cardano:fromTxOutRef ?ref .
+                ?ref cardano:hasTxId ?parentIdNode ;
+                     cardano:hasIndex ?pIdx .
+                ?parentTx cardano:hasTxId ?parentIdNode ;
+                          cardano:hasOutput ?parentOut .
+                ?parentOut cardano:hasIndex ?pIdx ;
+                           cardano:atAddress ?parentAddr .
+                ?parentAddr cardano:hasPaymentCredential ?parentPc .
+                ?parentPc cardano:hasIdentifier ?parentIdent .
+                ?parentIdent cardano:bytesHex
+                    "32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d" .
+
+                # Destination payment credential.
+                $this tx:OrderDatum_destination ?dest .
+                ?dest tx:_0_address ?destAddr .
+                ?destAddr tx:_0_payment_credential ?destPc .
+                ?destPc tx:_0_field0 ?destIdent .
+                ?destIdent cardano:bytesHex ?value .
+
+                # Violation: destination != network_compliance.
+                FILTER (?value !=
+                    "32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d")
+            }
+        """ ;
+    ] .
