@@ -1,0 +1,16 @@
+# Operator overlay for the DRep Vote Correlations case study.
+#
+# Only cardano-prefix predicates are used here (entities keyed by
+# script hash or stake credential), so no `imports:` block is needed
+# — Phase 3 of epic #66 makes the treasury vocab opt-in for cases
+# that need its `paid-via` / `role` / `attests` / `ipfs` keys.
+#
+# Entity shapes are constrained by
+# src/Cardano/Tx/Graph/Rules/Load/Parse/Yaml.hs::parseShape.
+entities:
+  - name: io.budget-guard-policy
+    script: fa24fb305126805cf2164c161d852a0e7330cf988f1fe558cf7d4a64
+
+  - name: intersect.treasury-holding
+    keys: [StakeKey]
+    bytes: 8583857e4a12ffe1e6f641a1785a0f2f036c565cfbe6ff9db8e5a469

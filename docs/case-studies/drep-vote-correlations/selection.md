@@ -94,8 +94,9 @@ rows.
 
 The CBOR cache is the union of all selected action submission transactions
 and all unique vote transaction hashes returned by Step 4. CBOR is fetched
-in batches of 50 hashes and saved as `<txid>.cbor`; `pipeline.sh` performs
-that batching and then invokes `tx-graph`.
+through any provider supported by `cq-rdf body` (e.g. `--provider koios`),
+streamed via `xargs -P8 -n1 cq-rdf body --provider koios < selections.txt`
+as documented in [`README.md`](README.md).
 
 ```sh
 curl -sS -X POST https://api.koios.rest/api/v1/tx_cbor \

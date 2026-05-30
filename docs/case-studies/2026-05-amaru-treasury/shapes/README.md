@@ -15,19 +15,22 @@ violations.
 
 ## Reproduce on the May 2026 lattice
 
-```bash
-# Build the lattice (existing dev artefact; Phase 5 of #66 retires it).
-[KOIOS_TOKEN=...] ./pipeline.sh ./out
+These shapes run as the last stage of the case study's reproduce
+pipe documented in [`../README.md`](../README.md):
 
-# Type the lattice with the Sundae blueprint, then validate it.
-cat ./out/lattice.ttl \
-  | cq-rdf blueprint --blueprints ../../../test/fixtures/tx-graph/blueprints/sundaeswap-v3/ \
-  | cq-rdf shacl    --shapes    shapes/
+```bash
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl \
+  | cq-rdf blueprint --blueprints blueprints/ \
+  > package.ttl
+cq-rdf shacl --shapes shapes/ < package.ttl
 ```
 
-On the real May 2026 lattice this pipe exits 0: every operator-
-issued Sundae order routes back to `network_compliance`, and every
-declared off-chain vendor is attested.
+On the real May 2026 lattice `cq-rdf shacl` exits 0 on the
+resulting `package.ttl`: every operator-issued Sundae order routes
+back to `network_compliance`, and every declared off-chain vendor
+is attested.
 
 ## Notes
 

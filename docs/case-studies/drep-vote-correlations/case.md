@@ -11,8 +11,9 @@ actions from proposal epochs 576 through 632.
 ## Dataset and queries
 
 Dataset assembly is documented in [Dataset selection](selection.md), with
-the full transaction list in [`selections.txt`](selections.txt) and the
-entity overlay in [`rules.yaml`](rules.yaml). SPARQL evidence is split into
+the full transaction list in [`selections.txt`](selections.txt), the
+entity overlay in [`overlay.yaml`](overlay.yaml), and the reproduce pipe
+in [`README.md`](README.md). SPARQL evidence is split into
 one page per question: [Q1 pairwise agreement](queries/q1-pairwise-agreement.md),
 [Q2 bloc detection](queries/q2-bloc-detection.md),
 [Q3 swing prevalence](queries/q3-swing-prevalence.md),
@@ -28,13 +29,13 @@ latest vote deterministically.
 
 ## Entity rules
 
-[`rules.yaml`](rules.yaml) names the two entities shared by all selected
+[`overlay.yaml`](overlay.yaml) names the two entities shared by all selected
 treasury withdrawals. `io.budget-guard-policy` names guard policy
 `fa24fb305126805cf2164c161d852a0e7330cf988f1fe558cf7d4a64`.
 `intersect.treasury-holding` names stake credential
 `8583857e4a12ffe1e6f641a1785a0f2f036c565cfbe6ff9db8e5a469`.
 
-Gov action IDs remain raw query filters because the current `rules.yaml`
+Gov action IDs remain raw query filters because the current `overlay.yaml`
 grammar has no `GovActionId` leaf type.
 
 ## Findings
@@ -115,15 +116,19 @@ not emitted yet (#46).
 
 ## How to reproduce
 
-```sh
-# 1. Assemble cbor/ and emit the SPARQL-queryable lattice.
-./pipeline.sh /tmp/io-gov-actions/drep-correlations
+The reproduce pipe is documented in [`README.md`](README.md). In
+summary, from this directory:
 
-# 2. Extract any SPARQL block from a query page into a .rq file.
-arq --data /tmp/io-gov-actions/drep-correlations/lattice.ttl --query q1.rq
+```bash
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider koios < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl > package.ttl
+
+# Extract any SPARQL block from a query page into a .rq file and run it.
+arq --data package.ttl --query q1.rq
 ```
 
 The action filters in the query pages use `(txid, index)` pairs rather than
-governance action bech32 strings. That mirrors tx-graph's typed
+governance action bech32 strings. That mirrors `cq-rdf body`'s typed
 `cardano:GovActionId` shape: `cardano:hasTxId/cardano:bytesHex` plus
 `cardano:hasIndex`.

@@ -6,17 +6,18 @@ right interface for the report.
 ## Dataset and queries
 
 Dataset assembly is documented in [Dataset selection](selection.md), with
-the full txid list in [`selections.txt`](selections.txt) and the entity
-overlay in [`rules.yaml`](rules.yaml). Query evidence lives under
+the full txid list in [`selections.txt`](selections.txt), the entity
+overlay in [`overlay.yaml`](overlay.yaml), and the reproduce pipe in
+[`README.md`](README.md). Query evidence lives under
 [`queries/`](queries/q-example.md).
 
 ## Entity rules
 
-Use [`rules.yaml`](rules.yaml) to name case-study entities with the supported
-tx-graph shapes: `from-address`, `script`, `asset`, `pool`, `drep`, and
-`keys` plus `bytes`. The same file can also register CIP-57 blueprints and
-IPFS attestations, and it can describe off-chain entities through
-`paid-via`.
+Use [`overlay.yaml`](overlay.yaml) to name case-study entities with the
+supported `cq-rdf overlay` shapes: `from-address`, `script`, `asset`,
+`pool`, `drep`, and `keys` plus `bytes`. The same file can also describe
+off-chain entities through `paid-via` (with `imports: [treasury]`) and
+declare IPFS-anchored attestations.
 
 ## Findings
 
@@ -25,7 +26,12 @@ page that produces it.
 
 ## How to reproduce
 
-```sh
-./pipeline.sh out
-arq --data out/lattice.ttl --query q-example.rq
+See [`README.md`](README.md) for the full reproduce pipe. In summary,
+from this directory:
+
+```bash
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider koios < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl > package.ttl
+arq --data package.ttl --query q-example.rq
 ```

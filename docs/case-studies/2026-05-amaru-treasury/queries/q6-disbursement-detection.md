@@ -3,10 +3,10 @@
 The contingency → network_compliance disbursement signature is "a
 transaction that consumes a contingency UTxO and emits a
 network_compliance output". This query expresses that pattern by
-joining through the `cardano:Entity` overlay nodes that the
-`rules.yaml` emit places in the lattice — so the bech32 addresses are
-sourced from the overlay (`rdfs:label` lookup) rather than pasted as
-literals.
+joining through the `cardano:Entity` overlay nodes that
+`cq-rdf overlay` emits from `overlay.yaml` into the lattice — so the
+bech32 addresses are sourced from the overlay (`rdfs:label` lookup)
+rather than pasted as literals.
 
 <div class="scrollbox" markdown>
 
