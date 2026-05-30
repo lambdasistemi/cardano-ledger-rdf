@@ -127,19 +127,17 @@ jobs:
           release-notes-command: 'scripts/release/extract-notes "$TAG"'
           release-title: ${{ matrix.executable.name }} ${{ env.TAG }}
           dev-release-title: ${{ matrix.executable.name }} dev Homebrew
+          # Smoke runs the binary with no args and validates the help text.
+          # Exit code is ignored: cq-rdf + tx-graph print help and exit 0;
+          # tx-view prints help and exits 1. Both shapes are valid for the
+          # smoke as long as the usage strings appear on stderr/stdout.
           tarball-smoke-script: |
-            if ${{ matrix.executable.name }} >/tmp/exe.out 2>&1; then
-              cat /tmp/exe.out
-              exit 1
-            fi
+            ${{ matrix.executable.name }} >/tmp/exe.out 2>&1 || true
             cat /tmp/exe.out
             grep -F -- "Usage:" /tmp/exe.out >/dev/null
             grep -F -- "${{ matrix.executable.usage-grep }}" /tmp/exe.out >/dev/null
           brew-smoke-script: |
-            if ${{ matrix.executable.name }} >/tmp/exe.out 2>&1; then
-              cat /tmp/exe.out
-              exit 1
-            fi
+            ${{ matrix.executable.name }} >/tmp/exe.out 2>&1 || true
             cat /tmp/exe.out
             grep -F -- "Usage:" /tmp/exe.out >/dev/null
             grep -F -- "${{ matrix.executable.usage-grep }}" /tmp/exe.out >/dev/null

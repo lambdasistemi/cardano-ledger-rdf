@@ -140,6 +140,19 @@
             EOF
             chmod +x "$out/bin/tx-graph"
           '';
+          # Darwin release package for tx-graph: a bare renamed copy of the
+          # cq-rdf binary so the Homebrew bundler can `cp -L` it into the
+          # tarball directly. The legacy `tx-graph` mode is selected by
+          # `getProgName` inside the binary (see app/tx-graph/Main.hs), so a
+          # simple rename is sufficient — no wrapper script with embedded
+          # /nix/store paths leaks into the tarball.
+          txGraphDarwinUnwrapped =
+            pkgs.runCommand "tx-graph-darwin-unwrapped-${packageVersion}"
+              { meta.mainProgram = "tx-graph"; } ''
+              mkdir -p "$out/bin"
+              cp -L ${cqRdfUnwrapped}/bin/cq-rdf "$out/bin/tx-graph"
+              chmod +x "$out/bin/tx-graph"
+            '';
           packageVersion =
             let
               versionLines =
@@ -159,6 +172,13 @@
             {
               name = "cq-rdf";
               package = cqRdf;
+              # Darwin release tarball must NOT contain the `makeWrapper`
+              # shell script — its embedded /nix/store/.../bin/cq-rdf path
+              # is dangling once the tarball is extracted on a fresh
+              # machine. Ship the raw Haskell binary instead; runtime
+              # dependencies (apache-jena for `cq-rdf shacl`) are the
+              # operator's responsibility on Homebrew installs (see README).
+              darwinPackage = cqRdfUnwrapped;
               desc = "Cardano RDF pipeline primitives";
               formulaClass = "CqRdf";
               formulaTest = ''
@@ -173,6 +193,11 @@
             {
               name = "tx-graph";
               package = txGraphCompat;
+              # Same self-containment rationale as `cq-rdf` above: the
+              # Darwin tarball ships a bare renamed copy of the cq-rdf
+              # binary; `getProgName` inside the binary selects the legacy
+              # tx-graph behaviour automatically.
+              darwinPackage = txGraphDarwinUnwrapped;
               desc = "Deprecated compatibility symlink for cq-rdf body";
               formulaClass = "TxGraph";
               formulaTest = ''

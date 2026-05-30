@@ -70,6 +70,24 @@ nix build .#tx-view-linux-release-artifacts
 Darwin/Homebrew artifacts are built by the corresponding GitHub
 Actions workflows for the same executables.
 
+### Runtime dependencies (Darwin/Homebrew installs)
+
+The Linux release artifacts (AppImage / `.deb` / `.rpm`) bundle a complete
+runtime closure, including Apache Jena. The Darwin Homebrew tarball ships
+only the `cq-rdf` (and renamed `tx-graph`) binary plus its native dylibs —
+it does NOT bundle the Java runtime or Apache Jena. The `cq-rdf overlay`,
+`cq-rdf body`, and `cq-rdf blueprint` subcommands are pure Haskell and
+need no extra dependencies. The `cq-rdf shacl` subcommand and the
+`arq`-based SPARQL examples in the workflow above require Apache Jena to
+be installed and discoverable on `PATH`. On macOS:
+
+```bash
+brew install jena
+```
+
+Inside `nix develop` the project's flake shell already provides Apache
+Jena, so this note only applies to Homebrew-installed `cq-rdf`.
+
 ## Develop
 
 ```bash
