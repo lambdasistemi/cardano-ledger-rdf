@@ -403,7 +403,17 @@ resolveBlueprintSchema blueprint =
         case schemaKind schema of
             SchemaReference reference
                 | reference `Set.member` seen ->
-                    Left (BlueprintDefinitionCycle reference)
+                    -- A reference loop in the blueprint definitions
+                    -- (e.g. SundaeSwap @MultisigScript@'s self-recursive
+                    -- @AllOf | AnyOf@ alternatives) cannot be resolved
+                    -- eagerly without diverging. Degrading the cyclic
+                    -- subtree to 'SchemaData' lets the surrounding
+                    -- (non-recursive) record fields still decode typed
+                    -- while the recursive payload appears as the
+                    -- 'plutusDataOpenValue' AST. Phase 4 (#66) of the
+                    -- SHACL-shapes work depends on this for Sundae
+                    -- @OrderDatum.destination@ typing.
+                    Right (BlueprintSchema (schemaTitle schema) SchemaData)
                 | otherwise ->
                     case Map.lookup reference (blueprintDefinitions blueprint) of
                         Nothing ->

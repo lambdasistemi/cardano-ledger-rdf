@@ -1,8 +1,9 @@
 # Amaru Treasury May 2026
 
-This case study runs eleven SPARQL queries over a real Amaru Treasury
+This case study runs twelve SPARQL queries over a real Amaru Treasury
 May 2026 on-chain lattice built end-to-end from `tx-graph`, the
-closure fetched by transaction CBOR, and Apache Jena.
+closure fetched by transaction CBOR, and Apache Jena, and validates
+two invariants on that lattice via SHACL shapes.
 
 The dataset is the 101-transaction lattice rooted in the May 2026
 operator batch: 30 seed transactions and 71 closure parents. The seed
@@ -23,7 +24,23 @@ one page per query: [Q0 conservation](queries/q0-conservation-check.md),
 [Q3 ADA scope flow](queries/q3-per-scope-ada-flow.md), [Q4 multisig shape](queries/q4-multisig-shape-distribution.md),
 [Q5 vendor chain](queries/q5-vendor-payment-chain.md), [Q6 disbursement detection](queries/q6-disbursement-detection.md),
 [Q7 USDM scope flow](queries/q7-per-scope-usdm-flow.md), [Q8 scoop detection](queries/q8-scoop-detection.md),
-[Q9 reference-script reuse](queries/q9-reference-script-reuse.md), and [Q10 scoop-recipient resolution](queries/q10-scoop-recipient-resolution.md).
+[Q9 reference-script reuse](queries/q9-reference-script-reuse.md), [Q10 scoop-recipient resolution](queries/q10-scoop-recipient-resolution.md),
+and [Q11 self-swap validation](queries/q11-self-swap-validation.md).
+
+## Invariants
+
+The operator ships SHACL shapes that turn the human-readable
+invariants into machine-checked gates. `cq-rdf shacl --shapes
+shapes/` runs every shape against the typed lattice and exits
+non-zero on any violation. Two shapes ship today; the directory
+is meant to grow as new invariants are added.
+
+| Shape | Invariant |
+|---|---|
+| [`shapes/self-swap.shacl.ttl`](shapes/self-swap.shacl.ttl) | Every operator-issued Sundae OrderDatum routes back to `network_compliance`. Machine form of [Q11](queries/q11-self-swap-validation.md). |
+| [`shapes/attested-disbursement.shacl.ttl`](shapes/attested-disbursement.shacl.ttl) | Every `treasury:OffChainEntity` with `treasury:paidVia` has at least one `treasury:Attestation` linked. |
+
+See [`shapes/README.md`](shapes/README.md) for the reproduce pipe.
 
 ## Data flow
 
@@ -186,6 +203,18 @@ What still doesn't land:
   swap-order datum as `Data` (intentional, by their design).
   The 6-field on-chain shape stays opaque. Q10 keeps the
   scoop-join workaround for resolving the human recipient.
+
+  *Update for #66 Phase 4*: when the operator points `cq-rdf
+  blueprint` at the upstream Sundae plutus.json, the
+  `documentation.spend` validator's typed `OrderDatum` schema (with
+  the `MultisigScript` recursive subtree degraded to opaque
+  `Data`) decodes the datum's named fields — including
+  `destination.address.payment_credential`. The
+  [`shapes/self-swap.shacl.ttl`](shapes/self-swap.shacl.ttl) shape
+  uses that typed path to enforce the self-swap invariant on every
+  operator-issued order. See
+  [Q11](queries/q11-self-swap-validation.md) for the explanatory
+  SPARQL.
 
 `rules.yaml` in this case-study folder names the entity
 `sundae.swap.v3.order` (the authoritative name) — the older

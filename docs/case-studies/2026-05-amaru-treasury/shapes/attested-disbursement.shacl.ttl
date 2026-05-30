@@ -1,0 +1,48 @@
+# Attested-disbursement invariant — Amaru Treasury May 2026
+#
+# Every off-chain entity that the operator declares as a payment
+# recipient (treasury:OffChainEntity with at least one
+# treasury:paidVia bridge) MUST be backed by at least one
+# treasury:Attestation linking back to it via treasury:attests.
+#
+# This is the simplified overlay-level form. The brief contemplates
+# a richer on-chain join (each USDM-bearing output to the cag-payee
+# bridge implies the vendor it pays has an attestation); we ship
+# the overlay-level check here because (a) it expresses the same
+# accountability guarantee on the data the operator authored, (b)
+# it composes with vendor-payment SPARQL without touching SHACL
+# path semantics, and (c) it proves the directory-of-shapes
+# convention picks up multiple *.shacl.ttl files.
+#
+# Vocabulary:
+#   treasury:OffChainEntity  — operator-declared off-chain vendor
+#   treasury:paidVia         — relates vendor → on-chain bridge entity
+#   treasury:attests         — relates attestation → vendor
+#   treasury:Attestation     — IPFS-anchored supporting artefact
+
+@prefix sh:       <http://www.w3.org/ns/shacl#> .
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix cardano:  <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/shapes/2026-05-amaru-treasury/attested-disbursement>
+    a sh:NodeShape ;
+    rdfs:label "Amaru Treasury May 2026 — attested disbursement" ;
+    rdfs:comment "Every off-chain entity with a payment bridge must have at least one attestation. Overlay-level form of the on-chain disbursement-attestation invariant." ;
+    sh:targetSubjectsOf treasury:paidVia ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Off-chain entity {?this} has a treasury:paidVia bridge but no treasury:Attestation attests it." ;
+        sh:severity sh:Violation ;
+        sh:select """
+            PREFIX treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#>
+            SELECT $this
+            WHERE {
+                $this treasury:paidVia ?bridge .
+                FILTER NOT EXISTS {
+                    ?attestation a treasury:Attestation ;
+                                 treasury:attests $this .
+                }
+            }
+        """ ;
+    ] .
