@@ -1,9 +1,10 @@
 # Q5 — Vendor-payment chain (lattice × overlay)
 
 The on-chain side (USDM at `amaru.cag-payee` in the seed batch) and
-the off-chain side (vendors and attestations from `rules.yaml`) are
-emitted into the same lattice file by `tx-graph --rules` — so a
-single SPARQL invocation joins them.
+the off-chain side (vendors and attestations from `overlay.yaml`) are
+concatenated into the same lattice file by the reproduce pipe
+(`cq-rdf overlay` + `cq-rdf body` + `cat`) documented in
+[`README.md`](../README.md) — so a single SPARQL invocation joins them.
 
 <div class="scrollbox" markdown>
 
@@ -82,8 +83,8 @@ contracts, invoices, cycle reviews — by walking `treasury:paidVia`
 and `treasury:attests` across the lattice in one SPARQL invocation.
 The fixture-default `:` prefix
 (`https://lambdasistemi.github.io/cardano-rdf/fixtures/#`) is the
-IRI tx-graph emits for `rules.yaml`-declared overlay nodes; the
-vendor IRIs are `:amaru_antithesis` and `:amaru_castellum`.
+IRI `cq-rdf overlay` emits for `overlay.yaml`-declared overlay
+nodes; the vendor IRIs are `:amaru_antithesis` and `:amaru_castellum`.
 
 ```mermaid
 flowchart LR

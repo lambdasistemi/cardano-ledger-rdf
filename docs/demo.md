@@ -139,12 +139,13 @@ to, what's being bought.
 ## Pipeline 2 — typed: the same tx, with the operator overlay
 
 The overlay is a small, operator-authored
-[`rules.yaml`](case-studies/2026-05-amaru-treasury/case.md): a flat
+[`overlay.yaml`](case-studies/2026-05-amaru-treasury/case.md): a flat
 declaration of the treasury's scopes, the asset it trades, the vendors it
-pays, and the on-chain contracts it engages. `tx-graph --rules` merges it
-into the graph. The file we end at is the one the Amaru operator actually
-uses; rather than drop it on you whole, we add it **one feature at a time**
-and watch each line earn its keep.
+pays, and the on-chain contracts it engages. `cq-rdf overlay` emits it
+as Turtle that concatenates with the body graphs. The file we end at is
+the one the Amaru operator actually uses; rather than drop it on you
+whole, we add it **one feature at a time** and watch each line earn its
+keep.
 
 ### Rung 1 — name the scopes
 
@@ -272,7 +273,7 @@ batch:
 <div class="scrollbox" markdown>
 
 ```yaml
---8<-- "docs/case-studies/2026-05-amaru-treasury/rules.yaml"
+--8<-- "docs/case-studies/2026-05-amaru-treasury/overlay.yaml"
 ```
 
 </div>
@@ -337,21 +338,19 @@ the [case study](case-studies/2026-05-amaru-treasury/case.md) uses a
 seed-plus-closure selection for a different purpose.)
 
 ```bash
-# overlay once (entities, asset, vendors, attestations, blueprints)
-tx-graph --rules docs/case-studies/2026-05-amaru-treasury/rules.yaml > /tmp/may.ttl
+# overlay once (entities, asset, vendors, attestations)
+cq-rdf overlay --in docs/case-studies/2026-05-amaru-treasury/overlay.yaml > /tmp/may.ttl
 
 # then one transaction body per line of the by-address selection
-while read -r txid; do
-  case "$txid" in \#*|"") continue ;; esac
-  tx-graph --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" "$txid"
-done < docs/demo/selections.txt >> /tmp/may.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  < docs/demo/selections.txt >> /tmp/may.ttl
 ```
 
 Hold the signed CBORs locally instead? Drop the provider and pass paths —
 same graph:
 
 ```bash
-for f in cbor/*.cbor; do tx-graph "$f"; done >> /tmp/may.ttl
+for f in cbor/*.cbor; do cq-rdf body "$f"; done >> /tmp/may.ttl
 ```
 
 The hand-expanded pair from a moment ago is just two nodes of the lattice
@@ -635,7 +634,7 @@ published binaries — the operator treats the directory as a laboratory
 (look around, read the inputs, confirm what's in scope), then runs a swap
 settling USDM into the treasury — bare, then typed — followed by the
 lattice build and the truthful queries.
-The full `rules.yaml` and the full txid list scroll past uncut: the
+The full `overlay.yaml` and the full txid list scroll past uncut: the
 faithful inputs are the proof the downstream numbers are honest. The
 `BLOCKFROST_PROJECT_ID` is shown to be *set*, never printed.
 

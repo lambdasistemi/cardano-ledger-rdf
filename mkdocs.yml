@@ -69,8 +69,11 @@ nav:
       - rules.yaml: rules-yaml.md
   - Case studies:
       - Overview: case-studies/index.md
-      - Template: case-studies/_template/case.md
+      - Template:
+          - Package: case-studies/_template/README.md
+          - Presentation: case-studies/_template/case.md
       - "9-IO 2026 budget vote":
+          - Package: case-studies/2026-io-budget-vote/README.md
           - Presentation: case-studies/2026-io-budget-vote/case.md
           - Dataset selection: case-studies/2026-io-budget-vote/selection.md
           - Queries:
@@ -82,6 +85,7 @@ nav:
               - DRep behaviour: case-studies/2026-io-budget-vote/queries/q6-drep-behaviour.md
               - Anchor host distribution: case-studies/2026-io-budget-vote/queries/q7-anchor-host-distribution.md
       - "DRep vote correlations":
+          - Package: case-studies/drep-vote-correlations/README.md
           - Presentation: case-studies/drep-vote-correlations/case.md
           - Dataset selection: case-studies/drep-vote-correlations/selection.md
           - Queries:
@@ -92,6 +96,7 @@ nav:
               - Anchor coverage: case-studies/drep-vote-correlations/queries/q5-anchor-coverage.md
               - Arrival-time dynamics: case-studies/drep-vote-correlations/queries/q6-arrival-time-dynamics.md
       - "2026-05 Amaru Treasury":
+          - Package: case-studies/2026-05-amaru-treasury/README.md
           - Presentation: case-studies/2026-05-amaru-treasury/case.md
           - Dataset selection: case-studies/2026-05-amaru-treasury/selection.md
           - Queries:

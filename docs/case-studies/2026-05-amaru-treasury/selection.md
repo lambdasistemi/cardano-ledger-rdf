@@ -24,10 +24,11 @@ also preserved in the local Amaru Treasury transaction archive under
 ## Step 2 - fetch closure parents from transaction CBOR
 
 For each seed transaction, the closure walk fetches parent transaction
-CBOR for every consumed input at depth 1. The shipped
-[`pipeline.sh`](pipeline.sh) invokes `tx-graph --provider koios` to do
-the CBOR pull; the only Koios endpoint used is the transaction-CBOR
-fetch (no address, UTxO, input, or output convenience APIs).
+CBOR for every consumed input at depth 1. The reproduce pipe in
+[`README.md`](README.md) invokes `cq-rdf body --provider blockfrost`
+(or any other supported provider) to do the CBOR pull; the only
+indexer endpoint used is the transaction-CBOR fetch (no address,
+UTxO, input, or output convenience APIs).
 
 The reproduced selection list was cross-checked from two sources:
 Koios `tx_utxos` for normal consumed-input parents, and the local

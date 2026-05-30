@@ -18,9 +18,10 @@ governance action index order for the shared submission transaction.[^labels]
 ## Dataset and queries
 
 The dataset assembly is documented in [Dataset selection](selection.md),
-with the full transaction list in [`selections.txt`](selections.txt) and
-the entity overlay in [`rules.yaml`](rules.yaml). The SPARQL evidence is
-split into one page per query: [Q1 asks](queries/q1-asks.md),
+with the full transaction list in [`selections.txt`](selections.txt),
+the entity overlay in [`overlay.yaml`](overlay.yaml), and the reproduce
+pipe in [`README.md`](README.md). The SPARQL evidence is split into one
+page per query: [Q1 asks](queries/q1-asks.md),
 [Q2 beneficiary](queries/q2-single-beneficiary.md),
 [Q3 guard policy](queries/q3-single-guard-policy.md),
 [Q4 anchors](queries/q4-proposer-anchors.md),
@@ -30,7 +31,7 @@ split into one page per query: [Q1 asks](queries/q1-asks.md),
 
 ## Entity rules
 
-[`rules.yaml`](rules.yaml) names two 9-IO entities. The guard policy is
+[`overlay.yaml`](overlay.yaml) names two 9-IO entities. The guard policy is
 `io.budget-guard-policy`, keyed by script hash
 `fa24fb305126805cf2164c161d852a0e7330cf988f1fe558cf7d4a64`. The treasury
 beneficiary credential is `intersect.treasury-holding`, keyed as a
@@ -92,22 +93,25 @@ The IO vote set contains **928 vote rationales with anchors**. The top host is *
 
 ## How to reproduce
 
-```sh
-# 1. Fetch each txid in selections.txt from Koios and emit one lattice.ttl
-#    (overlay from rules.yaml + one graph per CBOR), written to <out_dir>:
-KOIOS_TOKEN=... ./pipeline.sh out
+The reproduce pipe is documented in [`README.md`](README.md). In
+summary, from this directory:
 
-# 2. Run any of the 7 documented queries after saving its SPARQL block:
-arq --data out/lattice.ttl --query q1-asks.rq
+```bash
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider koios < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl > package.ttl
+
+# Then run any of the 7 documented queries after saving its SPARQL block:
+arq --data package.ttl --query q1-asks.rq
 ```
 
-In `lattice.ttl`, every per-transaction-position blank node is namespaced
+In `package.ttl`, every per-transaction-position blank node is namespaced
 by its short transaction id, so positional bnodes such as `_:input1`,
 `_:vote1`, and `_:proposal1` do not collide across the 1,688
 transactions. Content-addressed identifiers are emitted as stable
 `urn:cardano:id:*` IRIs, so cross-transaction joins work without depending
 on blank-node labels. The reader does not need to apply this naming rule;
-`tx-graph` handles it.
+`cq-rdf body` handles it.
 
 Use the submission transaction id
 `73e171a4c0730b4b59ecae271ab89f12a9d56360b02920e1f95107dbdc1d6762`

@@ -17,8 +17,8 @@ same graph.
 
 Dataset assembly is documented in [Dataset selection](selection.md), with
 the full transaction list in [`selections.txt`](selections.txt), the
-case-local operator overlay in [`rules.yaml`](rules.yaml), and the runnable
-workflow in [`pipeline.sh`](pipeline.sh). The SPARQL evidence is split into
+case-local operator overlay in [`overlay.yaml`](overlay.yaml), and the
+reproduce pipe in [`README.md`](README.md). The SPARQL evidence is split into
 one page per query: [Q0 conservation](queries/q0-conservation-check.md),
 [Q1 monthly totals](queries/q1-monthly-totals.md), [Q2 USDM landing](queries/q2-where-did-usdm-land.md),
 [Q3 ADA scope flow](queries/q3-per-scope-ada-flow.md), [Q4 multisig shape](queries/q4-multisig-shape-distribution.md),
@@ -46,20 +46,25 @@ See [`shapes/README.md`](shapes/README.md) for the reproduce pipe.
 
 ```mermaid
 flowchart LR
-  subgraph koios[Koios]
-    kc["tx-graph --provider koios<br/>(CBOR pulled per txid)"]
+  subgraph blockfrost[Blockfrost / Koios]
+    kc["cq-rdf body --provider blockfrost<br/>(CBOR pulled per txid)"]
   end
-  kc -->|CBOR| txgraph
-  rules[("rules.yaml<br/>entities + blueprints + attestations")] --> txgraph
-  txgraph["tx-graph<br/>(canonical Turtle emit)"] -->|lattice.ttl| lattice
-  subgraph lattice["101-tx lattice"]
+  kc -->|body TTL| join
+  overlay[("overlay.yaml<br/>entities + attestations<br/>(imports: treasury)")] --> ov
+  ov["cq-rdf overlay<br/>(YAML → overlay TTL)"] -->|overlay TTL| join
+  bp[("blueprints/<br/>sundae-order-typed.cip57.json")] --> bpass
+  join["cat overlay.ttl bodies.ttl"] -->|TTL| bpass
+  bpass["cq-rdf blueprint<br/>(typed-decode pass)"] -->|package.ttl| lattice
+  shapes[("shapes/<br/>self-swap + attested-disbursement")] --> shacl
+  lattice --> shacl["cq-rdf shacl<br/>(invariant validation, exits 0 on conform)"]
+  subgraph lattice["101-tx typed lattice (package.ttl)"]
     direction LR
     seeds["30 seeds<br/>(May 2026 batch)"]
     parents["71 parents<br/>(consumed UTxOs + reference/collateral parents)"]
     parents -. cardano:fromTxOutRef .-> seeds
   end
   lattice --> jena
-  jena["Apache Jena<br/>SPARQL 1.1 engine"] -->|11 queries| results["real on-chain answers"]
+  jena["Apache Jena<br/>SPARQL 1.1 engine"] -->|12 queries| results["real on-chain answers"]
 ```
 
 ## Findings
@@ -88,17 +93,25 @@ the expected reference-input pattern for the treasury and swap scripts.
 
 ## How to reproduce
 
-```sh
-# 1. Build the lattice. pipeline.sh fetches each txid's CBOR through
-#    Koios (`tx-graph --provider koios`) and concatenates the
-#    rules.yaml overlay + one body graph per transaction into a single
-#    SPARQL-queryable Turtle file at <out>/lattice.ttl. KOIOS_TOKEN is
-#    optional; without it Koios rate-limits anonymously.
-[KOIOS_TOKEN=...] ./pipeline.sh ./out
+The reproduce pipe is documented in [`README.md`](README.md). In
+summary, from this directory:
 
-# 2. Save any query page's SPARQL block as qN.rq, then run it:
-arq --data ./out/lattice.ttl --query q0-conservation-check.rq
+```bash
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl \
+  | cq-rdf blueprint --blueprints blueprints/ \
+  > package.ttl
+cq-rdf shacl --shapes shapes/ < package.ttl
+
+# Then save any query page's SPARQL block as qN.rq and run it:
+arq --data package.ttl --query q0-conservation-check.rq
 ```
+
+Substitute `--provider koios` (or any other supported provider) if
+Blockfrost is not on hand. `cq-rdf shacl --shapes shapes/` reads
+`package.ttl` on stdin and exits non-zero on a violation, so a clean
+exit is also a clean invariant check.
 
 ## Limitations to be solved on our side
 
@@ -137,10 +150,10 @@ is the operator-intended "shared parameterised contract" pattern
 (Amaru contingency vs network_compliance both spending the
 `treasury.treasury.spend` contract). A true cross-blueprint
 predicate-URI collision still fails fast with
-`DuplicateBlueprintPredicate`. The presentation's `rules.yaml`
-can now register `amaru-treasury.cip57.json` against both
-treasury scopes and surface the typed redeemer decode on either
-side once gap #4 lands.
+`DuplicateBlueprintPredicate`. The presentation's
+`blueprints/` directory can now register the treasury blueprint
+against both treasury scopes and surface the typed redeemer
+decode on either side once gap #4 lands.
 
 ### 4. Typed redeemer decode not firing on live mainnet
 
@@ -152,16 +165,17 @@ consumed input's `TxOut` from a `ResolvedUTxO` map. The earlier
 lattice path never populated that map, so dispatch silently fell back
 to `NoBlueprintRegistered`.
 
-The current path composes one graph per CBOR:
+The current path composes one graph per CBOR via the `cq-rdf`
+subcommand pipe:
 
-* `tx-graph` emits a single transaction graph with tx-scoped
+* `cq-rdf body` emits a single transaction graph with tx-scoped
   positional blank nodes and stable content-addressed identifiers.
-* `pipeline.sh` writes the operator overlay once, then loops over
-  `OUT_DIR/cbor/*.cbor` and appends each `tx-graph "$f"` body graph.
-  Cross-transaction queries join through the emitted `TxId`,
-  `TxOutRef`, address, asset, and credential identifiers rather than
-  through a special merge command.
-  and BFS-walked ancestors alike.
+* The operator pipe (`cq-rdf overlay` + `xargs … cq-rdf body` +
+  `cat`) writes the operator overlay once and appends one body graph
+  per transaction. Cross-transaction queries join through the
+  emitted `TxId`, `TxOutRef`, address, asset, and credential
+  identifiers rather than through a special merge command — for the
+  seed batch and BFS-walked ancestors alike.
 
 (The original #112 fix was an on-disk `--closure-dir DIR`
 resolver that read parent CBORs from disk at emit time. #114
@@ -216,7 +230,7 @@ What still doesn't land:
   [Q11](queries/q11-self-swap-validation.md) for the explanatory
   SPARQL.
 
-`rules.yaml` in this case-study folder names the entity
+`overlay.yaml` in this case-study folder names the entity
 `sundae.swap.v3.order` (the authoritative name) — the older
 `amaru.swap.v2` label has been retired throughout the
 presentation. Q3's narrative "sundae.swap.v3.order + pools +
@@ -225,22 +239,21 @@ same Sundae V3 order script.
 
 ### 6. `tx-lattice` is a shell prototype
 
-**Impact**: closure walk, Koios CBOR fetch (driven by `tx-graph
---provider koios` inside `pipeline.sh`), and txid/index
-post-processing are all bash + jq. Brittle, hard to test, single-
-threaded. The pre-filter for off-chain entities (when rules.yaml
-mixes on-chain + off-chain) is a separate concern that doesn't
-exist yet.
+**Resolved** (epic #66, Phase 5): the case study no longer ships an
+orchestrator shell script. The runtime is reached through four
+narrow pure subcommands — `cq-rdf overlay`, `cq-rdf body`,
+`cq-rdf blueprint`, `cq-rdf shacl` — composed by a documented Unix
+pipe in [`README.md`](README.md). Parallel CBOR fetch is delegated
+to `xargs -P8`, an operator-tunable knob rather than a hard-coded
+loop. The "closure walk" pre-filter remains an operator concern;
+operators stream txids in from any source (hand-edited file,
+`gh api`, future `cq-select` service) without the runtime needing
+to know.
 
-**Fix**: re-implement as a Haskell executable (proposed
-`tx-lattice` companion to `tx-graph`). Same on-disk contract
-(a directory of canonical Turtle files keyed by txid); typed code
-path; parallel CBOR fetch.
-
-### 7. `tx-graph --rules` rejects rules.yaml files carrying off-chain entities
+### 7. `cq-rdf overlay` rejects overlay files carrying off-chain entities
 
 **Resolved** (#105, across `Cardano.Tx.Graph.Rules.Load.{Types,
-Parse.Yaml, Emit.Overlay}`): a single `rules.yaml` can now carry
+Parse.Yaml, Emit.Overlay}`): a single overlay file can now carry
 on-chain entities, off-chain overlay vendors, and IPFS-anchored
 attestations side by side. Concretely:
 
@@ -258,8 +271,8 @@ attestations side by side. Concretely:
   `treasury:paidVia` triples respectively.
 
 The May 2026 presentation can now drop the `overlay.ttl` companion
-file and ship a single rules.yaml; Q5 (vendor-payment chain) runs
-unchanged against the merged document.
+file and ship a single `overlay.yaml`; Q5 (vendor-payment chain)
+runs unchanged against the merged document.
 
 ### 8. Scope mapping is hard-coded inside each SPARQL query
 
@@ -270,3 +283,16 @@ every entity declared via `from-address:` now emits a top-level
 `?entity rdfs:label ?scope . ?entity cardano:bech32 ?bech` instead
 of carrying hard-coded bech32 literals in `VALUES` blocks — a
 follow-up to this issue will land that refactor.
+
+### 9. Overlay blank-node inflation under per-tx `--rules`
+
+**Resolved** (epic #66, Phases 2 and 5): the legacy `tx-graph
+--rules` mode re-emitted the overlay (including blank-node
+sub-structure for off-chain attestations and vendor metadata) once
+per body call. Entity IRIs deduplicated as triples, but blank
+nodes did not — Q5 and Q11 had to add `SELECT DISTINCT` to
+compensate. The new pipe emits the overlay exactly once
+(`cq-rdf overlay --in overlay.yaml > overlay.ttl`) and concatenates
+it with one body graph per transaction (`cq-rdf body`). No
+overlay blank node ever appears twice in the lattice, and the
+`SELECT DISTINCT` workarounds in Q5 / Q11 are no longer load-bearing.

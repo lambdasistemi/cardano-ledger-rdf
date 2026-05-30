@@ -1,11 +1,19 @@
-# Template entity overlay. The current rules.yaml entity shapes are
-# constrained by src/Cardano/Tx/Graph/Rules/Load/Parse/Yaml.hs::parseShape.
-# Replace these example values with identifiers from the selected dataset.
+# Template operator overlay.
+#
+# Entity shapes are constrained by
+# src/Cardano/Tx/Graph/Rules/Load/Parse/Yaml.hs::parseShape.
+# Replace these example values with identifiers from the selected
+# dataset.
 #
 # Phase 3 of epic #66 (separate runtime from apps): non-cardano
 # vocabularies are opt-in through this `imports:` block. The treasury
 # vocab owns the `paid-via`, `role`, `attests`, and `ipfs` keys; drop
 # this import if you remove the off-chain accounting entries below.
+#
+# Typed-decode of on-chain datums/redeemers is delivered by the
+# separate `cq-rdf blueprint --blueprints blueprints/` pass — point
+# `--blueprints` at this directory's `blueprints/` to register your
+# CIP-57 files at the typed-decode stage.
 imports:
   - treasury
 
@@ -32,10 +40,6 @@ entities:
   - name: example.vendor
     role: off-chain service provider
     paid-via: example.from-address
-
-blueprints:
-  - script: example.script
-    datum: ./blueprints/example.cip57.json
 
 attestations:
   - ipfs: ipfs://bafkreicnoadlgnc6cqxggxboho7yt532lkonxcusj3ndsxdnv5szyswyam

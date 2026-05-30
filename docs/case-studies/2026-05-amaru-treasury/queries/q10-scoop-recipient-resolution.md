@@ -64,7 +64,7 @@ ADA values are derived from the raw lovelace returned by the query
 (divide by 10⁶); USDM values are derived from the raw quantity
 returned by the query (divide by 10⁶, USDM has 6 decimals). The
 `addr1xyezq8w…` row matches the `network_compliance` bech32 from
-`rules.yaml` — the USDM change from the scoop lands back on the
+`overlay.yaml` — the USDM change from the scoop lands back on the
 treasury scope.
 
 ```mermaid
