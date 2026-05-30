@@ -10,7 +10,7 @@ Drives the freshly-built @tx-view@ binary to cover issue #61 bug 3:
   temporary file. The stdin render must byte-equal the @--graph FILE@
   render of the same graph.
 * a graph fed on stdin that carries an off-chain attestation written
-  in the @[] a cardano:Attestation ; … .@ form (issue #61 bug 2)
+  in the @[] a treasury:Attestation ; … .@ form (issue #61 bug 2)
   renders without a parse error — the end-to-end proof that the
   overlay's blank-node-property-list survives the pipe.
 * omitting @--graph@ entirely shows --help and exits 0 with a
@@ -76,7 +76,7 @@ spec =
                         outStdin `shouldBe` outFile
 
                 it
-                    ( "(2) a [] a cardano:Attestation ; … . block fed on "
+                    ( "(2) a [] a treasury:Attestation ; … . block fed on "
                         <> "stdin renders without a parse error"
                     )
                     $ do
@@ -126,10 +126,12 @@ attestationBlock =
     BS8.pack $
         unlines
             [ ""
-            , "[] a cardano:Attestation ;"
+            , "@prefix treasury: <https://example.org/treasury#> ."
+            , ""
+            , "[] a treasury:Attestation ;"
             , "  rdfs:label \"Invoice INV-635\" ;"
-            , "  cardano:attests :amaru.antithesis ;"
-            , "  cardano:ipfs <ipfs://bafyfoo> ."
+            , "  treasury:attests :amaru.antithesis ;"
+            , "  treasury:ipfs <ipfs://bafyfoo> ."
             ]
 
 ----------------------------------------------------------------------

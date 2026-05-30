@@ -7,8 +7,8 @@ Emits a byte-stable Turtle document containing only the operator-declared
 entity overlay (entities + their identifier blank nodes). The byte
 shape is pinned by spec FR-012 and FR-013:
 
-* The three Phase A prefix declarations (@cardano:@, @rdfs:@, fixture
-  base) in that exact order, then a blank line.
+* The Phase A prefix declarations (@cardano:@, optional @treasury:@,
+  @rdfs:@, fixture base) in that exact order, then a blank line.
 * A header comment block (@# Operator-declared entities (from rules.yaml).@).
 * For each entity in source order: a four-line @:slug a cardano:Entity@
   block (label + one @cardano:hasIdentifier <urn:...>@ line per
@@ -39,6 +39,7 @@ import Cardano.Tx.Graph.Rules.Load.Types (
  )
 
 import Data.ByteString (ByteString)
+import Data.Maybe (isJust)
 import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Text (Text)
@@ -61,14 +62,15 @@ emitOverlay fixtureSlug entities attestations =
 renderDocument :: Text -> [EntityDecl] -> [Attestation] -> Text
 renderDocument fixtureSlug entities attestations =
     let table = buildNamingTable entities
-        header = renderHeader fixtureSlug
+        header = renderHeader fixtureSlug (needsTreasuryPrefix entities attestations)
         (entityBlocks, _) = renderEntities table entities Set.empty
         attestBlocks = renderAttestations attestations
      in header <> entityBlocks <> attestBlocks
 
-renderHeader :: Text -> Text
-renderHeader fixtureSlug =
+renderHeader :: Text -> Bool -> Text
+renderHeader fixtureSlug includeTreasury =
     "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n"
+        <> treasuryPrefix
         <> "@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n"
         <> "@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/"
         <> fixtureSlug
@@ -78,6 +80,20 @@ renderHeader fixtureSlug =
         <> "# Operator-declared entities (from rules.yaml).\n"
         <> "#\n"
         <> "\n"
+  where
+    treasuryPrefix =
+        if includeTreasury
+            then
+                "@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> .\n"
+            else ""
+
+needsTreasuryPrefix :: [EntityDecl] -> [Attestation] -> Bool
+needsTreasuryPrefix entities attestations =
+    any entityNeedsTreasury entities || not (null attestations)
+
+entityNeedsTreasury :: EntityDecl -> Bool
+entityNeedsTreasury EntityDecl{entityIdentifiers, entityRole, entityPaidVia} =
+    null entityIdentifiers || isJust entityRole || isJust entityPaidVia
 
 {- | Render every entity block, accumulating the set of identifier
 bnodes that have already been declared so the same blank-node block
@@ -107,13 +123,13 @@ renderEntity
         let
             -- Issue #105: an entity with no identifier shape is an
             -- off-chain overlay node, emitted as
-            -- @cardano:OffChainEntity@ rather than @cardano:Entity@.
+            -- @treasury:OffChainEntity@ rather than @cardano:Entity@.
             -- The body emitter never matches these against on-chain
             -- credentials; they exist only to anchor accounting
-            -- relations (@cardano:paidVia@ + @cardano:role@) and
+            -- relations (@treasury:paidVia@ + @treasury:role@) and
             -- attestation references.
             entityType = case entityIdentifiers of
-                [] -> "cardano:OffChainEntity"
+                [] -> "treasury:OffChainEntity"
                 _ -> "cardano:Entity"
             -- Issue #100: emit @cardano:bech32 "<addr>"@ on the
             -- entity node when the entity was declared via
@@ -124,10 +140,10 @@ renderEntity
             -- Issue #105: free-text role + cross-entity paid-via
             -- pointer. Both optional.
             roleLine = case entityRole of
-                Just r -> "  cardano:role " <> renderLiteral r <> " ;\n"
+                Just r -> "  treasury:role " <> renderLiteral r <> " ;\n"
                 Nothing -> ""
             paidViaLine = case entityPaidVia of
-                Just s -> "  cardano:paidVia :" <> s <> " ;\n"
+                Just s -> "  treasury:paidVia :" <> s <> " ;\n"
                 Nothing -> ""
             entityHead =
                 ":"
@@ -228,9 +244,9 @@ renderLiteral :: Text -> Text
 renderLiteral t = "\"" <> t <> "\""
 
 {- | Render the operator's @attestations:@ block (issue #105). Each
-entry becomes an anonymous @cardano:Attestation@-typed bnode
-carrying @rdfs:label@, a @cardano:attests :slug@ slug pointer to
-the entity it attests to, and a @cardano:ipfs <ipfs://...>@ IRI
+entry becomes an anonymous @treasury:Attestation@-typed bnode
+carrying @rdfs:label@, a @treasury:attests :slug@ slug pointer to
+the entity it attests to, and a @treasury:ipfs <ipfs://...>@ IRI
 to the artefact. Empty input → no output (no preceding header
 block, no trailing newline).
 -}
@@ -246,14 +262,14 @@ renderAttestations as =
 renderAttestation :: Attestation -> Text
 renderAttestation
     Attestation{attestationLabel, attestationIpfs, attestationOf} =
-        "[] a cardano:Attestation ;\n"
+        "[] a treasury:Attestation ;\n"
             <> "  rdfs:label "
             <> renderLiteral attestationLabel
             <> " ;\n"
-            <> "  cardano:attests :"
+            <> "  treasury:attests :"
             <> attestationOf
             <> " ;\n"
-            <> "  cardano:ipfs <"
+            <> "  treasury:ipfs <"
             <> attestationIpfs
             <> "> .\n"
             <> "\n"

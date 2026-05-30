@@ -55,7 +55,7 @@ data EntityDecl = EntityDecl
     -- @drep@, or @keys + bytes@). Empty when the entity is an
     -- off-chain overlay node (issue #105) declared with only
     -- @paid-via:@ and optional @role:@/@label:@; in that case the
-    -- entity is emitted as @cardano:OffChainEntity@ rather than
+    -- entity is emitted as @treasury:OffChainEntity@ rather than
     -- @cardano:Entity@.
     , entityBech32 :: !(Maybe Text)
     -- ^ The original bech32 string the entity was declared with
@@ -68,11 +68,11 @@ data EntityDecl = EntityDecl
     , entityRole :: !(Maybe Text)
     -- ^ Free-text description of the entity's role in the
     -- operator's accounting (issue #105). Emitted as
-    -- @cardano:role "<text>"@ when present. Available on both
+    -- @treasury:role "<text>"@ when present. Available on both
     -- on-chain and off-chain entities.
     , entityPaidVia :: !(Maybe Text)
     -- ^ Slug of another entity that intermediates payment for
-    -- this one (issue #105). Emitted as @cardano:paidVia
+    -- this one (issue #105). Emitted as @treasury:paidVia
     -- :<slug>@. When an entity has only @paid-via:@ and no
     -- identifier shape, it is an off-chain overlay entry — the
     -- funds reach it indirectly via the named bridge.
@@ -104,17 +104,17 @@ data EntityIdentifier = EntityIdentifier
 file under @attestations:@ (issue #105). Each attestation pins an
 IPFS-anchored artefact (contract, invoice, cycle review, …) to an
 operator entity by slug reference. The overlay emitter renders one
-@cardano:Attestation@ block per declared attestation.
+@treasury:Attestation@ block per declared attestation.
 -}
 data Attestation = Attestation
     { attestationLabel :: !Text
     -- ^ Human-readable label preserved as @rdfs:label@.
     , attestationIpfs :: !Text
     -- ^ IPFS URI string (e.g. @"ipfs://bafy..."@). Emitted
-    -- verbatim as a @cardano:ipfs@ IRI object.
+    -- verbatim as a @treasury:ipfs@ IRI object.
     , attestationOf :: !Text
     -- ^ Slug of the entity this attestation attests to. Emitted as
-    -- @cardano:attests :<slug>@. The slug must reference an entity
+    -- @treasury:attests :<slug>@. The slug must reference an entity
     -- declared in the same rules file (on-chain or off-chain).
     , attestationSourceFile :: !FilePath
     -- ^ Source file path for diagnostic provenance, matching

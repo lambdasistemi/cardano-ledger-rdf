@@ -219,14 +219,14 @@ attestations side by side. Concretely:
   shape (no `from-address` / `script` / `asset` / `pool` / `drep`
   / `keys+bytes`) but **with** `paid-via:` is accepted as an
   off-chain overlay node and emitted as `:slug a
-  cardano:OffChainEntity`.
+  treasury:OffChainEntity`.
 - A new top-level `attestations:` block declares
   IPFS-anchored artefacts; each entry emits a
-  `[] a cardano:Attestation ; rdfs:label "..." ; cardano:attests
-  :slug ; cardano:ipfs <ipfs://...>` block in the overlay.
+  `[] a treasury:Attestation ; rdfs:label "..." ;
+  treasury:attests :slug ; treasury:ipfs <ipfs://...>` block in the overlay.
 - New optional `role:` and `paid-via:` keys are accepted on any
-  entity (on-chain or off-chain); they emit `cardano:role` and
-  `cardano:paidVia` triples respectively.
+  entity (on-chain or off-chain); they emit `treasury:role` and
+  `treasury:paidVia` triples respectively.
 
 The May 2026 presentation can now drop the `overlay.ttl` companion
 file and ship a single rules.yaml; Q5 (vendor-payment chain) runs

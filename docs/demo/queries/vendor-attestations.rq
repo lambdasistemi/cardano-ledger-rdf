@@ -1,23 +1,24 @@
 # On-chain payment ↔ off-chain accountability, joined in one query.
 #
 # The overlay declares vendors that are paid through the cag-payee bridge
-# (cardano:paidVia) and attaches off-chain attestations to them — an IPFS
-# pointer to the invoice / contract / cycle-review (cardano:attests +
-# cardano:ipfs, written by the emitter as `[] a cardano:Attestation ; …`,
+# (treasury:paidVia) and attaches off-chain attestations to them — an IPFS
+# pointer to the invoice / contract / cycle-review (treasury:attests +
+# treasury:ipfs, written by the emitter as `[] a treasury:Attestation ; …`,
 # the W3C blank-node-property-list form). This query walks the bridge to
 # the vendors and lists every attestation backing each one: the operator's
 # audit trail, queryable alongside the chain.
 PREFIX cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#>
+PREFIX treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#>
 PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT ?vendor ?role ?invoice ?ipfs
 WHERE {
-  ?v   cardano:paidVia ?bridge ;
+  ?v   treasury:paidVia ?bridge ;
        rdfs:label ?vendor ;
-       cardano:role ?role .
+       treasury:role ?role .
   ?bridge rdfs:label "amaru.cag-payee" .
-  ?att cardano:attests ?v ;
+  ?att treasury:attests ?v ;
        rdfs:label ?invoice ;
-       cardano:ipfs ?ipfs .
+       treasury:ipfs ?ipfs .
 }
 ORDER BY ?vendor ?invoice
