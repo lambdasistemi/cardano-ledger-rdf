@@ -630,41 +630,25 @@ position: **1,654,998 ADA spent**, **425,131.62 USDM received**, average
 USDM end up?* above — the same coins, seen at the moment they were
 created.
 
-## Watch it run
+## Reproduce it yourself
 
-A live `asciinema` capture of the workflow above, run against the
-published binaries — the operator treats the directory as a laboratory
-(look around, read the inputs, confirm what's in scope), then runs a swap
-settling USDM into the treasury — bare, then typed — followed by the
-lattice build and the truthful queries.
-The full `overlay.yaml` and the full txid list scroll past uncut: the
-faithful inputs are the proof the downstream numbers are honest. The
-`BLOCKFROST_PROJECT_ID` is shown to be *set*, never printed.
+Every command on this page runs against the published binaries. The
+canonical end-to-end pipe lives in each case study's `README.md` — for
+the May 2026 walk-through above:
 
-!!! note "Cast pre-dates the cq-rdf rename"
-    The cast was recorded against the `tx-graph` CLI before epic
-    [#66](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/66)
-    split it into `cq-rdf {overlay,body,blueprint,shacl}`. The
-    invocations on screen still work via the one-release compatibility
-    symlink: every `tx-graph <txid>` you see is equivalent to `cq-rdf
-    body <txid>`, and every `tx-graph --rules X` to
-    `cq-rdf overlay --in X`. The shapes of the graphs and queries are
-    unchanged.
-
-<div class="asciinema-demo">
-
-```asciinema-player
-{
-  "file": "demo/cast.cast",
-  "auto_play": false,
-  "speed": 1.0,
-  "theme": "asciinema",
-  "rows": 32,
-  "cols": 100
-}
+```bash
+cq-rdf overlay --in overlay.yaml > overlay.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+cat overlay.ttl bodies.ttl \
+  | cq-rdf blueprint --blueprints blueprints/ \
+  | cq-rdf shacl --shapes shapes/ \
+  > package.ttl
 ```
 
-</div>
+Then `arq --data package.ttl --query <some-query>.rq` for any SPARQL on
+this page. The full case-study package, including `overlay.yaml`,
+`selections.txt`, `blueprints/`, and `shapes/`, is in
+[`docs/case-studies/2026-05-amaru-treasury/`](case-studies/2026-05-amaru-treasury/case.md).
 
 ## Closing — write your own query
 
