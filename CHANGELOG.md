@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+## [0.3.0.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.5.0...v0.3.0.0) (2026-05-30)
+
+This release lands epic [#66](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/66) — the runtime/app separation. The on-disk shape every operator depends on changes; see Breaking Changes.
+
+### Breaking Changes
+
+* **CLI rename**: `tx-graph` → `cq-rdf` with four subcommands (`overlay` / `body` / `blueprint` / `shacl`). The old `tx-graph` name remains for one release as a compatibility wrapper (a Darwin-friendly unwrapped binary that dispatches to legacy mode via `getProgName`); invoking `tx-graph --rules X` emits a stderr deprecation warning pointing at the new pipe.
+* **Vocab split**: `cardano:` namespace retains only ledger primitives. Treasury overlay predicates moved to `treasury:` (`treasury:OffChainEntity`, `treasury:Attestation`, `treasury:paidVia`, `treasury:attests`, `treasury:ipfs`, `treasury:role`). Existing SPARQL queries that used `cardano:paidVia` etc. must rewrite their prefixes.
+* **Overlay YAML**: operator-authored YAML files (formerly `rules.yaml`) now require an `imports:` block when they use non-cardano predicates. Without `imports: [treasury]`, keys like `paid-via:` fail the parser with `MissingImportForKey`. Emitted overlay TTL declares `owl:imports` for each resolved ontology.
+* **Case-study package layout**: every case study migrated to `overlay.yaml` + `README.md` + optional `blueprints/` + optional `shapes/`. The per-case `pipeline.sh` orchestrator scripts are deleted; reproduce is a documented Unix pipe (no `cq-rdf build` meta-orchestrator and no `recipe.yaml` — both explicitly rejected during design).
+
+### Features
+
+* **vocab:** split treasury overlay predicates out of cardano namespace (#67) ([0e06dc0](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/0e06dc0214555ff1cedadec19f0f9ab738e2a0b2))
+* **cli:** split tx-graph into cq-rdf subcommands (#68) ([2a6aff6](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/2a6aff65cdb2288f471fce18b2aa1da311e85ebe))
+* **rules:** overlay YAML imports + emitted owl:imports (#72) ([94c1c24](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/94c1c24e4223378333762f5d7f39f92cc97cdf45))
+* **shapes:** SHACL invariants first-class — self-swap + attested-disbursement (#71) ([3bd45fa](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/3bd45fa31a7003447b572ea13a1a6296b543e97f))
+
+### Bug Fixes
+
+* **release:** Darwin aarch64 cq-rdf tarball self-contained (no Nix store dangling refs) (#74) ([ceb7a66](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/ceb7a66802321d3abf8b1b630ff08c0e20e5545f))
+
+### Documentation
+
+* **case-studies:** migrate to declarative package layout, delete every `pipeline.sh`; canonical reproduce pipe documented per case-study README (#73) ([1872753](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/1872753))
+* **docs:** ontology accessibility + vocab tests; new `vocab/{cardano,treasury}/index.md` landing pages so declared base IRIs dereference instead of 404; new `scripts/vocab-accessibility.py` self-testing gate wired as `nix build .#checks.x86_64-linux.vocab-accessibility`; reproduce pipe smoke against real Blockfrost mainnet for May 2026 case study (#75) ([8d0eeba](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/8d0eeba))
+
 ## [0.2.5.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.4.0...v0.2.5.0) (2026-05-29)
 
 ### Features
