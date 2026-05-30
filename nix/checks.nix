@@ -1,4 +1,4 @@
-{ pkgs, src, components, lintPkgs ? pkgs, pythonEnv, eye, cqRdf, txGraphCompat }:
+{ pkgs, src, components, libraryDoc, lintPkgs ? pkgs, pythonEnv, eye, cqRdf, txGraphCompat }:
 let
   lib = pkgs.lib;
 
@@ -109,6 +109,88 @@ let
       text = ''
         cd ${src}
         python3 scripts/vocab-accessibility.py
+      '';
+    };
+
+    haddock-coverage = {
+      name = "haddock-coverage";
+      runtimeInputs = [ pkgs.gnugrep pkgs.findutils pkgs.coreutils ];
+      # The library.doc derivation only realises when haskell.nix's
+      # haddock build for `cardano-ledger-rdf` succeeds — which in turn
+      # only happens when every locally-defined export has a parseable
+      # Haddock attachment. The check below verifies (a) the HTML tree
+      # is present, (b) every locally-defined module has a rendered
+      # page, and (c) a small set of high-value doc strings written by
+      # issue #76 has survived in the rendered output.
+      #
+      # The upstream re-export gaps in Cardano.Tx.Build (ConwayEra,
+      # AccountId, Anchor, ConwayGovCert, ConwayTxCert, DRep,
+      # GovActionId, GovActionIx, ProposalProcedure, ScriptHash,
+      # StrictMaybe, Vote, Voter, VotingProcedure, VotingProcedures)
+      # cannot be closed locally — their home declarations live in
+      # `cardano-ledger-*` and ship no Haddock string. The
+      # `$conwayLedgerTypes` documentation chunk above the section
+      # provides the navigational text; it is asserted below so a
+      # silent removal of that chunk fails the gate.
+      text = ''
+        set -euo pipefail
+
+        DOC_HTML="${libraryDoc}/share/doc/cardano-ledger-rdf/html"
+        if [ ! -d "$DOC_HTML" ]; then
+          echo "✗ haddock html tree missing at $DOC_HTML" >&2
+          exit 1
+        fi
+
+        expected_modules=(
+          Cardano-Tx-Balance
+          Cardano-Tx-Blueprint
+          Cardano-Tx-Build
+          Cardano-Tx-Decode
+          Cardano-Tx-Evaluate
+          Cardano-Tx-Graph-Emit
+          Cardano-Tx-Graph-Emit-Blueprint
+          Cardano-Tx-Graph-Emit-Project
+          Cardano-Tx-Graph-Provider
+          Cardano-Tx-Graph-Resolve
+          Cardano-Tx-Graph-Resolve-Web2
+          Cardano-Tx-Graph-Rules-Load
+          Cardano-Tx-Graph-Rules-Load-Imports
+          Cardano-Tx-Ledger
+          Cardano-Tx-View
+        )
+        for m in "''${expected_modules[@]}"; do
+          if [ ! -f "$DOC_HTML/$m.html" ]; then
+            echo "✗ haddock page missing: $m.html" >&2
+            exit 1
+          fi
+        done
+
+        # Doc-string regression guard: the strings below were written
+        # by issue #76's slices 1-4 and ANCHOR the documentation
+        # surface a Hackage reader sees. A silent deletion of any of
+        # them fails this gate.
+        declare -a guards=(
+          "Cardano-Tx-Blueprint.html:A CIP-0057 Plutus blueprint as parsed from JSON"
+          "Cardano-Tx-Blueprint.html:Open, schema-driven projection of a"
+          "Cardano-Tx-Build.html:Re-exports of"
+          "Cardano-Tx-Build.html:phantom era tag for Conway-era"
+          "Cardano-Tx-Decode.html:Decode a bech32-encoded Cardano address"
+          "Cardano-Tx-Decode.html:02-alice-bob-ada"
+          "Cardano-Tx-Graph-Emit.html:body emitter introduced by"
+          "Cardano-Tx-Graph-Emit-Project.html:Render a"
+          "Cardano-Tx-Graph-Rules-Load.html:operator-authored rule files"
+          "Cardano-Tx-View.html:in-repo view runner. Loads"
+        )
+        for guard in "''${guards[@]}"; do
+          file="''${guard%%:*}"
+          needle="''${guard#*:}"
+          if ! grep -F -q "$needle" "$DOC_HTML/$file"; then
+            echo "✗ regression: '$needle' not found in $file" >&2
+            exit 1
+          fi
+        done
+
+        echo "✓ haddock-coverage gate passed (''${#expected_modules[@]} modules, ''${#guards[@]} regression guards)"
       '';
     };
   };

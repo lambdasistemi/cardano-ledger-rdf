@@ -1528,6 +1528,12 @@ rolePrefixText = \case
     LtVrfKeyHash -> "vrfkey"
     LtPoolMetadataHash -> "poolmetadata"
 
+{- | Render a 'ByteString' as a lowercase ASCII hex literal. Used by the
+witness-set walker and shared blueprint-decoded triple emission
+('Cardano.Tx.Graph.Emit.Project.emitBlueprintFields') so that
+hash-typed leaves render identically regardless of which sub-walker
+produces them.
+-}
 hexText :: ByteString -> Text
 hexText = TextEncoding.decodeLatin1 . Base16.encode
 

@@ -29,6 +29,7 @@ jobs:
           .#checks.x86_64-linux.lint
           .#checks.x86_64-linux.vocab-validate
           .#checks.x86_64-linux.vocab-owl-smoke
+          .#checks.x86_64-linux.haddock-coverage
       - name: Release version contract
         run: scripts/release/check-version-consistency
 
