@@ -3,10 +3,21 @@
 {- |
 Module      : Cardano.Tx.Blueprint
 Description : Plutus blueprint parsing for transaction graph typing.
+License     : Apache-2.0
 
 This module parses the CIP-0057 subset needed by the graph blueprint
 boundary: validators, datum and redeemer argument schemas, definitions, and
 the Plutus data schema forms needed to name constructor fields.
+
+The parsed 'Blueprint' value drives
+'Cardano.Tx.Graph.Emit.Blueprint.decodeDatumForOutput' and
+'Cardano.Tx.Graph.Emit.Blueprint.decodeRedeemerForPurpose', which the
+projection walker consults to render typed @cardano:hasField@ predicates
+in place of opaque @cardano:hasRawBytes@ when a script hash matches a
+loaded blueprint. The schema vocabulary tracks CIP-0057 closely enough to
+re-emit constructor and field names verbatim, but it does not attempt full
+CIP-0057 coverage — collections, abstract definitions, and value-only
+fields fall outside the structural decoder's responsibility.
 -}
 module Cardano.Tx.Blueprint (
     Blueprint (..),
