@@ -1,4 +1,4 @@
-{ pkgs, src, components, lintPkgs ? pkgs, pythonEnv, eye }:
+{ pkgs, src, components, lintPkgs ? pkgs, pythonEnv, eye, cqRdf, txGraphCompat }:
 let
   lib = pkgs.lib;
 
@@ -44,7 +44,8 @@ let
       name = "build";
       text = ''
         test -e ${components.library}
-        test -e ${components.exes.tx-graph}
+        test -e ${cqRdf}
+        test -e ${txGraphCompat}
         test -e ${components.exes.tx-view}
         test -e ${components.tests."unit-tests"}
         echo "build outputs realized"
@@ -59,14 +60,12 @@ let
         pkgs.jre_headless
         pkgs.which
       ];
-      # LoadExeSpec spawns the tx-graph binary as a subprocess and
-      # reads its path from TX_GRAPH_EXE (with a `cabal list-bin`
-      # fallback for the dev shell). The nix-check sandbox has no
-      # cabal on PATH, so we set the env var to the haskell.nix
-      # store path here — the same way components.tests.unit-tests
-      # is wired in as a runtimeInput.
+      # Exe specs spawn cq-rdf and the deprecated tx-graph symlink
+      # as subprocesses. The nix-check sandbox has no cabal on PATH,
+      # so we set both env vars to haskell.nix store paths.
       text = ''
-        export TX_GRAPH_EXE=${components.exes.tx-graph}/bin/tx-graph
+        export CQ_RDF_EXE=${cqRdf}/bin/cq-rdf
+        export TX_GRAPH_EXE=${txGraphCompat}/bin/tx-graph
         unit-tests
       '';
     };

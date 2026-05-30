@@ -100,7 +100,8 @@ spec = describe "tx-graph executable (post-#114 pure-transformation CLI)" $ do
                     expected <- BS.readFile expectedPath
                     (code, out, err) <-
                         runExe txGraphPath ["--rules", rulesPath]
-                    err `shouldBe` BS.empty
+                    BS8.unpack err
+                        `shouldSatisfy` ("deprecation: --rules is deprecated" `isInfixOf`)
                     unless (out == expected) $
                         expectationFailure $
                             "tx-graph overlay-only stdout mismatch ("

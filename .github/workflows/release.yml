@@ -47,10 +47,15 @@ jobs:
       max-parallel: 1
       matrix:
         executable:
+          - name: cq-rdf
+            release-output: cq-rdf-linux-release-artifacts
+            dev-output: cq-rdf-linux-dev-release-artifacts
+            usage-grep: "Cardano RDF pipeline primitives"
+            dev-tag: dev-linux-cq-rdf
           - name: tx-graph
             release-output: tx-graph-linux-release-artifacts
             dev-output: tx-graph-linux-dev-release-artifacts
-            usage-grep: "operator-entity overlay + body emitter"
+            usage-grep: "--rules"
             dev-tag: dev-linux-tx-graph
           - name: tx-view
             release-output: tx-view-linux-release-artifacts

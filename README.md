@@ -6,31 +6,38 @@ consume transaction graphs:
 
 | Tool | Role |
 |------|------|
-| `tx-graph` | Convert Conway transaction CBOR plus operator rules into canonical Turtle or JSON-LD. Reads CBOR from a local file or fetches it by txid from an HTTP indexer (`--provider koios\|blockfrost\|http`). |
+| `cq-rdf` | Cardano RDF pipeline primitives: `overlay` (operator YAML/Turtle to overlay TTL), `body` (CBOR or txid to body TTL), `blueprint` (TTL to typed TTL), and `shacl` (TTL to validation report). |
+| `tx-graph` | Deprecated one-release compatibility symlink for the old transaction-body CLI shape. |
 | `tx-view` | Project a generated Turtle graph through packaged views such as `cli-tree`, `asset-flow`, `entity-occurrences`, or `json-ld`. |
 
 Generic applications such as transaction diffing, inspecting, signing,
 validating, and load generation belong in `cardano-tx-tools`. That
 suite can depend on this repository when those applications are backed
-by `tx-graph` output.
+by `cq-rdf body` output.
 
 Documentation: <https://lambdasistemi.github.io/cardano-ledger-rdf/>.
 
 ## Workflow
 
 ```bash
-tx-graph --rules rules/amaru-treasury.yaml > lattice.ttl
+cq-rdf overlay --in rules/amaru-treasury.yaml > lattice.ttl
 while read -r txid; do
-  tx-graph --provider koios "$txid"
+  cq-rdf body --provider koios "$txid"
 done < selections.txt >> lattice.ttl
 arq --data lattice.ttl --query my.rq    # consume directly via Apache Jena, or any SPARQL engine
 ```
 
-`tx-graph --provider` is the only network boundary in the core pipeline:
+`cq-rdf body --provider` is the only network boundary in the core pipeline:
 it fetches CBOR by txid from a koios / blockfrost / generic-HTTP indexer.
-With `--provider file` (the default) `tx-graph` reads CBOR from a local
+With `--provider file` (the default) `cq-rdf body` reads CBOR from a local
 path, and the overlay + SPARQL stages are offline transformations over
 local files.
+
+`tx-graph --rules X` is deprecated for one release. Use
+`cq-rdf overlay --in X` for the operator overlay and concatenate that
+with one or more `cq-rdf body ...` outputs; the compatibility symlink
+still accepts the old positional and provider forms while downstream
+scripts migrate.
 
 ## Library
 
@@ -52,6 +59,7 @@ library instead of being owned here.
 Release automation packages only the RDF tools:
 
 ```bash
+nix build .#cq-rdf-linux-release-artifacts
 nix build .#tx-graph-linux-release-artifacts
 nix build .#tx-view-linux-release-artifacts
 ```

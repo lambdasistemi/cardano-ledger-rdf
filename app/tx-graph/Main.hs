@@ -1,10 +1,13 @@
+{-# LANGUAGE TypeApplications #-}
+
 {- |
 Module      : Main
-Description : tx-graph executable — pure (rules + cbor) → ttl transformation.
+Description : cq-rdf executable — Cardano RDF subcommands.
 License     : Apache-2.0
 
-Renders an operator-authored rules overlay and/or one Turtle (or
-JSON-LD) graph for one Conway transaction CBOR.
+Renders operator-authored overlays, transaction bodies, blueprint
+typed-decode decorations, and SHACL reports as separate Unix-pipe
+subcommands.
 
 CLI surface (see issue #114 — operator-led role audit consolidation):
 
@@ -42,8 +45,18 @@ Exit codes:
 -}
 module Main (main) where
 
-import Cardano.Tx.Blueprint (Blueprint)
+import Cardano.Tx.Blueprint (
+    Blueprint (..),
+    BlueprintArgument (..),
+    BlueprintPreamble (..),
+    BlueprintSchema (..),
+    BlueprintValidator (..),
+    OpenValue (..),
+    parseBlueprintJSON,
+    resolveBlueprintSchema,
+ )
 import Cardano.Tx.Graph.Emit
+import Cardano.Tx.Graph.Emit.Blueprint (decodeDatumForScriptHash)
 import Cardano.Tx.Graph.Rules.Load (
     EntityDecl,
     RulesLoadResult (..),
@@ -53,19 +66,34 @@ import Cardano.Tx.Graph.Rules.Load (
     rulesEntities,
  )
 
-import Cardano.Ledger.Hashes (ScriptHash, extractHash, hashAnnotated)
+import Cardano.Ledger.Hashes (ScriptHash (..), extractHash, hashAnnotated)
 import Data.Text (Text)
 
+import Cardano.Crypto.Hash (hashFromBytes, hashToBytes)
+import Cardano.Ledger.Api.Scripts.Data (Data)
+import Cardano.Ledger.Binary (decCBOR, decodeFullDecoder, natVersion)
+import Control.Monad (forM, unless, when)
+import Data.Aeson qualified as Aeson
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KeyMap
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BS8
+import Data.ByteString.Lazy qualified as LBS
+import Data.Foldable (asum, toList)
+import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
+import Data.Maybe (fromMaybe, isJust, mapMaybe)
 import Data.Set (Set)
 import Data.Text qualified as Text
+import Data.Text.Encoding qualified as TextEncoding
+import Data.Text.Encoding.Error (lenientDecode)
 import Options.Applicative (
     Parser,
     ParserInfo,
     ParserResult (Failure),
     argument,
+    command,
     defaultPrefs,
     eitherReader,
     execParser,
@@ -84,15 +112,24 @@ import Options.Applicative (
     progDesc,
     showDefault,
     strOption,
+    subparser,
     value,
     (<**>),
  )
 import Options.Applicative.Types (ParseError (ErrorMsg))
+import System.Directory (
+    doesDirectoryExist,
+    getTemporaryDirectory,
+    listDirectory,
+    removeFile,
+ )
+import System.Environment (getProgName)
 import System.Exit (ExitCode (..), exitSuccess, exitWith)
-import System.IO (hPutStrLn, stderr, stdin, stdout)
+import System.FilePath (takeFileName, (</>))
+import System.IO (hClose, hPutStrLn, openTempFile, stderr, stdin, stdout)
 import System.IO.Error (catchIOError)
+import System.Process (readProcessWithExitCode)
 
-import Cardano.Crypto.Hash (hashToBytes)
 import Cardano.Ledger.Api.Tx (bodyTxL)
 import Cardano.Ledger.Api.Tx.Body (
     collateralInputsTxBodyL,
@@ -105,9 +142,7 @@ import Cardano.Ledger.BaseTypes (TxIx (..))
 import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.TxIn (TxId (..), TxIn (..))
 import Data.ByteString.Base16 qualified as Base16
-import Data.Foldable (toList)
 import Data.Set qualified as Set
-import Data.Text.Encoding qualified as TextEncoding
 import Lens.Micro ((^.))
 
 import Data.Char (isHexDigit)
@@ -146,6 +181,226 @@ data InputSource
     = TxFromFile FilePath
     | TxFromStdin
     deriving stock (Eq, Show)
+
+data Command
+    = CmdOverlay !OverlayOptions
+    | CmdBody !BodyOptions
+    | CmdBlueprint !BlueprintOptions
+    | CmdShacl !ShaclOptions
+
+data OverlayOptions = OverlayOptions
+    { overlayIn :: !(Maybe FilePath)
+    , overlayOut :: !(Maybe FilePath)
+    }
+
+data BodyOptions = BodyOptions
+    { bodyProvider :: !(Maybe CborProvider)
+    , bodyToken :: !(Maybe Text)
+    , bodyUrl :: !(Maybe Text)
+    , bodyPositional :: ![InputSource]
+    , bodyIn :: !(Maybe FilePath)
+    , bodyOut :: !(Maybe FilePath)
+    , bodyFormat :: !String
+    }
+
+newtype BlueprintOptions = BlueprintOptions
+    { blueprintDir :: FilePath
+    }
+
+data ShaclSeverity
+    = ShaclViolationOnly
+    | ShaclWarningAndViolation
+    deriving stock (Eq, Show)
+
+data ShaclOptions = ShaclOptions
+    { shaclShapes :: !FilePath
+    , shaclOut :: !(Maybe FilePath)
+    , shaclSeverity :: !ShaclSeverity
+    }
+
+data BlueprintRegistry = BlueprintRegistry
+    { registryIndexed :: ![(ScriptHash, Blueprint, Text)]
+    , registryFallback :: ![(Blueprint, Text)]
+    }
+
+commandParser :: Parser Command
+commandParser =
+    subparser
+        ( command
+            "overlay"
+            ( info
+                (CmdOverlay <$> overlayOptionsParser <**> helper)
+                ( progDesc
+                    "Read an overlay YAML/Turtle file and emit overlay-only Turtle."
+                )
+            )
+            <> command
+                "body"
+                ( info
+                    (CmdBody <$> bodyOptionsParser <**> helper)
+                    ( progDesc
+                        ( "Read one transaction CBOR path/stdin or fetch one "
+                            <> "txid via --provider, then emit body-only RDF. "
+                            <> "Deprecated tx-graph --rules users should run "
+                            <> "'cq-rdf overlay --in rules.yaml' separately "
+                            <> "and concatenate it with this output."
+                        )
+                    )
+                )
+            <> command
+                "blueprint"
+                ( info
+                    (CmdBlueprint <$> blueprintOptionsParser <**> helper)
+                    ( progDesc
+                        "Read Turtle on stdin and append CIP-57 typed datum triples."
+                    )
+                )
+            <> command
+                "shacl"
+                ( info
+                    (CmdShacl <$> shaclOptionsParser <**> helper)
+                    ( progDesc
+                        "Read Turtle on stdin and emit a SHACL validation report."
+                    )
+                )
+        )
+
+commandInfo :: ParserInfo Command
+commandInfo =
+    info
+        (commandParser <**> helper)
+        ( fullDesc
+            <> header "cq-rdf — Cardano RDF pipeline primitives"
+            <> progDesc
+                ( "Pure subcommands: overlay (YAML/Turtle to overlay TTL), "
+                    <> "body (txid/CBOR to body TTL), blueprint (TTL to typed "
+                    <> "TTL), and shacl (TTL to validation report)."
+                )
+        )
+
+overlayOptionsParser :: Parser OverlayOptions
+overlayOptionsParser =
+    OverlayOptions
+        <$> optional
+            ( strOption
+                ( long "in"
+                    <> metavar "FILE"
+                    <> help "Read overlay YAML/Turtle from FILE; '-' or omitted reads stdin."
+                )
+            )
+        <*> optional
+            ( strOption
+                ( long "out"
+                    <> metavar "FILE"
+                    <> help "Write overlay Turtle to FILE instead of stdout."
+                )
+            )
+
+bodyOptionsParser :: Parser BodyOptions
+bodyOptionsParser =
+    BodyOptions
+        <$> option
+            (eitherReader parseProviderArg)
+            ( long "provider"
+                <> metavar "PROVIDER"
+                <> value Nothing
+                <> help
+                    ( "CBOR source: file | koios | blockfrost | http "
+                        <> "(default: file). With a fetching provider the "
+                        <> "positional argument / --in is a 64-hex txid."
+                    )
+            )
+        <*> optional
+            ( Text.pack
+                <$> strOption
+                    ( long "token"
+                        <> metavar "TOKEN"
+                        <> help "Bearer / API token for the provider."
+                    )
+            )
+        <*> optional
+            ( Text.pack
+                <$> strOption
+                    ( long "url"
+                        <> metavar "URL"
+                        <> help "Provider base URL."
+                    )
+            )
+        <*> many
+            ( argument
+                readInputSource
+                ( metavar "CBOR|TXID"
+                    <> help
+                        ( "Conway tx CBOR file path, '-' for stdin, "
+                            <> "or txid with --provider."
+                        )
+                )
+            )
+        <*> optional
+            ( strOption
+                ( long "in"
+                    <> metavar "FILE"
+                    <> help "Read one Conway tx CBOR from FILE."
+                )
+            )
+        <*> optional
+            ( strOption
+                ( long "out"
+                    <> metavar "FILE"
+                    <> help "Write one body graph to FILE instead of stdout."
+                )
+            )
+        <*> strOption
+            ( long "format"
+                <> metavar "FORMAT"
+                <> value "turtle"
+                <> showDefault
+                <> help "Output format: 'turtle' or 'json-ld'."
+            )
+  where
+    readInputSource =
+        eitherReader $ \case
+            "-" -> Right TxFromStdin
+            path -> Right (TxFromFile path)
+
+blueprintOptionsParser :: Parser BlueprintOptions
+blueprintOptionsParser =
+    BlueprintOptions
+        <$> strOption
+            ( long "blueprints"
+                <> metavar "DIR"
+                <> help "Directory containing *.cip57.json blueprint files."
+            )
+
+shaclOptionsParser :: Parser ShaclOptions
+shaclOptionsParser =
+    ShaclOptions
+        <$> strOption
+            ( long "shapes"
+                <> metavar "DIR"
+                <> help "Directory containing *.shacl.ttl shape files."
+            )
+        <*> optional
+            ( strOption
+                ( long "out"
+                    <> metavar "FILE"
+                    <> help "Write the SHACL report to FILE instead of stdout."
+                )
+            )
+        <*> option
+            (eitherReader parseSeverity)
+            ( long "severity"
+                <> metavar "SEVERITY"
+                <> value ShaclViolationOnly
+                <> showDefault
+                <> help "Failure threshold: violation or warning."
+            )
+
+parseSeverity :: String -> Either String ShaclSeverity
+parseSeverity = \case
+    "violation" -> Right ShaclViolationOnly
+    "warning" -> Right ShaclWarningAndViolation
+    other -> Left ("unknown severity: " <> other)
 
 optionsParser :: Parser Options
 optionsParser =
@@ -262,15 +517,31 @@ optionsInfo =
 
 main :: IO ()
 main = do
-    opts <- execParser optionsInfo
-    dispatch opts
+    prog <- takeFileName <$> getProgName
+    if prog == "tx-graph"
+        then execParser optionsInfo >>= dispatchLegacy
+        else execParser commandInfo >>= dispatchCommand
+
+dispatchCommand :: Command -> IO ()
+dispatchCommand = \case
+    CmdOverlay opts -> overlayCommand opts
+    CmdBody opts -> bodyCommand opts
+    CmdBlueprint opts -> blueprintCommand opts
+    CmdShacl opts -> shaclCommand opts
 
 {- | Dispatch on input presence. Overlay-only when @--rules@ is the
 sole input flag; joint emit when at least one CBOR source is
 present.
 -}
-dispatch :: Options -> IO ()
-dispatch opts = do
+dispatchLegacy :: Options -> IO ()
+dispatchLegacy opts = do
+    when (isJust (optRulesFile opts)) $
+        hPutStrLn
+            stderr
+            ( "deprecation: --rules is deprecated; use "
+                <> "'cq-rdf overlay --in X' and pipe + "
+                <> "'cq-rdf body' for the body emit. See #66."
+            )
     input <- collectInput opts
     case (optRulesFile opts, input) of
         (Just rulesPath, Nothing) ->
@@ -282,6 +553,36 @@ dispatch opts = do
                 )
         (_, Just source) ->
             emitOne opts source
+
+overlayCommand :: OverlayOptions -> IO ()
+overlayCommand OverlayOptions{overlayIn, overlayOut} =
+    withOverlayInput overlayIn $ \path -> do
+        bytes <- overlayBytes path
+        writeOutput overlayOut bytes
+
+bodyCommand :: BodyOptions -> IO ()
+bodyCommand opts = do
+    input <- collectBodyInput opts
+    case input of
+        Nothing ->
+            usageErrorWith
+                commandInfo
+                "missing input: pass one positional CBOR file, '-' for stdin, or a txid with --provider."
+        Just source ->
+            emitOne (bodyAsOptions opts) source
+
+bodyAsOptions :: BodyOptions -> Options
+bodyAsOptions BodyOptions{bodyProvider, bodyToken, bodyUrl, bodyPositional, bodyIn, bodyOut, bodyFormat} =
+    Options
+        { optRulesFile = Nothing
+        , optProvider = bodyProvider
+        , optToken = bodyToken
+        , optUrl = bodyUrl
+        , optPositional = bodyPositional
+        , optIn = bodyIn
+        , optOut = bodyOut
+        , optFormat = bodyFormat
+        }
 
 {- | Resolve positional input to zero or one 'InputSource'. Multiple
 positional CBOR files are intentionally rejected; operators compose
@@ -308,35 +609,75 @@ collectInput opts =
                 )
             pure Nothing
 
+collectBodyInput :: BodyOptions -> IO (Maybe InputSource)
+collectBodyInput opts =
+    collectInput (bodyAsOptions opts)
+
 {- | Pretty usage error: print one line on stderr and let
 @optparse-applicative@ render help with exit code 2.
 -}
 usageError :: String -> IO ()
-usageError msg =
+usageError =
+    usageErrorWith optionsInfo
+
+usageErrorWith :: ParserInfo a -> String -> IO ()
+usageErrorWith pinfo msg =
     handleParseResult
         ( Failure
             ( parserFailure
                 defaultPrefs
-                optionsInfo
+                pinfo
                 (ErrorMsg msg)
                 []
             )
         )
+
+writeOutput :: Maybe FilePath -> BS.ByteString -> IO ()
+writeOutput = \case
+    Just outPath -> BS.writeFile outPath
+    Nothing -> BS.hPut stdout
+
+overlayBytes :: FilePath -> IO BS.ByteString
+overlayBytes rulesPath = do
+    result <- loadRulesFile rulesPath
+    case result of
+        Right RulesLoadResult{rulesOverlayTurtle, rulesWarnings} -> do
+            mapM_ (hPutStrLn stderr . renderRulesLoadWarning) rulesWarnings
+            pure rulesOverlayTurtle
+        Left err -> do
+            hPutStrLn stderr (renderRulesLoadError err)
+            exitWith (ExitFailure 1)
+
+withOverlayInput :: Maybe FilePath -> (FilePath -> IO a) -> IO a
+withOverlayInput (Just path) action
+    | path /= "-" = action path
+withOverlayInput _ action =
+    withTempFile "cq-rdf-overlay" ".yaml" $ \path -> do
+        BS.hGetContents stdin >>= BS.writeFile path
+        action path
+
+withTempFile :: String -> String -> (FilePath -> IO a) -> IO a
+withTempFile prefix suffix action = do
+    dir <- getTemporaryDirectory
+    (path0, handle) <- openTempFile dir prefix
+    hClose handle
+    removeFile path0 `catchIOError` \_ -> pure ()
+    let path = path0 <> suffix
+    result <-
+        action path `catchIOError` \err -> do
+            removeFile path `catchIOError` \_ -> pure ()
+            ioError err
+    removeFile path `catchIOError` \_ -> pure ()
+    pure result
 
 {- | Overlay-only mode. Loads the rules file and writes the
 canonical Turtle entity overlay to stdout.
 -}
 overlayOnly :: FilePath -> IO ()
 overlayOnly rulesPath = do
-    result <- loadRulesFile rulesPath
-    case result of
-        Right RulesLoadResult{rulesOverlayTurtle, rulesWarnings} -> do
-            mapM_ (hPutStrLn stderr . renderRulesLoadWarning) rulesWarnings
-            BS.hPut stdout rulesOverlayTurtle
-            exitSuccess
-        Left err -> do
-            hPutStrLn stderr (renderRulesLoadError err)
-            exitWith (ExitFailure 1)
+    bytes <- overlayBytes rulesPath
+    BS.hPut stdout bytes
+    exitSuccess
 
 {- | Body-emitting mode for one transaction. Parses the input,
 indexes it by computed 'TxId', and emits one Turtle (or JSON-LD)
@@ -522,6 +863,390 @@ warnOnMissingParents label tx lattice = do
 defaultSlug :: FilePath
 defaultSlug = "tx"
 
+----------------------------------------------------------------------
+-- cq-rdf blueprint
+----------------------------------------------------------------------
+
+blueprintCommand :: BlueprintOptions -> IO ()
+blueprintCommand BlueprintOptions{blueprintDir} = do
+    ttl <- BS.hGetContents stdin
+    index <- loadBlueprintDirectory blueprintDir
+    enriched <- enrichBlueprintTurtle index ttl
+    BS.hPut stdout enriched
+
+loadBlueprintDirectory :: FilePath -> IO BlueprintRegistry
+loadBlueprintDirectory dir = do
+    exists <- doesDirectoryExist dir
+    unless exists $ do
+        hPutStrLn stderr ("blueprint directory does not exist: " <> dir)
+        exitWith (ExitFailure 1)
+    names <- listDirectory dir
+    loaded <-
+        forM
+            [dir </> name | name <- List.sort names, ".cip57.json" `List.isSuffixOf` name]
+            loadBlueprintFile
+    pure
+        BlueprintRegistry
+            { registryIndexed = concatMap fst loaded
+            , registryFallback = concatMap snd loaded
+            }
+
+loadBlueprintFile ::
+    FilePath ->
+    IO ([(ScriptHash, Blueprint, Text)], [(Blueprint, Text)])
+loadBlueprintFile path = do
+    bytes <- LBS.readFile path
+    blueprint <- case parseBlueprintJSON bytes of
+        Right bp -> pure bp
+        Left err -> do
+            hPutStrLn stderr ("BlueprintParseError: " <> path <> ": " <> err)
+            exitWith (ExitFailure 1)
+    hashes <- case Aeson.eitherDecode bytes of
+        Right jsonValue -> pure (blueprintHashes jsonValue)
+        Left err -> do
+            hPutStrLn stderr ("BlueprintParseError: " <> path <> ": " <> err)
+            exitWith (ExitFailure 1)
+    let title = preambleTitle (blueprintPreamble blueprint)
+        indexed = [(sh, blueprint, title) | sh <- hashes]
+        fallback = [(blueprint, title) | null hashes]
+    pure (indexed, fallback)
+
+blueprintHashes :: Aeson.Value -> [ScriptHash]
+blueprintHashes (Aeson.Object root) =
+    case KeyMap.lookup (Key.fromString "validators") root of
+        Just (Aeson.Array validators) ->
+            mapMaybe validatorHash (toList validators)
+        _ -> []
+  where
+    validatorHash (Aeson.Object validator) = do
+        Aeson.String raw <- KeyMap.lookup (Key.fromString "hash") validator
+        scriptHashFromHex raw
+    validatorHash _ = Nothing
+blueprintHashes _ = []
+
+scriptHashFromHex :: Text -> Maybe ScriptHash
+scriptHashFromHex raw = do
+    bytes <-
+        either (const Nothing) Just $
+            Base16.decode (TextEncoding.encodeUtf8 (Text.toLower raw))
+    if BS.length bytes == 28
+        then ScriptHash <$> hashFromBytes bytes
+        else Nothing
+
+enrichBlueprintTurtle ::
+    BlueprintRegistry ->
+    BS.ByteString ->
+    IO BS.ByteString
+enrichBlueprintTurtle index ttlBytes = do
+    let ttlText = TextEncoding.decodeUtf8With lenientDecode ttlBytes
+        graph = parseCanonicalTurtle ttlText
+        decorations = blueprintDecorations index graph ttlText
+    pure $
+        if null decorations
+            then ttlBytes
+            else
+                ttlBytes
+                    <> ensureTrailingNewline ttlBytes
+                    <> TextEncoding.encodeUtf8
+                        ( Text.intercalate "\n" $
+                            [ "#"
+                            , "# Blueprint typed decode."
+                            , "#"
+                            , ""
+                            ]
+                                <> decorations
+                        )
+
+newtype TurtleGraph = TurtleGraph
+    { tgBlocks :: Map Text Text
+    }
+
+parseCanonicalTurtle :: Text -> TurtleGraph
+parseCanonicalTurtle =
+    TurtleGraph . Map.fromList . mapMaybe parseBlock . splitStatements
+
+splitStatements :: Text -> [Text]
+splitStatements = go [] [] . Text.lines
+  where
+    go acc current [] =
+        reverse (finish current acc)
+    go acc current (line : rest)
+        | skipLine line && null current = go acc [] rest
+        | statementEnd line =
+            go (Text.unlines (reverse (line : current)) : acc) [] rest
+        | otherwise = go acc (line : current) rest
+    finish [] acc = acc
+    finish current acc = Text.unlines (reverse current) : acc
+    skipLine line =
+        let t = Text.strip line
+         in Text.null t || "#" `Text.isPrefixOf` t || "@prefix" `Text.isPrefixOf` t
+    statementEnd line = "." `Text.isSuffixOf` Text.strip line
+
+parseBlock :: Text -> Maybe (Text, Text)
+parseBlock block = do
+    firstLine <- List.find (not . Text.null . Text.strip) (Text.lines block)
+    subject <- listToMaybeText (Text.words firstLine)
+    pure (subject, block)
+
+listToMaybeText :: [Text] -> Maybe Text
+listToMaybeText [] = Nothing
+listToMaybeText (x : _) = Just x
+
+blueprintDecorations ::
+    BlueprintRegistry ->
+    TurtleGraph ->
+    Text ->
+    [Text]
+blueprintDecorations index graph fullText =
+    concatMap decorate (Map.toList (tgBlocks graph))
+  where
+    decorate (outSubj, outBlock)
+        | not ("cardano:Output" `Text.isInfixOf` outBlock) = []
+        | otherwise =
+            case (objectFor "cardano:atAddress" outBlock, objectFor "cardano:hasDatum" outBlock) of
+                (Just addr, Just datumSubj) ->
+                    decorateDatum outSubj addr datumSubj
+                _ -> []
+
+    decorateDatum _outSubj addr datumSubj = fromMaybe [] $ do
+        scriptHash <- outputScriptHash graph addr
+        datumBlock <- Map.lookup datumSubj (tgBlocks graph)
+        rawHex <- literalFor "cardano:hasRawBytes" datumBlock
+        rawBytes <-
+            either (const Nothing) Just $
+                Base16.decode (TextEncoding.encodeUtf8 rawHex)
+        datum <- decodeDatumBytes rawBytes
+        case decodeDatumFromRegistry index scriptHash datum of
+            Decoded openValue blueprint ->
+                let rendered = renderTypedDatum datumSubj blueprint openValue
+                 in if any (`Text.isInfixOf` fullText) (typedPredicates rendered)
+                        then Just []
+                        else Just rendered
+            DecodeFailed err ->
+                Just [datumSubj <> " cardano:decodeError " <> turtleString (Text.pack (show err)) <> " .", ""]
+            NoBlueprintRegistered -> Just []
+
+decodeDatumFromRegistry ::
+    BlueprintRegistry ->
+    ScriptHash ->
+    Data ConwayEra ->
+    BlueprintDecodeResult
+decodeDatumFromRegistry BlueprintRegistry{registryIndexed, registryFallback} scriptHash datum =
+    case decodeDatumForScriptHash registryIndexed scriptHash datum of
+        NoBlueprintRegistered ->
+            fallbackDecode registryFallback
+        result -> result
+  where
+    fallbackDecode fallbacks =
+        let results =
+                [ decodeDatumForScriptHash [(scriptHash, blueprint, title)] scriptHash datum
+                | (blueprint, title) <- fallbacks
+                ]
+         in case [result | result@(Decoded _ _) <- results] of
+                result : _ -> result
+                [] -> case [result | result@(DecodeFailed _) <- results] of
+                    result : _ -> result
+                    [] -> NoBlueprintRegistered
+
+typedPredicates :: [Text] -> [Text]
+typedPredicates =
+    mapMaybe
+        ( \line ->
+            case Text.words line of
+                (_subj : predName : _) | ":" `Text.isPrefixOf` predName -> Just predName
+                _ -> Nothing
+        )
+
+outputScriptHash :: TurtleGraph -> Text -> Maybe ScriptHash
+outputScriptHash graph addr = do
+    addrBlock <- Map.lookup addr (tgBlocks graph)
+    paymentCred <- objectFor "cardano:hasPaymentCredential" addrBlock
+    credBlock <- Map.lookup paymentCred (tgBlocks graph)
+    ident <- objectFor "cardano:hasIdentifier" credBlock
+    scriptHashFromIdentifier ident
+
+scriptHashFromIdentifier :: Text -> Maybe ScriptHash
+scriptHashFromIdentifier ident =
+    let prefix = "<urn:cardano:id:PaymentScript:"
+     in if prefix `Text.isPrefixOf` ident && ">" `Text.isSuffixOf` ident
+            then scriptHashFromHex (Text.dropEnd 1 (Text.drop (Text.length prefix) ident))
+            else Nothing
+
+objectFor :: Text -> Text -> Maybe Text
+objectFor predName block =
+    asum (map objectFromLine (Text.lines block))
+  where
+    objectFromLine line = do
+        rest <- Text.stripPrefix predName (Text.strip (dropSubject line))
+        pure (stripObject rest)
+    dropSubject line =
+        let stripped = Text.strip line
+         in case Text.words stripped of
+                _subject : pred0 : more
+                    | pred0 == predName -> Text.unwords (pred0 : more)
+                _ -> stripped
+    stripObject =
+        Text.strip
+            . Text.dropWhileEnd (`elem` [';', '.'])
+            . Text.strip
+
+literalFor :: Text -> Text -> Maybe Text
+literalFor predName block = do
+    obj <- objectFor predName block
+    quotedText obj
+
+quotedText :: Text -> Maybe Text
+quotedText t =
+    case Text.uncons (Text.strip t) of
+        Just ('"', rest) ->
+            Just (Text.takeWhile (/= '"') rest)
+        _ -> Nothing
+
+decodeDatumBytes :: BS.ByteString -> Maybe (Data ConwayEra)
+decodeDatumBytes raw =
+    either (const Nothing) Just $
+        decodeFullDecoder
+            (natVersion @11)
+            "Conway datum"
+            (decCBOR @(Data ConwayEra))
+            (LBS.fromStrict raw)
+
+renderTypedDatum :: Text -> Blueprint -> OpenValue -> [Text]
+renderTypedDatum datumSubj blueprint openValue =
+    case openValue of
+        OpenObject fields ->
+            concatMap
+                (uncurry (renderField datumSubj base ctor))
+                (Map.toAscList fields)
+        _ -> []
+  where
+    base = bnodeBase datumSubj
+    ctor = topDatumConstructorTitle blueprint
+
+renderField :: Text -> Text -> Text -> Text -> OpenValue -> [Text]
+renderField parent base ctor fieldName openValue =
+    let fieldBase = base <> "_" <> fieldName
+        (obj, extra) = renderOpenObject fieldBase openValue
+     in [parent <> " " <> blueprintPredicate ctor fieldName <> " " <> obj <> " ."]
+            <> extra
+            <> [""]
+
+renderOpenObject :: Text -> OpenValue -> (Text, [Text])
+renderOpenObject _base (OpenInteger n) = (Text.pack (show n), [])
+renderOpenObject _base (OpenText t) = (turtleString t, [])
+renderOpenObject base (OpenBytes hex) =
+    let subject = "_:" <> base
+     in ( subject
+        ,
+            [ subject <> " a cardano:Identifier ;"
+            , "  cardano:leafType \"Bytes\" ;"
+            , "  cardano:bytesHex " <> turtleString hex <> " ."
+            ]
+        )
+renderOpenObject base (OpenObject fields) =
+    let subject = "_:" <> base
+        triples =
+            concatMap
+                (uncurry (renderField subject base "_0"))
+                (Map.toAscList fields)
+     in (subject, triples)
+renderOpenObject base (OpenArray _values) =
+    ("_:" <> base, [])
+
+topDatumConstructorTitle :: Blueprint -> Text
+topDatumConstructorTitle blueprint =
+    case [(v, arg) | v <- blueprintValidators blueprint, Just arg <- [validatorDatum v]] of
+        [] -> "_0"
+        (validator, blueprintArg) : _ ->
+            case schemaTitle (resolvedSchema blueprint blueprintArg) of
+                Just title -> title
+                Nothing -> fromMaybe "_0" (validatorTitle validator)
+
+resolvedSchema :: Blueprint -> BlueprintArgument -> BlueprintSchema
+resolvedSchema blueprint blueprintArg =
+    case resolveBlueprintSchema blueprint (argumentSchema blueprintArg) of
+        Right schema -> schema
+        Left _ -> argumentSchema blueprintArg
+
+blueprintPredicate :: Text -> Text -> Text
+blueprintPredicate ctor fieldName = ":" <> ctor <> "_" <> fieldName
+
+bnodeBase :: Text -> Text
+bnodeBase subject =
+    fromMaybe subject (Text.stripPrefix "_:" subject)
+
+turtleString :: Text -> Text
+turtleString t =
+    "\"" <> Text.concatMap escapeChar t <> "\""
+  where
+    escapeChar = \case
+        '"' -> "\\\""
+        '\\' -> "\\\\"
+        '\n' -> "\\n"
+        c -> Text.singleton c
+
+ensureTrailingNewline :: BS.ByteString -> BS.ByteString
+ensureTrailingNewline bs
+    | BS.null bs = BS.empty
+    | BS.last bs == 0x0A = BS.empty
+    | otherwise = "\n"
+
+----------------------------------------------------------------------
+-- cq-rdf shacl
+----------------------------------------------------------------------
+
+shaclCommand :: ShaclOptions -> IO ()
+shaclCommand ShaclOptions{shaclShapes, shaclOut, shaclSeverity} = do
+    dataTtl <- BS.hGetContents stdin
+    shapeFiles <- shapeFilesIn shaclShapes
+    withTempFile "cq-rdf-data" ".ttl" $ \dataPath ->
+        withTempFile "cq-rdf-shapes" ".ttl" $ \shapesPath -> do
+            BS.writeFile dataPath dataTtl
+            shapeBytes <- fmap BS.concat (traverse BS.readFile shapeFiles)
+            BS.writeFile shapesPath shapeBytes
+            (code, report, err) <-
+                readProcessWithExitCode
+                    "shacl"
+                    ["validate", "--shapes", shapesPath, "--data", dataPath]
+                    ""
+            unless (null err) (hPutStrLn stderr err)
+            let failed = reportFails shaclSeverity report
+                reportBytes =
+                    if not failed && "sh:conforms  true" `List.isInfixOf` report
+                        then BS.empty
+                        else BS8.pack report
+            writeOutput shaclOut reportBytes
+            case code of
+                ExitFailure n -> exitWith (ExitFailure n)
+                ExitSuccess ->
+                    when failed $
+                        exitWith (ExitFailure 1)
+
+shapeFilesIn :: FilePath -> IO [FilePath]
+shapeFilesIn dir = do
+    exists <- doesDirectoryExist dir
+    unless exists $ do
+        hPutStrLn stderr ("SHACL shapes directory does not exist: " <> dir)
+        exitWith (ExitFailure 1)
+    names <- listDirectory dir
+    pure
+        [ dir </> name
+        | name <- List.sort names
+        , ".shacl.ttl" `List.isSuffixOf` name
+        ]
+
+reportFails :: ShaclSeverity -> String -> Bool
+reportFails severity report =
+    case severity of
+        ShaclViolationOnly ->
+            "sh:Violation" `List.isInfixOf` report
+                || "http://www.w3.org/ns/shacl#Violation" `List.isInfixOf` report
+                || "Conforms: false" `List.isInfixOf` report
+        ShaclWarningAndViolation ->
+            reportFails ShaclViolationOnly report
+                || "sh:Warning" `List.isInfixOf` report
+                || "http://www.w3.org/ns/shacl#Warning" `List.isInfixOf` report
+
 parseFormat :: String -> Either EmitError EmitFormat
 parseFormat = \case
     "turtle" -> Right Turtle
@@ -530,8 +1255,8 @@ parseFormat = \case
 
 {- | Resolve the tx's inputs against the in-memory lattice via the
 standard 'Resolver' chain. Missing entries fall through as
-unresolved (same semantics the on-disk closure resolver had in
-#112, now without the disk roundtrip).
+unresolved (same semantics the on-disk closure resolver had in issue
+112, now without the disk roundtrip).
 -}
 resolveAgainstLattice :: Map TxId ConwayTx -> ConwayTx -> IO ResolvedUTxO
 resolveAgainstLattice lattice tx = do

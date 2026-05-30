@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-# tx-lattice — thin convenience wrapper around tx-graph --provider.
+# tx-lattice — thin convenience wrapper around cq-rdf overlay/body.
 #
 # Architecture (post-#114, simplified in #59):
 #
-#   tx-graph  emits an optional rules overlay and one canonical Turtle graph
-#             per transaction. With --provider it fetches each transaction's
-#             CBOR by txid from an HTTP indexer (koios | blockfrost | http).
-#             This wrapper composes the lattice by writing the overlay once
-#             and concatenating one body graph per txid into
-#             <out-dir>/lattice.ttl.
+#   cq-rdf overlay emits the rules overlay once.
+#   cq-rdf body emits one canonical Turtle graph per transaction. With
+#   --provider it fetches each transaction's CBOR by txid from an HTTP
+#   indexer (koios | blockfrost | http).
 #
-#   For one-tx-at-a-time emit, use tx-graph directly.
+#   For one-tx-at-a-time emit, use cq-rdf body directly.
 #
 # Usage:
 #   tx-lattice [--rules rules.yaml] --out-dir DIR \
@@ -18,8 +16,8 @@
 #              <txId1> <txId2> ... <txIdN>
 #
 # Env:
-#   TX_GRAPH_EXE  override path to tx-graph binary
-#                 (default: tx-graph on PATH, else result/bin/tx-graph)
+#   CQ_RDF_EXE  override path to cq-rdf binary
+#               (default: cq-rdf on PATH, else result/bin/cq-rdf)
 
 set -euo pipefail
 
@@ -48,14 +46,14 @@ done
 [[ -n "$OUT_DIR" ]] || { echo "tx-lattice: --out-dir required" >&2; exit 2; }
 [[ ${#TXIDS[@]} -gt 0 ]] || { echo "tx-lattice: pass at least one txId" >&2; exit 2; }
 
-if [[ -n "${TX_GRAPH_EXE:-}" ]]; then
-  TXG="$TX_GRAPH_EXE"
-elif command -v tx-graph >/dev/null 2>&1; then
-  TXG="$(command -v tx-graph)"
-elif [[ -x "result/bin/tx-graph" ]]; then
-  TXG="result/bin/tx-graph"
+if [[ -n "${CQ_RDF_EXE:-}" ]]; then
+  CQRDF="$CQ_RDF_EXE"
+elif command -v cq-rdf >/dev/null 2>&1; then
+  CQRDF="$(command -v cq-rdf)"
+elif [[ -x "result/bin/cq-rdf" ]]; then
+  CQRDF="result/bin/cq-rdf"
 else
-  echo "tx-lattice: tx-graph not found — set TX_GRAPH_EXE, put tx-graph on PATH, or run 'nix build .#tx-graph' first" >&2
+  echo "tx-lattice: cq-rdf not found — set CQ_RDF_EXE, put cq-rdf on PATH, or run 'nix build .#cq-rdf' first" >&2
   exit 2
 fi
 
@@ -66,13 +64,13 @@ PROVIDER_ARGS=(--provider "$PROVIDER")
 mkdir -p "$OUT_DIR"
 OUT_TTL="$OUT_DIR/lattice.ttl"
 if [[ -n "$RULES" ]]; then
-  "$TXG" --rules "$RULES" > "$OUT_TTL"
+  "$CQRDF" overlay --in "$RULES" > "$OUT_TTL"
 else
   : > "$OUT_TTL"
 fi
 
 for txid in "${TXIDS[@]}"; do
-  "$TXG" "${PROVIDER_ARGS[@]}" "$txid"
+  "$CQRDF" body "${PROVIDER_ARGS[@]}" "$txid"
 done >> "$OUT_TTL"
 
 echo "tx-lattice: done. ${#TXIDS[@]} tx graph(s) via --provider $PROVIDER → $OUT_TTL" >&2
