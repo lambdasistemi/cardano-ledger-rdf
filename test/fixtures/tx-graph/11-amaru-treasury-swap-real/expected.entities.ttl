@@ -1,6 +1,11 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/11-amaru-treasury-swap-real#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/11-amaru-treasury-swap-real#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
 
 #
 # Operator-declared entities (from rules.yaml).

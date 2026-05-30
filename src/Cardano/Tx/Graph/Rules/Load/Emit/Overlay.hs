@@ -27,6 +27,10 @@ module Cardano.Tx.Graph.Rules.Load.Emit.Overlay (
     emitOverlay,
 ) where
 
+import Cardano.Tx.Graph.Rules.Load.Imports (
+    ImportEntry (..),
+    cardanoIri,
+ )
 import Cardano.Tx.Graph.Rules.Load.Naming (
     NamingTable,
     buildNamingTable,
@@ -54,42 +58,119 @@ The @fixtureSlug@ argument is the fixture-directory basename and
 becomes the local part of the default @:@ prefix's base IRI (e.g.
 @02-alice-bob-ada@ → prefix
 @\<https://lambdasistemi.github.io/cardano-rdf/fixtures/02-alice-bob-ada#\>@).
--}
-emitOverlay :: Text -> [EntityDecl] -> [Attestation] -> ByteString
-emitOverlay fixtureSlug entities attestations =
-    TextEncoding.encodeUtf8 (renderDocument fixtureSlug entities attestations)
+It is also the manifest local part minted into the @owl:imports@
+declaration at the top of the overlay.
 
-renderDocument :: Text -> [EntityDecl] -> [Attestation] -> Text
-renderDocument fixtureSlug entities attestations =
+The @vocabImports@ argument is the list of vocabularies the operator
+declared in @imports:@, parsed and resolved by the YAML compiler.
+The emitter mints one @owl:imports@ triple per declared vocab
+ontology resource, plus the always-implicit cardano ontology.
+-}
+emitOverlay :: Text -> [ImportEntry] -> [EntityDecl] -> [Attestation] -> ByteString
+emitOverlay fixtureSlug vocabImports entities attestations =
+    TextEncoding.encodeUtf8
+        (renderDocument fixtureSlug vocabImports entities attestations)
+
+renderDocument ::
+    Text -> [ImportEntry] -> [EntityDecl] -> [Attestation] -> Text
+renderDocument fixtureSlug vocabImports entities attestations =
     let table = buildNamingTable entities
-        header = renderHeader fixtureSlug (needsTreasuryPrefix entities attestations)
+        includeTreasury =
+            needsTreasuryPrefix vocabImports entities attestations
+        header = renderHeader fixtureSlug vocabImports includeTreasury
         (entityBlocks, _) = renderEntities table entities Set.empty
         attestBlocks = renderAttestations attestations
      in header <> entityBlocks <> attestBlocks
 
-renderHeader :: Text -> Bool -> Text
-renderHeader fixtureSlug includeTreasury =
-    "@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .\n"
-        <> treasuryPrefix
-        <> "@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        <> "@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/"
-        <> fixtureSlug
-        <> "#> .\n"
+renderHeader :: Text -> [ImportEntry] -> Bool -> Text
+renderHeader fixtureSlug vocabImports includeTreasury =
+    prefixBlock
         <> "\n"
+        <> manifestBlock
         <> "#\n"
         <> "# Operator-declared entities (from rules.yaml).\n"
         <> "#\n"
         <> "\n"
   where
+    prefixBlock =
+        "@prefix cardano: <"
+            <> cardanoIri
+            <> "> .\n"
+            <> treasuryPrefix
+            <> customPrefixes
+            <> "@prefix owl:     <http://www.w3.org/2002/07/owl#> .\n"
+            <> "@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            <> "@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/"
+            <> fixtureSlug
+            <> "#> .\n"
     treasuryPrefix =
         if includeTreasury
             then
                 "@prefix treasury: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#> .\n"
             else ""
+    customPrefixes =
+        Text.concat
+            [ "@prefix "
+                <> importEntryName e
+                <> ": <"
+                <> importEntryNamespace e
+                <> "> .\n"
+            | e <- vocabImports
+            , importEntryName e /= "treasury"
+            ]
 
-needsTreasuryPrefix :: [EntityDecl] -> [Attestation] -> Bool
-needsTreasuryPrefix entities attestations =
-    any entityNeedsTreasury entities || not (null attestations)
+    manifestBlock =
+        let manifestIri =
+                "https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/"
+                    <> fixtureSlug
+                    <> "#"
+            ontologyTargets =
+                cardanoOntologyIri : map importToOntologyIri allImports
+            allImports =
+                [treasuryEntry | includeTreasury]
+                    <> [e | e <- vocabImports, importEntryName e /= "treasury"]
+            treasuryEntry =
+                ImportEntry
+                    { importEntryName = "treasury"
+                    , importEntryNamespace =
+                        "https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury#"
+                    }
+            importsTriples =
+                Text.intercalate
+                    " ,\n              "
+                    (map angled ontologyTargets)
+         in "<"
+                <> manifestIri
+                <> ">\n  a owl:Ontology ;\n  owl:imports "
+                <> importsTriples
+                <> " .\n\n"
+
+angled :: Text -> Text
+angled t = "<" <> t <> ">"
+
+cardanoOntologyIri :: Text
+cardanoOntologyIri =
+    "https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions"
+
+{- | Map a vocab import to its ontology resource IRI. The two
+built-in vocabs have known ontology suffixes; for inline-imported
+custom ontologies we have nothing better than the namespace IRI
+itself (the operator provided no ontology-resource hint), so we
+mint that as the @owl:imports@ target. Operators authoring a
+custom ontology should make the namespace and ontology IRIs equal
+to avoid surprises.
+-}
+importToOntologyIri :: ImportEntry -> Text
+importToOntologyIri e
+    | importEntryName e == "treasury" =
+        "https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/treasury/overlay"
+    | otherwise = importEntryNamespace e
+
+needsTreasuryPrefix :: [ImportEntry] -> [EntityDecl] -> [Attestation] -> Bool
+needsTreasuryPrefix vocabImports entities attestations =
+    any ((== "treasury") . importEntryName) vocabImports
+        || any entityNeedsTreasury entities
+        || not (null attestations)
 
 entityNeedsTreasury :: EntityDecl -> Bool
 entityNeedsTreasury EntityDecl{entityIdentifiers, entityRole, entityPaidVia} =

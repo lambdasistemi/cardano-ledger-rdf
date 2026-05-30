@@ -1,5 +1,12 @@
 # Case-study-local copy of rules/amaru-treasury.yaml, extended with the
 # off-chain attestations that the May 2026 presentation joins in Q5.
+#
+# Phase 3 of epic #66 (separate runtime from apps): non-cardano
+# vocabularies are opt-in through this `imports:` block. The treasury
+# vocab owns the `paid-via`, `role`, `attests`, and `ipfs` keys.
+imports:
+  - treasury
+
 entities:
   - name: amaru-treasury.contingency
     from-address: addr1x8ndhlcfy30t38z0tql64fpg8ply93r37xrgvdagfpsz5nhxm0lsjfz7hzwy7kpl42jzswr7gtz8ruvxscm6sjrq9f8qruq0ae

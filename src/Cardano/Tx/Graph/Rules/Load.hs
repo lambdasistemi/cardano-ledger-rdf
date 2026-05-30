@@ -157,13 +157,17 @@ loadWithResolver path = do
     eResolved <- resolveImports path
     pure $ case eResolved of
         Left err -> Left err
-        Right (entities, blueprints, attestations) -> do
+        Right (entities, blueprints, attestations, vocabImports) -> do
             (dedupedBlueprints, blueprintWarnings) <-
                 dedupBlueprints blueprints
             let fixtureSlug = Text.pack (takeBaseName (takeDirectory path))
                 (dedupedEntities, entityWarnings) = dedupAcrossFiles entities
                 bytes =
-                    emitOverlay fixtureSlug dedupedEntities attestations
+                    emitOverlay
+                        fixtureSlug
+                        vocabImports
+                        dedupedEntities
+                        attestations
             Right
                 RulesLoadResult
                     { rulesOverlayTurtle = bytes
@@ -282,6 +286,50 @@ renderRulesLoadError = \case
             <> show line
             <> ": DuplicateBlueprintPredicate: "
             <> Text.unpack predName
+    UnknownImport file line raw ->
+        file
+            <> ":"
+            <> show line
+            <> ": UnknownImport: "
+            <> show (Text.unpack raw)
+            <> "; known short names: cardano, treasury; supply "
+            <> "'{iri: ..., as: ...}' for a custom ontology"
+    MalformedImport file line msg ->
+        file
+            <> ":"
+            <> show line
+            <> ": MalformedImport: "
+            <> Text.unpack msg
+    UnknownKey file line key ->
+        file
+            <> ":"
+            <> show line
+            <> ": UnknownKey: '"
+            <> Text.unpack key
+            <> "'; did you forget to add it to imports:?"
+    MissingImportForKey file line key vocab ->
+        file
+            <> ":"
+            <> show line
+            <> ": MissingImport: key '"
+            <> Text.unpack key
+            <> "' requires 'imports: ["
+            <> Text.unpack vocab
+            <> "]'"
+    AmbiguousKey file line key vocabs ->
+        file
+            <> ":"
+            <> show line
+            <> ": AmbiguousKey: key '"
+            <> Text.unpack key
+            <> "' is ambiguous (imports: "
+            <> Text.unpack (Text.intercalate ", " vocabs)
+            <> "); qualify it as "
+            <> Text.unpack
+                ( Text.intercalate
+                    " or "
+                    ["'" <> v <> ":" <> key <> ":'" | v <- vocabs]
+                )
   where
     renderCycle = \case
         [] -> "<empty cycle>"

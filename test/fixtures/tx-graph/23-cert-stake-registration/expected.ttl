@@ -1,8 +1,13 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/23-cert-stake-registration#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/23-cert-stake-registration#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
 
 #
 # Operator-declared entities (from rules.yaml).

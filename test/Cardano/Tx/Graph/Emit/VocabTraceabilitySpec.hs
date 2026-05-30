@@ -152,12 +152,12 @@ fixtureSpec (slug, tx) = describe slug $ do
                         <> ": emit returned Left "
                         <> show err
             Right _ -> pure ()
-    it "declared prefixes ⊆ {cardano, rdf, rdfs, xsd, :}" $ do
+    it "declared prefixes ⊆ {cardano, owl, rdf, rdfs, xsd, :}" $ do
         sort (extractDeclaredPrefixes bytes)
-            `shouldBe` sort ["", "cardano", "rdf", "rdfs", "xsd"]
-    it "every CURIE prefix in the body is one of the declared five" $ do
+            `shouldBe` sort ["", "cardano", "owl", "rdf", "rdfs", "xsd"]
+    it "every CURIE prefix in the body is one of the declared six" $ do
         let usedPrefixes = nub (extractUsedPrefixes bytes)
-            ok p = p `elem` ["", "cardano", "rdf", "rdfs", "xsd"]
+            ok p = p `elem` ["", "cardano", "owl", "rdf", "rdfs", "xsd"]
             bad = filter (not . ok) usedPrefixes
         bad `shouldBe` []
     it "no '_internal:' substring leak" $ do

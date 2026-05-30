@@ -48,6 +48,7 @@ import Cardano.Tx.Graph.Emit.Triple (
 import Cardano.Tx.Graph.Emit.Vocab (
     cardanoPrefix,
     fixturePrefixBase,
+    owlPrefix,
     rdfPrefix,
     rdfsPrefix,
     xsdPrefix,
@@ -236,6 +237,7 @@ renderPrefixes :: Text -> Builder
 renderPrefixes slug =
     mconcat
         [ prefixLine "cardano:" cardanoPrefix
+        , prefixLine "owl:    " owlPrefix
         , prefixLine "rdf:    " rdfPrefix
         , prefixLine "rdfs:   " rdfsPrefix
         , prefixLine "xsd:    " xsdPrefix

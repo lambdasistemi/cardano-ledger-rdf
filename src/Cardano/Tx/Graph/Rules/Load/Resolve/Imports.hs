@@ -84,12 +84,16 @@ import Cardano.Tx.Blueprint (
     BlueprintValidator (..),
     parseBlueprintJSON,
  )
+import Cardano.Tx.Graph.Rules.Load.Imports (
+    ImportEntry,
+    importEntryName,
+ )
 import Cardano.Tx.Graph.Rules.Load.Parse.Turtle (
     parseRulesTurtleImportsWithFile,
  )
 import Cardano.Tx.Graph.Rules.Load.Parse.Yaml (
     BlueprintStub (..),
-    parseRulesYamlImportsWithFile,
+    parseRulesYamlImportsWithFileVocab,
  )
 import Cardano.Tx.Graph.Rules.Load.Types (
     Attestation,
@@ -165,7 +169,7 @@ resolveImports ::
     IO
         ( Either
             RulesLoadError
-            ([EntityDecl], [ResolvedBlueprint], [Attestation])
+            ([EntityDecl], [ResolvedBlueprint], [Attestation], [ImportEntry])
         )
 resolveImports topPath = do
     -- The caller's path may be relative — canonicalize once so the
@@ -193,11 +197,11 @@ dfs ::
     StateT
         VisitMap
         (ExceptT RulesLoadError IO)
-        ([EntityDecl], [ResolvedBlueprint], [Attestation])
+        ([EntityDecl], [ResolvedBlueprint], [Attestation], [ImportEntry])
 dfs activePath canonicalPath = do
     visited <- get
     case Map.lookup canonicalPath visited of
-        Just Black -> pure ([], [], [])
+        Just Black -> pure ([], [], [], [])
         Just Grey ->
             lift
                 ( throwE
@@ -205,20 +209,27 @@ dfs activePath canonicalPath = do
                 )
         Nothing -> do
             modify' (Map.insert canonicalPath Grey)
-            (imports, ownEntities, ownStubs, ownAttests) <- parseFile canonicalPath
+            (imports, ownVocabImports, ownEntities, ownStubs, ownAttests) <-
+                parseFile canonicalPath
             ownBlueprints <- traverse loadBlueprintStub ownStubs
             let activePath' = activePath <> [canonicalPath]
             children <-
                 traverse (resolveChild activePath' canonicalPath) imports
             modify' (Map.insert canonicalPath Black)
             -- Reverse-post-order: children before parent.
-            let childEntities = concatMap (\(a, _, _) -> a) children
-                childBlueprints = concatMap (\(_, b, _) -> b) children
-                childAttests = concatMap (\(_, _, c) -> c) children
+            let childEntities = concatMap (\(a, _, _, _) -> a) children
+                childBlueprints = concatMap (\(_, b, _, _) -> b) children
+                childAttests = concatMap (\(_, _, c, _) -> c) children
+                childVocabImports = concatMap (\(_, _, _, d) -> d) children
             pure
                 ( childEntities <> ownEntities
                 , childBlueprints <> ownBlueprints
                 , childAttests <> ownAttests
+                , -- Dedup vocab imports by short name across the
+                  -- transitive closure so a fixture that imports a
+                  -- shared file gets each unique vocabulary exactly
+                  -- once in the emitted overlay header.
+                  dedupVocabImports (childVocabImports <> ownVocabImports)
                 )
 
 {- | Build the cycle-path payload for a 'RulesImportCycle'.
@@ -253,22 +264,44 @@ parseFile ::
     StateT
         VisitMap
         (ExceptT RulesLoadError IO)
-        ([Text], [EntityDecl], [BlueprintStub], [Attestation])
+        ( [Text]
+        , [ImportEntry]
+        , [EntityDecl]
+        , [BlueprintStub]
+        , [Attestation]
+        )
 parseFile path = do
     blob <- liftIO (BS.readFile path)
     case takeExtension path of
         ".ttl" ->
             -- Turtle rules files don't carry @blueprints:@ or
-            -- @attestations:@; both lists are empty for them.
+            -- @attestations:@ or vocab imports (yet); their vocab
+            -- import list is always empty.
             liftEither $
                 fmap
-                    (\(imp, ents) -> (imp, ents, [], []))
+                    (\(imp, ents) -> (imp, [], ents, [], []))
                     (parseRulesTurtleImportsWithFile path blob)
-        ".yaml" -> liftEither (parseRulesYamlImportsWithFile path blob)
-        ".yml" -> liftEither (parseRulesYamlImportsWithFile path blob)
+        ".yaml" -> liftEither (parseRulesYamlImportsWithFileVocab path blob)
+        ".yml" -> liftEither (parseRulesYamlImportsWithFileVocab path blob)
         _ -> liftEither (Left (UnsupportedExtension path))
   where
     liftEither = lift . ExceptT . pure
+
+{- | Dedup vocab imports by short name, keeping the first occurrence
+in source order. The DFS-flattening can produce the same vocabulary
+via multiple file imports (e.g. two YAMLs each declaring
+@imports: [treasury]@); the emitted @owl:imports@ block needs each
+vocabulary exactly once.
+-}
+dedupVocabImports :: [ImportEntry] -> [ImportEntry]
+dedupVocabImports = go Set.empty
+  where
+    go _ [] = []
+    go seen (e : rest)
+        | Set.member (entryKey e) seen = go seen rest
+        | otherwise =
+            e : go (Set.insert (entryKey e) seen) rest
+    entryKey = importEntryName
 
 {- | IO half of blueprint loading. Resolves the stub's raw @datum:@
 path against the rules.yaml's directory, reads the JSON, and parses
@@ -333,7 +366,7 @@ resolveChild ::
     StateT
         VisitMap
         (ExceptT RulesLoadError IO)
-        ([EntityDecl], [ResolvedBlueprint], [Attestation])
+        ([EntityDecl], [ResolvedBlueprint], [Attestation], [ImportEntry])
 resolveChild activePath importer importRaw
     | isHttpsLike importRaw =
         throw (HttpsImport importer importRaw)

@@ -20,6 +20,7 @@ module Cardano.Tx.Graph.Emit.Vocab (
     rdfsPrefix,
     rdfPrefix,
     xsdPrefix,
+    owlPrefix,
     fixturePrefixBase,
 
     -- * Vocab term registry
@@ -50,6 +51,14 @@ rdfPrefix = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 -- | The XML Schema namespace. Carries explicitly typed boolean literals.
 xsdPrefix :: Text
 xsdPrefix = "http://www.w3.org/2001/XMLSchema#"
+
+{- | The OWL namespace. Phase 3 of epic 66 introduced the
+@owl:Ontology@ manifest declaration at the top of every emitted
+overlay; the joint serializer keeps the prefix line so the
+overlay block embedded under the prefix header parses cleanly.
+-}
+owlPrefix :: Text
+owlPrefix = "http://www.w3.org/2002/07/owl#"
 
 {- | The fixture-local prefix base. The full @\@prefix :@ IRI is
 @\<fixturePrefixBase\>\<slug\>#@ for a given fixture slug.

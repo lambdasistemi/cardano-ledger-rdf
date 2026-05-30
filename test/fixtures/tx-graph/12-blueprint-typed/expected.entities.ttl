@@ -1,3 +1,21 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/12-blueprint-typed#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/12-blueprint-typed#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+:amaru_swap_v2 a cardano:Entity ;
+  rdfs:label "amaru.swap.v2" ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077> .
+
+<urn:cardano:id:PaymentScript:fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077> a cardano:Identifier ;
+  cardano:leafType "PaymentScript" ;
+  cardano:bytesHex "fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077" .
+

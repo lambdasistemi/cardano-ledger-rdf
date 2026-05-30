@@ -1,6 +1,11 @@
 @prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/17-amaru-disburse-contingency#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/17-amaru-disburse-contingency#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
 
 #
 # Operator-declared entities (from rules.yaml).
@@ -8,40 +13,43 @@
 
 :amaru_treasury_contingency a cardano:Entity ;
   rdfs:label "amaru-treasury.contingency" ;
-  cardano:hasIdentifier _:amaru_treasury_contingency_paymentScript ;
-  cardano:hasIdentifier _:amaru_treasury_contingency_stakeScript .
+  cardano:bech32 "addr1x8ndhlcfy30t38z0tql64fpg8ply93r37xrgvdagfpsz5nhxm0lsjfz7hzwy7kpl42jzswr7gtz8ruvxscm6sjrq9f8qruq0ae" ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeScript:e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e> .
 
-_:amaru_treasury_contingency_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e" .
 
-_:amaru_treasury_contingency_stakeScript a cardano:Identifier ;
+<urn:cardano:id:StakeScript:e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e> a cardano:Identifier ;
   cardano:leafType "StakeScript" ;
   cardano:bytesHex "e6dbff09245eb89c4f583faaa428387e42c471f1868637a848602a4e" .
 
 :amaru_treasury_network_compliance a cardano:Entity ;
   rdfs:label "amaru-treasury.network_compliance" ;
-  cardano:hasIdentifier _:amaru_treasury_network_compliance_paymentScript ;
-  cardano:hasIdentifier _:amaru_treasury_network_compliance_stakeScript .
+  cardano:bech32 "addr1xyezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rfjyqwur6p8pqmycmzz55lcnan4x99mnt2a5fe54ggt4gxs8thzgk" ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> .
 
-_:amaru_treasury_network_compliance_paymentScript a cardano:Identifier ;
+<urn:cardano:id:PaymentScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> a cardano:Identifier ;
   cardano:leafType "PaymentScript" ;
   cardano:bytesHex "32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d" .
 
-_:amaru_treasury_network_compliance_stakeScript a cardano:Identifier ;
+<urn:cardano:id:StakeScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> a cardano:Identifier ;
   cardano:leafType "StakeScript" ;
   cardano:bytesHex "32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d" .
 
 :amaru_network_wallet a cardano:Entity ;
   rdfs:label "amaru.network-wallet" ;
-  cardano:hasIdentifier _:amaru_network_wallet_paymentKey ;
-  cardano:hasIdentifier _:amaru_network_wallet_stakeKey .
+  cardano:bech32 "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz" ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> ;
+  cardano:hasIdentifier <urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> .
 
-_:amaru_network_wallet_paymentKey a cardano:Identifier ;
+<urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> a cardano:Identifier ;
   cardano:leafType "PaymentKey" ;
   cardano:bytesHex "8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1" .
 
-_:amaru_network_wallet_stakeKey a cardano:Identifier ;
+<urn:cardano:id:StakeKey:4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3> a cardano:Identifier ;
   cardano:leafType "StakeKey" ;
   cardano:bytesHex "4c7889c658ef4f491a34cf79c35a2e0fe6b0d1b0a856fb9580f2d9c3" .
 
