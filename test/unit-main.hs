@@ -4,6 +4,7 @@ import Test.Hspec (hspec)
 
 import Cardano.Tx.Build.MinUtxoSpec qualified as BuildMinUtxoSpec
 import Cardano.Tx.BuildSpec qualified as BuildSpec
+import Cardano.Tx.Graph.CqRdfExeSpec qualified as GraphCqRdfExeSpec
 import Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec qualified as GraphEmitBlockfrostSampleSmokeSpec
 import Cardano.Tx.Graph.Emit.BlueprintPredicateTraceabilitySpec qualified as GraphEmitBlueprintPredicateTraceabilitySpec
 import Cardano.Tx.Graph.Emit.BlueprintSpec qualified as GraphEmitBlueprintSpec
@@ -63,6 +64,7 @@ main :: IO ()
 main = hspec $ do
     BuildSpec.spec
     BuildMinUtxoSpec.spec
+    GraphCqRdfExeSpec.spec
     GraphEmitBlockfrostSampleSmokeSpec.spec
     GraphEmitBlueprintPredicateTraceabilitySpec.spec
     GraphEmitBlueprintSpec.spec

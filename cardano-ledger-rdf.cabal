@@ -145,7 +145,7 @@ library
     , tree-view                  >=0.5  && <0.6
     , yaml                       >=0.11 && <0.12
 
-executable tx-graph
+executable cq-rdf
   import:           warnings
   hs-source-dirs:   app/tx-graph
   main-is:          Main.hs
@@ -153,11 +153,14 @@ executable tx-graph
   autogen-modules:  Paths_cardano_ledger_rdf
   other-modules:    Paths_cardano_ledger_rdf
   build-depends:
+    , aeson
     , base
     , base16-bytestring      >=1.0  && <1.1
     , bytestring             >=0.12 && <0.13
+    , cardano-binary         >=1.8  && <3
     , cardano-crypto-class   >=2.3  && <4
     , cardano-ledger-api     >=1.13 && <3
+    , cardano-ledger-binary  >=1.8  && <3
     , cardano-ledger-conway  >=1.21 && <3
     , cardano-ledger-core    >=1.19 && <3
     , cardano-ledger-rdf
@@ -168,6 +171,7 @@ executable tx-graph
     , http-client-tls        >=0.3  && <0.4
     , microlens              >=0.4  && <0.5
     , optparse-applicative   >=0.19 && <0.20
+    , process                >=1.6  && <1.7
     , text                   >=2.1  && <2.2
 
 executable tx-view
@@ -194,6 +198,7 @@ test-suite unit-tests
     Cardano.Tx.BlueprintSpec
     Cardano.Tx.Build.MinUtxoSpec
     Cardano.Tx.BuildSpec
+    Cardano.Tx.Graph.CqRdfExeSpec
     Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec
     Cardano.Tx.Graph.Emit.BlueprintPredicateTraceabilitySpec
     Cardano.Tx.Graph.Emit.BlueprintSpec
@@ -320,7 +325,9 @@ test-suite unit-tests
   -- without a `cabal list-bin` env-var dance in the dev shell. The
   -- nix flake check path wires the same store path through
   -- TX_VIEW_EXE (see flake.nix's unit-check override).
-  build-tool-depends: cardano-ledger-rdf:tx-view
+  build-tool-depends:
+    , cardano-ledger-rdf:cq-rdf
+    , cardano-ledger-rdf:tx-view
 
 source-repository head
   type:     git

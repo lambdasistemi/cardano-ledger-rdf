@@ -45,6 +45,7 @@ module Cardano.Tx.Graph.Emit.Blueprint (
 
     -- * Decoders (pure)
     decodeDatumForOutput,
+    decodeDatumForScriptHash,
     decodeRedeemerForPurpose,
 
     -- * IRI minter (pure)
@@ -142,9 +143,24 @@ decodeDatumForOutput ::
 decodeDatumForOutput index txOut datum =
     case paymentScriptHash (txOut ^. addrTxOutL) of
         Nothing -> NoBlueprintRegistered
-        Just sh -> case lookupBlueprint sh index of
-            Nothing -> NoBlueprintRegistered
-            Just blueprint -> tryDecode BlueprintDatum blueprint datum
+        Just sh -> decodeDatumForScriptHash index sh datum
+
+{- | Consult the blueprint index for a datum when the enclosing
+payment script hash is already known.
+
+This is the same matching path as 'decodeDatumForOutput', exposed
+for graph-to-graph passes that recover the script hash from RDF
+instead of from a ledger 'TxOut'.
+-}
+decodeDatumForScriptHash ::
+    [(ScriptHash, Blueprint, Text)] ->
+    ScriptHash ->
+    Data ConwayEra ->
+    BlueprintDecodeResult
+decodeDatumForScriptHash index sh datum =
+    case lookupBlueprint sh index of
+        Nothing -> NoBlueprintRegistered
+        Just blueprint -> tryDecode BlueprintDatum blueprint datum
 
 {- | Consult the blueprint index for a redeemer at a given purpose.
 

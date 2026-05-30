@@ -118,6 +118,28 @@
             };
           };
           components = project.hsPkgs.cardano-ledger-rdf.components;
+          cqRdfUnwrapped = components.exes.cq-rdf;
+          cqRdf = pkgs.runCommand "cq-rdf-${packageVersion}"
+            {
+              nativeBuildInputs = [ pkgs.makeWrapper ];
+              meta.mainProgram = "cq-rdf";
+            } ''
+            mkdir -p "$out/bin"
+            makeWrapper ${cqRdfUnwrapped}/bin/cq-rdf "$out/bin/cq-rdf" \
+              --prefix PATH : ${lib.makeBinPath [ pkgs.apache-jena pkgs.jre_headless ]} \
+              --set-default SSL_CERT_FILE ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+          '';
+          txGraphCompat = pkgs.runCommand "tx-graph-compat-${packageVersion}"
+            { meta.mainProgram = "tx-graph"; } ''
+            mkdir -p "$out/bin"
+            cat > "$out/bin/tx-graph" <<'EOF'
+            #!${pkgs.bash}/bin/bash
+            export PATH="${lib.makeBinPath [ pkgs.apache-jena pkgs.jre_headless ]}:$PATH"
+            export SSL_CERT_FILE="''${SSL_CERT_FILE:-${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt}"
+            exec -a tx-graph ${cqRdfUnwrapped}/bin/cq-rdf "$@"
+            EOF
+            chmod +x "$out/bin/tx-graph"
+          '';
           packageVersion =
             let
               versionLines =
@@ -135,18 +157,31 @@
           devArtifactVersion = "${packageVersion}-${sourceRevision}";
           exeSpecs = [
             {
-              name = "tx-graph";
-              package = components.exes.tx-graph;
-              desc =
-                "Emit Conway transactions and operator-entity overlays as RDF";
-              formulaClass = "TxGraph";
+              name = "cq-rdf";
+              package = cqRdf;
+              desc = "Cardano RDF pipeline primitives";
+              formulaClass = "CqRdf";
               formulaTest = ''
-                output = shell_output("#{bin}/tx-graph 2>&1", 1)
-                assert_match "operator-entity overlay + body emitter", output
+                output = shell_output("#{bin}/cq-rdf 2>&1", 0)
+                assert_match "Cardano RDF pipeline primitives", output
               '';
               usageGreps = [
                 "Usage:"
-                "operator-entity overlay + body emitter"
+                "Cardano RDF pipeline primitives"
+              ];
+            }
+            {
+              name = "tx-graph";
+              package = txGraphCompat;
+              desc = "Deprecated compatibility symlink for cq-rdf body";
+              formulaClass = "TxGraph";
+              formulaTest = ''
+                output = shell_output("#{bin}/tx-graph 2>&1", 0)
+                assert_match "--rules", output
+              '';
+              usageGreps = [
+                "Usage:"
+                "--rules"
               ];
             }
             {
@@ -155,6 +190,7 @@
               desc =
                 "Project canonical Turtle graphs through packaged SPARQL views";
               formulaClass = "TxView";
+              smokeExitCode = 1;
               formulaTest = ''
                 output = shell_output("#{bin}/tx-view 2>&1", 1)
                 assert_match "canonical Turtle graph file", output
@@ -171,7 +207,7 @@
               ${spec.name} >/tmp/${spec.name}.out 2>&1
               status="$?"
               set -e
-              test "$status" -ne 0
+              test "$status" -eq ${toString (spec.smokeExitCode or 0)}
             ''
             + lib.concatMapStringsSep "\n"
               (g: "  grep -F -- ${lib.escapeShellArg g} /tmp/${spec.name}.out >/dev/null")
@@ -240,7 +276,7 @@
                 };
             });
           checkSuite = import ./nix/checks.nix {
-            inherit pkgs components lintPkgs pythonEnv eye;
+            inherit pkgs components lintPkgs pythonEnv eye cqRdf txGraphCompat;
             src = ./.;
           };
           checkApps = import ./nix/apps.nix {
@@ -252,13 +288,16 @@
             runtimeInputs = [ checkSuite.scripts.unit ];
             text = ''
               export TX_VIEW_EXE=${components.exes.tx-view}/bin/tx-view
+              export CQ_RDF_EXE=${cqRdf}/bin/cq-rdf
+              export TX_GRAPH_EXE=${txGraphCompat}/bin/tx-graph
               exec ${lib.getExe checkSuite.scripts.unit} "$@"
             '';
           };
         in {
           packages = {
-            default = components.exes.tx-graph;
-            tx-graph = components.exes.tx-graph;
+            default = cqRdf;
+            cq-rdf = cqRdf;
+            tx-graph = txGraphCompat;
             tx-view = components.exes.tx-view;
           } // darwinReleasePackages // linuxReleasePackages;
           checks = checkSuite.checks // {
@@ -284,7 +323,11 @@
             };
             tx-graph = {
               type = "app";
-              program = "${components.exes.tx-graph}/bin/tx-graph";
+              program = "${txGraphCompat}/bin/tx-graph";
+            };
+            cq-rdf = {
+              type = "app";
+              program = "${cqRdf}/bin/cq-rdf";
             };
             tx-view = {
               type = "app";

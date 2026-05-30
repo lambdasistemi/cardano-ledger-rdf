@@ -51,8 +51,11 @@ jobs:
       max-parallel: 1
       matrix:
         executable:
+          - name: cq-rdf
+            usage-grep: "Cardano RDF pipeline primitives"
+            dev-tag: dev-homebrew-cq-rdf
           - name: tx-graph
-            usage-grep: "operator-entity overlay + body emitter"
+            usage-grep: "--rules"
             dev-tag: dev-homebrew-tx-graph
           - name: tx-view
             usage-grep: "canonical Turtle graph file"

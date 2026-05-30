@@ -1,25 +1,27 @@
 {- |
 Module      : Cardano.Tx.Graph.Rules.LoadExeSpec
-Description : End-to-end tests for the @tx-graph@ executable surface (T011).
+Description : End-to-end tests for the @cq-rdf overlay@ executable surface.
 License     : Apache-2.0
 
-Drives the freshly-built @tx-graph@ binary as a subprocess to exercise
-the three CLI surfaces called out by US7:
+Drives the freshly-built @cq-rdf@ binary as a subprocess to exercise
+the overlay CLI surface:
 
-* @tx-graph --rules \<fixture\>/rules.yaml@ on a basic fixture produces
+* @cq-rdf overlay --in \<fixture\>/rules.yaml@ on a basic fixture produces
   exit 0, an empty stderr, and a stdout byte-stream that equals the
   fixture's @expected.entities.ttl@.
-* @tx-graph --rules \<cycle\>@ on a rules graph with an import cycle
+* @cq-rdf overlay --in \<cycle\>@ on a rules graph with an import cycle
   produces a non-zero exit and a stderr line containing the
   @RulesImportCycle@ tag from
   'Cardano.Tx.Graph.Rules.Load.renderRulesLoadError'.
-* @tx-graph@ with no arguments produces a non-zero exit and a stderr
-  payload that mentions @--rules@ — the @optparse-applicative@
-  default usage message.
+* @cq-rdf@ with no arguments produces exit 0 and a stderr help block
+  that mentions the @overlay@ subcommand and the @Cardano RDF pipeline
+  primitives@ header. Exit 0 is mandated by the release-artifact-smoke
+  contract (the smoke runs the freshly-built binary with no args and
+  greps its stderr).
 
-The binary is located via the @TX_GRAPH_EXE@ environment variable
+The binary is located via the @CQ_RDF_EXE@ environment variable
 when set (the @nix flake check@ sandbox and the @just unit@ recipe
-both export it), or via @cabal list-bin -O0 exe:tx-graph@ as a
+both export it), or via @cabal list-bin -O0 exe:cq-rdf@ as a
 fallback for bare @cabal test@ invocations in the dev shell. The
 env-var path keeps the spec usable inside the @nix@ check sandbox,
 which has no @cabal@ on @PATH@.
@@ -58,10 +60,10 @@ import Test.Hspec (
 ----------------------------------------------------------------------
 
 spec :: Spec
-spec = describe "tx-graph executable (T011, US7)" $ do
-    txGraphPath <- runIO locateTxGraph
+spec = describe "cq-rdf overlay executable" $ do
+    cqRdfPath <- runIO locateCqRdf
     it
-        ( "--rules <fixture-02>/rules.yaml — exit 0, stdout byte-equals"
+        ( "overlay --in <fixture-02>/rules.yaml — exit 0, stdout byte-equals"
             <> " expected.entities.ttl, stderr empty"
         )
         $ do
@@ -75,7 +77,7 @@ spec = describe "tx-graph executable (T011, US7)" $ do
                         </> "expected.entities.ttl"
             expected <- BS.readFile expectedPath
             (code, out, err) <-
-                runExe txGraphPath ["--rules", rulesPath]
+                runExe cqRdfPath ["overlay", "--in", rulesPath]
             err `shouldBe` BS.empty
             unless (out == expected) $
                 expectationFailure $
@@ -90,7 +92,7 @@ spec = describe "tx-graph executable (T011, US7)" $ do
             code `shouldBe` ExitSuccess
 
     it
-        ( "--rules <cycle.yaml> — non-zero exit, stderr contains"
+        ( "overlay --in <cycle.yaml> — non-zero exit, stderr contains"
             <> " RulesImportCycle"
         )
         $ do
@@ -110,31 +112,33 @@ spec = describe "tx-graph executable (T011, US7)" $ do
                         <> hex28B
                         <> "\n"
                 (code, _out, err) <-
-                    runExe txGraphPath ["--rules", aPath]
+                    runExe cqRdfPath ["overlay", "--in", aPath]
                 code `shouldSatisfy` isFailure
                 BS8.unpack err
                     `shouldSatisfy` ("RulesImportCycle" `isInfixOf`)
 
-    it "no arguments — non-zero exit, stderr usage mentions --rules" $ do
-        (code, _out, err) <- runExe txGraphPath []
-        code `shouldSatisfy` isFailure
+    it "no arguments — exit 0, stderr usage mentions overlay (release-artifact-smoke contract)" $ do
+        (code, _out, err) <- runExe cqRdfPath []
+        code `shouldBe` ExitSuccess
         BS8.unpack err
-            `shouldSatisfy` ("--rules" `isInfixOf`)
+            `shouldSatisfy` ("overlay" `isInfixOf`)
+        BS8.unpack err
+            `shouldSatisfy` ("Cardano RDF pipeline primitives" `isInfixOf`)
 
 ----------------------------------------------------------------------
 -- Subprocess helpers
 ----------------------------------------------------------------------
 
-{- | Locate the freshly-built @tx-graph@ binary.
+{- | Locate the freshly-built @cq-rdf@ binary.
 
-If the @TX_GRAPH_EXE@ environment variable is set, use it directly.
+If the @CQ_RDF_EXE@ environment variable is set, use it directly.
 This is the path the @nix flake check@ sandbox takes — the @unit@
 gate exports it pointing at the haskell.nix-built executable's store
 path before invoking @unit-tests@. The @just unit@ recipe takes the
 same path so the dev shell never needs @cabal@ as a runtime tool of
 the test suite.
 
-If unset, fall back to @cabal list-bin -O0 exe:tx-graph@ so a bare
+If unset, fall back to @cabal list-bin -O0 exe:cq-rdf@ so a bare
 @cabal test cardano-rdf:unit-tests@ in the dev shell still
 self-locates the binary. The nix-check sandbox has no @cabal@ on
 @PATH@; using only the env-var path there keeps the suite working
@@ -145,9 +149,9 @@ resolves so a regression in the cabal stanza surfaces as an
 actionable test failure rather than a confusing @no such file@ from
 'runExe'.
 -}
-locateTxGraph :: IO FilePath
-locateTxGraph = do
-    mEnvPath <- lookupEnv "TX_GRAPH_EXE"
+locateCqRdf :: IO FilePath
+locateCqRdf = do
+    mEnvPath <- lookupEnv "CQ_RDF_EXE"
     case mEnvPath of
         Just p | not (null p) -> pure p
         _ -> do
@@ -156,14 +160,14 @@ locateTxGraph = do
                     "cabal"
                     [ "list-bin"
                     , "-O0"
-                    , "exe:tx-graph"
+                    , "exe:cq-rdf"
                     ]
             case code of
                 ExitSuccess ->
                     pure (trimTrailingNewline (BS8.unpack out))
                 _ ->
                     fail $
-                        "cabal list-bin exe:tx-graph failed: " <> BS8.unpack err
+                        "cabal list-bin exe:cq-rdf failed: " <> BS8.unpack err
 
 -- | Spawn an external program, capture stdout + stderr, return exit code.
 runExe :: FilePath -> [String] -> IO (ExitCode, ByteString, ByteString)
