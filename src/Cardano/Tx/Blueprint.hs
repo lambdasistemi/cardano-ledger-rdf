@@ -65,97 +65,238 @@ import Cardano.Ledger.Api.Scripts.Data (Data (..))
 import Cardano.Ledger.Conway (ConwayEra)
 import PlutusCore.Data qualified as PLC
 
+{- | A CIP-0057 Plutus blueprint as parsed from JSON: the preamble that
+describes the on-chain code, the list of validators it exposes, and a
+definitions table that names every shared schema referenced by
+'SchemaReference'.
+-}
 data Blueprint = Blueprint
     { blueprintPreamble :: BlueprintPreamble
+    -- ^ Header metadata (title, Plutus version) carried verbatim from
+    -- the @preamble@ object.
     , blueprintValidators :: [BlueprintValidator]
+    -- ^ Every @validators[i]@ entry in source order. The order is not
+    -- semantically meaningful but is preserved so error messages can
+    -- point at a stable position.
     , blueprintDefinitions :: Map Text BlueprintSchema
+    -- ^ Reusable schemas keyed by their JSON-Pointer-style reference name
+    -- (the part after @#\/definitions\/@). Consulted by
+    -- 'resolveBlueprintSchema' when walking 'SchemaReference' edges.
     }
     deriving stock (Eq, Show)
 
+{- | Header metadata for a 'Blueprint'. Title and Plutus version are kept
+as 'Text' so the surrounding tooling can render them without coupling
+to the CIP-0057 schema vocabulary.
+-}
 data BlueprintPreamble = BlueprintPreamble
     { preambleTitle :: Text
+    -- ^ The blueprint-level title (e.g. the contract name).
     , preamblePlutusVersion :: Text
+    -- ^ The targeted Plutus Core version, verbatim from the @plutusVersion@
+    -- field (e.g. @"v2"@, @"v3"@).
     }
     deriving stock (Eq, Show)
 
+{- | One validator entry inside a 'Blueprint'. A validator may bind a
+datum schema, a redeemer schema, both, or neither. The @title@ — when
+present — is used by 'BlueprintArgumentSelector' to disambiguate
+between validators that share a parameter shape.
+-}
 data BlueprintValidator = BlueprintValidator
     { validatorTitle :: Maybe Text
+    -- ^ Validator-scoped title (often @"spend"@, @"mint"@, etc.). Absent
+    -- when the blueprint author left the @title@ field unset.
     , validatorDatum :: Maybe BlueprintArgument
+    -- ^ Schema for the datum argument of a spending validator, if any.
     , validatorRedeemer :: Maybe BlueprintArgument
+    -- ^ Schema for the redeemer argument of any validator kind, if any.
     }
     deriving stock (Eq, Show)
 
+{- | A single typed argument bound to a 'BlueprintValidator'. The schema
+is the local view (it can still carry 'SchemaReference' edges into the
+surrounding 'blueprintDefinitions'); the title — if present — is the
+semantic name the author attached to that argument and is used as the
+top-level field name when an outer @SchemaConstructor@ wraps it.
+-}
 data BlueprintArgument = BlueprintArgument
     { argumentTitle :: Maybe Text
+    -- ^ Operator-supplied name for the argument (e.g. @"redeemer"@,
+    -- @"orderDatum"@). Absent when the blueprint author left it unset.
     , argumentSchema :: BlueprintSchema
+    -- ^ The structural schema describing the argument's
+    -- @PlutusCore.Data@ shape.
     }
     deriving stock (Eq, Show)
 
+{- | Selects whether 'BlueprintArgumentSelector' targets the datum or the
+redeemer slot of a validator.
+-}
 data BlueprintArgumentKind
-    = BlueprintDatum
-    | BlueprintRedeemer
+    = -- | Match the validator's @datum@ argument.
+      BlueprintDatum
+    | -- | Match the validator's @redeemer@ argument.
+      BlueprintRedeemer
     deriving stock (Eq, Show)
 
+{- | Cross-blueprint argument selector: an optional validator title plus
+a 'BlueprintArgumentKind'. When 'selectorValidatorTitle' is 'Nothing',
+every validator of every blueprint is a candidate; when 'Just', only
+validators whose 'validatorTitle' matches contribute.
+-}
 data BlueprintArgumentSelector = BlueprintArgumentSelector
     { selectorValidatorTitle :: Maybe Text
+    -- ^ Validator-title filter applied during selection. 'Nothing' means
+    -- "any title accepted".
     , selectorArgumentKind :: BlueprintArgumentKind
+    -- ^ Which argument slot (datum or redeemer) to match.
     }
     deriving stock (Eq, Show)
 
+{- | Structural errors that can surface when looking up a typed argument
+against a list of 'Blueprint's, before any 'Data' decoding takes
+place.
+-}
 data BlueprintMatchError
-    = BlueprintArgumentMissing
-    | BlueprintArgumentAmbiguous [Text]
-    | BlueprintDefinitionMissing Text
-    | BlueprintDefinitionCycle Text
+    = -- | The selector matched no validator argument across the provided
+      -- blueprints.
+      BlueprintArgumentMissing
+    | -- | More than one validator argument matched the selector; the
+      -- list carries the candidate labels for the operator-facing
+      -- diagnostic.
+      BlueprintArgumentAmbiguous [Text]
+    | -- | A 'SchemaReference' pointed at a name absent from
+      -- 'blueprintDefinitions'.
+      BlueprintDefinitionMissing Text
+    | -- | A 'SchemaReference' loop was detected while resolving (the
+      -- definition refers to itself directly or transitively). The
+      -- reference name that closes the cycle is carried.
+      BlueprintDefinitionCycle Text
     deriving stock (Eq, Show)
 
+{- | Open, schema-driven projection of a 'PlutusCore.Data' value. Every
+constructor name and field key is taken from the matched
+'BlueprintSchema' (constructors become @OpenObject@ records, fields
+become string-typed keys), so the surrounding emitter can build typed
+predicate IRIs without re-walking the schema. @OpenBytes@ holds the
+raw bytes hex-encoded for ASCII-clean rendering.
+-}
 data OpenValue
-    = OpenObject (Map Text OpenValue)
-    | OpenArray [OpenValue]
-    | OpenInteger Integer
-    | OpenText Text
-    | OpenBytes Text
+    = -- | A constructor or map entry as a string-keyed record.
+      OpenObject (Map Text OpenValue)
+    | -- | A list of values — either positional (from 'SchemaList' /
+      -- 'SchemaListOf') or map entries lifted as @{key,value}@ records
+      -- (from 'SchemaMap').
+      OpenArray [OpenValue]
+    | -- | An integer literal.
+      OpenInteger Integer
+    | -- | A UTF-8 text literal (only produced through 'OpenBytes' today;
+      -- reserved for future Plutus-side text types).
+      OpenText Text
+    | -- | Raw bytes rendered as lowercase hex. The hex normalisation is
+      -- intentional: downstream RDF emitters can drop this directly into
+      -- @cardano:bytesHex@ literals.
+      OpenBytes Text
     deriving stock (Eq, Show)
 
+{- | Structural errors raised by 'decodeBlueprintData' when a Plutus
+@Data@ value does not conform to the supplied 'BlueprintSchema'. None
+of these are recoverable inside the decoder itself; the caller may
+choose to skip the typed branch and fall back to raw bytes.
+-}
 data BlueprintDataError
-    = BlueprintDataTypeMismatch Text
-    | BlueprintConstructorMismatch
+    = -- | The 'Data' constructor did not match the schema's expected
+      -- shape (e.g. @PLC.B@ found where 'SchemaInteger' was declared).
+      -- The 'Text' is the schema kind name for diagnostics.
+      BlueprintDataTypeMismatch Text
+    | -- | The encountered 'PLC.Constr' tag differs from the schema's
+      -- declared constructor index.
+      BlueprintConstructorMismatch
         { expectedConstructorIndex :: Integer
         , actualConstructorIndex :: Integer
         }
-    | BlueprintFieldCountMismatch
+    | -- | The encountered 'PLC.Constr' (or @PLC.List@ under
+      -- 'SchemaList') has a field count that disagrees with the
+      -- schema's declaration.
+      BlueprintFieldCountMismatch
         { expectedFieldCount :: Int
         , actualFieldCount :: Int
         }
-    | BlueprintUnresolvedReference Text
+    | -- | A 'SchemaReference' survived all the way to the decoder
+      -- without being resolved through 'resolveBlueprintSchema'. The
+      -- reference name is carried for the diagnostic.
+      BlueprintUnresolvedReference Text
     deriving stock (Eq, Show)
 
+{- | A typed CIP-0057 schema node: an optional semantic title plus the
+structural kind. The title — when present — is used as the field name
+in 'OpenObject' projections; when absent the field falls back to
+@"field\<index\>"@.
+-}
 data BlueprintSchema = BlueprintSchema
     { schemaTitle :: Maybe Text
+    -- ^ Operator-supplied field title; defines how the field will be
+    -- named in 'OpenValue' projections when embedded in a record.
     , schemaKind :: BlueprintSchemaKind
+    -- ^ Structural shape of the value this schema describes.
     }
     deriving stock (Eq, Show)
 
+{- | Structural sum of the CIP-0057 schema kinds this library
+understands. Anything outside this set (e.g. abstract type unions
+without a concrete @anyOf@ branching, value-only @const@ fields)
+falls through to 'SchemaData' so the surrounding decoder still has a
+usable terminal.
+-}
 data BlueprintSchemaKind
-    = SchemaInteger
-    | SchemaBytes
-    | SchemaConstructor Integer [BlueprintSchema]
-    | SchemaAnyOf [BlueprintSchema]
-    | SchemaList [BlueprintSchema]
-    | SchemaListOf BlueprintSchema
+    = -- | A Plutus integer.
+      SchemaInteger
+    | -- | A Plutus bytestring.
+      SchemaBytes
+    | -- | A constructor with a fixed index and ordered field schemas.
+      SchemaConstructor Integer [BlueprintSchema]
+    | -- | A disjunction of alternative schemas — the decoder accepts
+      -- the unique one that decodes cleanly (and reports
+      -- 'BlueprintDataTypeMismatch' if zero or several do).
+      SchemaAnyOf [BlueprintSchema]
+    | -- | A tuple-shaped list with fixed positional schemas, one per
+      -- element.
+      SchemaList [BlueprintSchema]
+    | -- | A homogenous list where every element shares the same
+      -- element schema.
+      SchemaListOf BlueprintSchema
     | -- | CIP-57 @"dataType": "map"@ — a Plutus 'PLC.Map' payload whose keys
       -- match the first sub-schema and values the second. Decodes as
       -- @OpenArray [OpenObject {"key" -> k, "value" -> v}, ...]@ so the
       -- typed-emit walker treats each entry as a named-field record.
       SchemaMap BlueprintSchema BlueprintSchema
-    | SchemaData
-    | SchemaReference Text
+    | -- | An opaque @data@ leaf — the decoder produces a generic
+      -- 'OpenValue' projection of the Plutus @Data@ AST without
+      -- per-field typing.
+      SchemaData
+    | -- | A reference to a named entry in 'blueprintDefinitions'.
+      -- Resolved at the call site by 'resolveBlueprintSchema'.
+      SchemaReference Text
     deriving stock (Eq, Show)
 
+{- | Parse a 'Blueprint' from a lazy JSON byte string. The parser
+accepts the CIP-0057 subset documented in the module header; anything
+outside that subset yields a 'Left' with a structural decoder error
+message.
+-}
 parseBlueprintJSON :: LBS.ByteString -> Either String Blueprint
 parseBlueprintJSON =
     eitherDecode
 
+{- | High-level cross-blueprint decode: select the unique validator
+argument matching the 'BlueprintArgumentSelector' and decode the
+supplied 'Data' against it. Returns 'Left' with a human-readable
+diagnostic on selection or decode failure, and 'Right' with the
+typed projection on success. The 'Text' diagnostic is suitable for
+forwarding into an @rdfs:comment@ on a fallback @cardano:Datum@
+block.
+-}
 decodeMatchingBlueprintArgument ::
     [Blueprint] ->
     BlueprintArgumentSelector ->
@@ -202,6 +343,11 @@ decodeMatchingBlueprintArgument blueprints selector datum =
         | (label, Left reason) <- attempts
         ]
 
+{- | Decode a single 'Data' value against a fully-resolved
+'BlueprintSchema'. Use 'resolveBlueprintSchema' first to flatten any
+'SchemaReference' edges; passing an unresolved schema reports
+'BlueprintUnresolvedReference'.
+-}
 decodeBlueprintData ::
     BlueprintSchema -> Data ConwayEra -> Either BlueprintDataError OpenValue
 decodeBlueprintData schema (Data value) =
@@ -350,6 +496,12 @@ hexText :: BS.ByteString -> Text
 hexText =
     TextEncoding.decodeUtf8 . Base16.encode
 
+{- | Resolve a typed 'BlueprintArgumentSelector' against a set of
+blueprints to its concrete 'BlueprintSchema'. Returns
+'BlueprintArgumentMissing' / 'BlueprintArgumentAmbiguous' on
+selection failure and 'BlueprintDefinitionMissing' /
+'BlueprintDefinitionCycle' on reference-resolution failure.
+-}
 matchBlueprintArgument ::
     [Blueprint] ->
     BlueprintArgumentSelector ->
@@ -405,6 +557,14 @@ matchLabel blueprint validator =
         Nothing ->
             preambleTitle (blueprintPreamble blueprint)
 
+{- | Flatten a 'BlueprintSchema' against a single 'Blueprint''s
+definitions table by recursively resolving 'SchemaReference' nodes.
+Cyclic references (self-referential definitions, which CIP-0057
+allows for things like SundaeSwap's @MultisigScript@) degrade to
+'SchemaData' at the cycle boundary so surrounding non-recursive
+fields can still decode typed. Returns 'BlueprintDefinitionMissing'
+when a reference name is not in the table.
+-}
 resolveBlueprintSchema ::
     Blueprint -> BlueprintSchema -> Either BlueprintMatchError BlueprintSchema
 resolveBlueprintSchema blueprint =
