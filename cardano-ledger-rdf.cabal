@@ -3,19 +3,40 @@ name:            cardano-ledger-rdf
 version:         0.3.0.0
 synopsis:        Cardano transaction RDF graph tooling
 description:
-  Library and executables for emitting Cardano Conway transactions as RDF,
-  fetching transaction CBOR closure lattices, and projecting generated graphs
-  through packaged views. Generic transaction inspection, signing, validation,
-  diffing, and load-generation remain downstream cardano-tx-tools concerns.
+  Library and executables for emitting Cardano Conway transactions as RDF and
+  projecting the resulting graphs through packaged views.
+  .
+  The library walks a @ConwayTx@ ledger structure, dispatches each typed
+  field (inputs, outputs, certificates, governance proposals, mints,
+  withdrawals, witnesses) into vocab-typed RDF triples, looks up
+  operator-declared entities to give blank nodes stable slugs, and emits
+  canonical Turtle and JSON-LD over a shared body+witness projection. A
+  pluggable input resolver chain enriches the projection with on-chain
+  inputs fetched from Koios, Blockfrost, or any HTTP CBOR indexer, and
+  CIP-57 blueprints can be threaded through the projection to render
+  typed datum/redeemer fields with first-class predicate IRIs.
+  .
+  The @cq-rdf@ executable exposes the emitter, the rule-loader, and the
+  SHACL pass as subcommands suitable for scripting; @tx-view@ projects a
+  canonical Turtle graph through packaged SPARQL views shipped under
+  @views/@. Both binaries can be invoked from the library directly so
+  downstream tooling does not need to shell out.
+  .
+  Generic Conway transaction inspection, signing, validation, diffing, and
+  load-generation remain downstream
+  @<https://github.com/lambdasistemi/cardano-tx-tools cardano-tx-tools>@
+  concerns.
 
 license:         Apache-2.0
 license-file:    LICENSE
 author:          Paolo Veronelli
 maintainer:      paolo.veronelli@gmail.com
+copyright:       2025-2026 Paolo Veronelli
 homepage:        https://lambdasistemi.github.io/cardano-ledger-rdf/
 bug-reports:     https://github.com/lambdasistemi/cardano-ledger-rdf/issues
 category:        Cardano
 build-type:      Simple
+tested-with:     GHC ==9.12.3
 extra-doc-files:
   CHANGELOG.md
   README.md
