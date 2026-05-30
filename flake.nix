@@ -303,6 +303,7 @@
           checkSuite = import ./nix/checks.nix {
             inherit pkgs components lintPkgs pythonEnv eye cqRdf txGraphCompat;
             src = ./.;
+            libraryDoc = components.library.doc;
           };
           checkApps = import ./nix/apps.nix {
             inherit pkgs;
