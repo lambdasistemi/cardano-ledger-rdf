@@ -148,6 +148,21 @@ path through 'parseRulesYamlImportsWithFile').
 The in-memory entry points discard the blueprint stub list; the
 file-aware 'parseRulesYamlImportsWithFile' threads it through to the
 resolver for IO loading + JSON parsing.
+
+==== __Example__
+
+The smallest non-empty document — one entity, one bech32 address
+(taken verbatim from @test\/fixtures\/tx-graph\/02-alice-bob-ada\/rules.yaml@):
+
+>>> :set -XOverloadedStrings
+>>> let blob = "entities:\n  - name: alice\n    from-address: addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz\n"
+>>> fmap length (parseRulesYamlText blob)
+Right 1
+
+An empty document or one without @entities:@ returns the empty list:
+
+>>> parseRulesYamlText ""
+Right []
 -}
 parseRulesYamlText :: ByteString -> Either RulesLoadError [EntityDecl]
 parseRulesYamlText = fmap (\(_, ents, _, _) -> ents) . parseRulesYamlImports

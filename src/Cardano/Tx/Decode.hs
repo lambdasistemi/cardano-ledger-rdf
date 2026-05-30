@@ -111,6 +111,21 @@ Returns @Left@ on any bech32 framing error, an unrecoverable data-part,
 or a ledger decode failure. Mainnet (@addr1@) and testnet
 (@addr_test1@) prefixes are both accepted; the loader does not pin a
 network.
+
+==== __Example__
+
+A well-formed mainnet address (the @alice@ entity in fixture
+@test\/fixtures\/tx-graph\/02-alice-bob-ada\/rules.yaml@) decodes to
+'Right'.
+
+>>> import Data.Either (isRight)
+>>> isRight (decodeBech32Address "addr1qx9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrs2v0zyuvk80fay35dx008p45ts0u6cdrv9g2maetq8jm8psznjcrz")
+True
+
+A malformed string surfaces as 'Left' with the bech32-level reason:
+
+>>> decodeBech32Address "not-an-address"
+Left "bech32 decode failed: StringToDecodeMissingSeparatorChar"
 -}
 decodeBech32Address :: Text -> Either String Addr
 decodeBech32Address keyText =

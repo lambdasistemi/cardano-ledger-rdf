@@ -284,6 +284,20 @@ data BlueprintSchemaKind
 accepts the CIP-0057 subset documented in the module header; anything
 outside that subset yields a 'Left' with a structural decoder error
 message.
+
+==== __Example__
+
+A minimal blueprint with one validator and one integer-typed datum:
+
+>>> :set -XOverloadedStrings
+>>> let blob = "{\"preamble\":{\"title\":\"demo\",\"plutusVersion\":\"v3\"},\"validators\":[{\"title\":\"spend\",\"datum\":{\"schema\":{\"dataType\":\"integer\"}}}]}"
+>>> fmap (preambleTitle . blueprintPreamble) (parseBlueprintJSON blob)
+Right "demo"
+
+Malformed JSON returns the aeson-level diagnostic via 'Left':
+
+>>> case parseBlueprintJSON "not json" of { Left e -> take 10 e ; Right _ -> "" }
+"Unexpected"
 -}
 parseBlueprintJSON :: LBS.ByteString -> Either String Blueprint
 parseBlueprintJSON =

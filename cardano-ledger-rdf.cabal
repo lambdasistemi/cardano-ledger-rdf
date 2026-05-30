@@ -220,6 +220,7 @@ test-suite unit-tests
     Cardano.Tx.BlueprintSpec
     Cardano.Tx.Build.MinUtxoSpec
     Cardano.Tx.BuildSpec
+    Cardano.Tx.Doc.ExamplesSpec
     Cardano.Tx.Graph.CqRdfExeSpec
     Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec
     Cardano.Tx.Graph.Emit.BlueprintPredicateTraceabilitySpec
