@@ -13,8 +13,11 @@ the overlay CLI surface:
   produces a non-zero exit and a stderr line containing the
   @RulesImportCycle@ tag from
   'Cardano.Tx.Graph.Rules.Load.renderRulesLoadError'.
-* @cq-rdf@ with no arguments produces a non-zero exit and a stderr
-  payload that mentions the overlay subcommand.
+* @cq-rdf@ with no arguments produces exit 0 and a stderr help block
+  that mentions the @overlay@ subcommand and the @Cardano RDF pipeline
+  primitives@ header. Exit 0 is mandated by the release-artifact-smoke
+  contract (the smoke runs the freshly-built binary with no args and
+  greps its stderr).
 
 The binary is located via the @CQ_RDF_EXE@ environment variable
 when set (the @nix flake check@ sandbox and the @just unit@ recipe
@@ -114,11 +117,13 @@ spec = describe "cq-rdf overlay executable" $ do
                 BS8.unpack err
                     `shouldSatisfy` ("RulesImportCycle" `isInfixOf`)
 
-    it "no arguments — non-zero exit, stderr usage mentions overlay" $ do
+    it "no arguments — exit 0, stderr usage mentions overlay (release-artifact-smoke contract)" $ do
         (code, _out, err) <- runExe cqRdfPath []
-        code `shouldSatisfy` isFailure
+        code `shouldBe` ExitSuccess
         BS8.unpack err
             `shouldSatisfy` ("overlay" `isInfixOf`)
+        BS8.unpack err
+            `shouldSatisfy` ("Cardano RDF pipeline primitives" `isInfixOf`)
 
 ----------------------------------------------------------------------
 -- Subprocess helpers

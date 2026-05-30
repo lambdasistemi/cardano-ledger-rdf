@@ -162,7 +162,7 @@
               desc = "Cardano RDF pipeline primitives";
               formulaClass = "CqRdf";
               formulaTest = ''
-                output = shell_output("#{bin}/cq-rdf 2>&1", 1)
+                output = shell_output("#{bin}/cq-rdf 2>&1", 0)
                 assert_match "Cardano RDF pipeline primitives", output
               '';
               usageGreps = [
@@ -176,7 +176,7 @@
               desc = "Deprecated compatibility symlink for cq-rdf body";
               formulaClass = "TxGraph";
               formulaTest = ''
-                output = shell_output("#{bin}/tx-graph 2>&1", 1)
+                output = shell_output("#{bin}/tx-graph 2>&1", 0)
                 assert_match "--rules", output
               '';
               usageGreps = [
@@ -190,6 +190,7 @@
               desc =
                 "Project canonical Turtle graphs through packaged SPARQL views";
               formulaClass = "TxView";
+              smokeExitCode = 1;
               formulaTest = ''
                 output = shell_output("#{bin}/tx-view 2>&1", 1)
                 assert_match "canonical Turtle graph file", output
@@ -206,7 +207,7 @@
               ${spec.name} >/tmp/${spec.name}.out 2>&1
               status="$?"
               set -e
-              test "$status" -ne 0
+              test "$status" -eq ${toString (spec.smokeExitCode or 0)}
             ''
             + lib.concatMapStringsSep "\n"
               (g: "  grep -F -- ${lib.escapeShellArg g} /tmp/${spec.name}.out >/dev/null")

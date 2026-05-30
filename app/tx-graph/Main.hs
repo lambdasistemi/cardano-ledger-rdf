@@ -91,12 +91,13 @@ import Data.Text.Encoding.Error (lenientDecode)
 import Options.Applicative (
     Parser,
     ParserInfo,
+    ParserPrefs,
     ParserResult (Failure),
     argument,
     command,
+    customExecParser,
     defaultPrefs,
     eitherReader,
-    execParser,
     fullDesc,
     handleParseResult,
     header,
@@ -109,21 +110,25 @@ import Options.Applicative (
     option,
     optional,
     parserFailure,
+    prefs,
     progDesc,
+    renderFailure,
     showDefault,
+    showHelpOnEmpty,
+    showHelpOnError,
     strOption,
     subparser,
     value,
     (<**>),
  )
-import Options.Applicative.Types (ParseError (ErrorMsg))
+import Options.Applicative.Types (ParseError (ErrorMsg, ShowHelpText))
 import System.Directory (
     doesDirectoryExist,
     getTemporaryDirectory,
     listDirectory,
     removeFile,
  )
-import System.Environment (getProgName)
+import System.Environment (getArgs, getProgName)
 import System.Exit (ExitCode (..), exitSuccess, exitWith)
 import System.FilePath (takeFileName, (</>))
 import System.IO (hClose, hPutStrLn, openTempFile, stderr, stdin, stdout)
@@ -518,9 +523,38 @@ optionsInfo =
 main :: IO ()
 main = do
     prog <- takeFileName <$> getProgName
-    if prog == "tx-graph"
-        then execParser optionsInfo >>= dispatchLegacy
-        else execParser commandInfo >>= dispatchCommand
+    args <- getArgs
+    case args of
+        [] ->
+            if prog == "tx-graph"
+                then printHelpAndExitSuccess prog optionsInfo
+                else printHelpAndExitSuccess prog commandInfo
+        _ ->
+            if prog == "tx-graph"
+                then customExecParser helpfulPrefs optionsInfo >>= dispatchLegacy
+                else customExecParser helpfulPrefs commandInfo >>= dispatchCommand
+
+{- | Parser preferences that show the help block when the binary is invoked
+with no arguments and on usage errors. This keeps the release-pipeline smoke
+test (@<binary>@ with no args grep-checked for a usage substring) green for
+subcommand-style CLIs.
+-}
+helpfulPrefs :: ParserPrefs
+helpfulPrefs = prefs (showHelpOnEmpty <> showHelpOnError)
+
+{- | Render the parser's help block to stderr and exit 0. Used when the
+binary is invoked with no arguments — both for @cq-rdf@ (subcommand-style,
+where the default 'showHelpOnEmpty' still exits non-zero on 'MissingError')
+and for the legacy @tx-graph@ entry point (no required arguments).
+Writing the help to stderr matches the @linux-artifact-smoke@ contract
+(stderr-only diagnostic capture).
+-}
+printHelpAndExitSuccess :: String -> ParserInfo a -> IO ()
+printHelpAndExitSuccess prog pinfo = do
+    let failure = parserFailure helpfulPrefs pinfo (ShowHelpText Nothing) []
+        (msg, _) = renderFailure failure prog
+    hPutStrLn stderr msg
+    exitSuccess
 
 dispatchCommand :: Command -> IO ()
 dispatchCommand = \case
