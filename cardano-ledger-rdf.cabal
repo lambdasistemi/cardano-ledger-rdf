@@ -1,6 +1,6 @@
 cabal-version:   3.4
 name:            cardano-ledger-rdf
-version:         0.2.5.0
+version:         0.3.0.0
 synopsis:        Cardano transaction RDF graph tooling
 description:
   Library and executables for emitting Cardano Conway transactions as RDF,
