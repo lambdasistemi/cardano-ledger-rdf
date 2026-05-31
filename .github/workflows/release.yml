@@ -40,12 +40,16 @@ concurrency:
 
 jobs:
   linux-bundles:
-    name: Build Linux ${{ matrix.executable.name }} bundles
-    runs-on: nixos
+    name: Build Linux ${{ matrix.executable.name }} (${{ matrix.arch.id }})
+    runs-on: ${{ matrix.arch.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
+        arch:
+          - id: x86_64
+            runner: nixos
+          - id: aarch64
+            runner: ubuntu-24.04-arm
         executable:
           - name: cq-rdf
             release-output: cq-rdf-linux-release-artifacts
@@ -68,12 +72,18 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag || github.ref }}
 
-      - uses: cachix/cachix-action@v17
+      - if: matrix.arch.runner == 'nixos'
+        uses: cachix/cachix-action@v17
         with:
           name: paolino
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - uses: paolino/dev-assets/linux-release@41a598ad94d6b4b6aad0162f673786e4fc57db9b
+      - if: matrix.arch.runner != 'nixos'
+        uses: paolino/dev-assets/setup-nix@b901b08ce8d2e290d84e323486f7fa216b190df9
+        with:
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - uses: paolino/dev-assets/linux-release@b901b08ce8d2e290d84e323486f7fa216b190df9
         with:
           mode: >-
             ${{
