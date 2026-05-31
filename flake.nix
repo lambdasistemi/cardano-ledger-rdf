@@ -30,7 +30,8 @@
       url = "github:NixOS/bundlers";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    dev-assets.url = "github:paolino/dev-assets";
+    dev-assets.url =
+      "github:paolino/dev-assets/b901b08ce8d2e290d84e323486f7fa216b190df9";
     iohkNix = {
       url =
         "github:input-output-hk/iohk-nix/f444d972c301ddd9f23eac4325ffcc8b5766eee9";
@@ -48,7 +49,7 @@
     inputs@{ self, nixpkgs, lintNixpkgs, flake-parts, haskellNix, iohkNix
     , CHaP, mkdocs, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" "aarch64-darwin" ];
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       perSystem = { system, ... }:
         let
           pkgs = import nixpkgs {
@@ -118,6 +119,12 @@
             };
           };
           components = project.hsPkgs.cardano-ledger-rdf.components;
+          muslComponents =
+            if system == "x86_64-linux"
+            then project.projectCross.musl64.hsPkgs.cardano-ledger-rdf.components
+            else if system == "aarch64-linux"
+            then project.projectCross.aarch64-multiplatform-musl.hsPkgs.cardano-ledger-rdf.components
+            else null;
           cqRdfUnwrapped = components.exes.cq-rdf;
           cqRdf = pkgs.runCommand "cq-rdf-${packageVersion}"
             {
@@ -151,6 +158,13 @@
               { meta.mainProgram = "tx-graph"; } ''
               mkdir -p "$out/bin"
               cp -L ${cqRdfUnwrapped}/bin/cq-rdf "$out/bin/tx-graph"
+              chmod +x "$out/bin/tx-graph"
+            '';
+          txGraphMuslUnwrapped =
+            pkgs.runCommand "tx-graph-musl-unwrapped-${packageVersion}"
+              { meta.mainProgram = "tx-graph"; } ''
+              mkdir -p "$out/bin"
+              cp -L ${muslComponents.exes.cq-rdf}/bin/cq-rdf "$out/bin/tx-graph"
               chmod +x "$out/bin/tx-graph"
             '';
           packageVersion =
@@ -193,6 +207,7 @@
             {
               name = "tx-graph";
               package = txGraphCompat;
+              muslPackage = txGraphMuslUnwrapped;
               # Same self-containment rationale as `cq-rdf` above: the
               # Darwin tarball ships a bare renamed copy of the cq-rdf
               # binary; `getProgName` inside the binary selects the legacy
@@ -254,10 +269,13 @@
               smokeCommands = [ (mkExeSmokeCommand spec) ];
             } // args);
           mkExeLinuxRelease = spec: extraArgs:
-            import ./nix/linux-release.nix ({
-              inherit pkgs system packageVersion;
+            inputs.dev-assets.lib.mkLinuxArtifacts ({
+              inherit pkgs system;
               executableName = spec.name;
-              package = spec.package;
+              version = packageVersion;
+              glibcPackage = spec.package;
+              muslPackage =
+                spec.muslPackage or muslComponents.exes.${spec.name};
               bundlers = inputs.bundlers;
             } // extraArgs);
           darwinReleasePackages = lib.optionalAttrs
@@ -296,7 +314,7 @@
               ]) exeSpecs)
             // {
               linux-artifact-smoke =
-                import ./nix/linux-artifact-smoke.nix {
+                inputs.dev-assets.lib.mkLinuxArtifactSmoke {
                   inherit pkgs system;
                 };
             });
