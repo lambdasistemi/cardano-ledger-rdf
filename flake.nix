@@ -31,7 +31,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     dev-assets.url =
-      "github:paolino/dev-assets/b901b08ce8d2e290d84e323486f7fa216b190df9";
+      "github:paolino/dev-assets/v0.1.0";
     iohkNix = {
       url =
         "github:input-output-hk/iohk-nix/f444d972c301ddd9f23eac4325ffcc8b5766eee9";
