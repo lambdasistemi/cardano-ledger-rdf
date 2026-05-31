@@ -7,19 +7,19 @@
 
 ## Slice 2 - Nix Linux Artifact Matrix
 
-- [ ] T70-S2 Pin `dev-assets` to the required commit and refresh `flake.lock`
+- [X] T70-S2 Pin `dev-assets` to the required commit and refresh `flake.lock`
   while preserving the compatible `NixOS/bundlers` revision.
-- [ ] T70-S2 Add `aarch64-linux` to `systems`.
-- [ ] T70-S2 Add per-system musl component selection for `x86_64-linux` and
+- [X] T70-S2 Add `aarch64-linux` to `systems`.
+- [X] T70-S2 Add per-system musl component selection for `x86_64-linux` and
   `aarch64-linux`.
-- [ ] T70-S2 Replace the local Linux release derivation with
+- [X] T70-S2 Replace the local Linux release derivation with
   `inputs.dev-assets.lib.mkLinuxArtifacts`.
-- [ ] T70-S2 Replace the local Linux artifact smoke app with
+- [X] T70-S2 Replace the local Linux artifact smoke app with
   `inputs.dev-assets.lib.mkLinuxArtifactSmoke`.
-- [ ] T70-S2 Delete `nix/linux-release.nix` and
+- [X] T70-S2 Delete `nix/linux-release.nix` and
   `nix/linux-artifact-smoke.nix`.
-- [ ] T70-S2 Verify the new Nix outputs with targeted eval/build commands.
-- [ ] T70-S2 Commit one bisect-safe Nix slice with `Tasks: T70-S2`.
+- [X] T70-S2 Verify the new Nix outputs with targeted eval/build commands.
+- [X] T70-S2 Commit one bisect-safe Nix slice with `Tasks: T70-S2`.
 
 ## Slice 3 - GitHub Actions Arm Matrix
 
