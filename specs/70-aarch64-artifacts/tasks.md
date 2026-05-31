@@ -23,15 +23,15 @@
 
 ## Slice 3 - GitHub Actions Arm Matrix
 
-- [ ] T70-S3 Add the release workflow architecture matrix for `x86_64` and
+- [X] T70-S3 Add the release workflow architecture matrix for `x86_64` and
   `aarch64`.
-- [ ] T70-S3 Use runner-specific Nix setup with `cachix/cachix-action@v17`
+- [X] T70-S3 Use runner-specific Nix setup with `cachix/cachix-action@v17`
   on `nixos` and `paolino/dev-assets/setup-nix` on arm.
-- [ ] T70-S3 Pin `paolino/dev-assets` workflow actions to the required
+- [X] T70-S3 Pin `paolino/dev-assets` workflow actions to the required
   `b901b08ce8d2e290d84e323486f7fa216b190df9` commit.
-- [ ] T70-S3 Add the `aarch64-eval` CI job with the GHC source-build guard.
-- [ ] T70-S3 Verify workflow syntax and push the draft PR branch.
-- [ ] T70-S3 Commit one bisect-safe workflow slice with `Tasks: T70-S3`.
+- [X] T70-S3 Add the `aarch64-eval` CI job with the GHC source-build guard.
+- [X] T70-S3 Verify workflow syntax before pushing the draft PR branch.
+- [X] T70-S3 Commit one bisect-safe workflow slice with `Tasks: T70-S3`.
 
 ## Final PR Proof
 
