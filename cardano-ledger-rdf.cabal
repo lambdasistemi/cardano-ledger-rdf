@@ -312,6 +312,7 @@ test-suite unit-tests
     Fixtures.TxGraph.S33_MetadataScalarMap
     Fixtures.TxGraph.S34_MetadataFaithful
     Fixtures.TxGraph.S35_MetadataContingency1694
+    Fixtures.TxGraph.S36_MetadataEmptyContainers
     Fixtures.TxGraph.TurtleShim
 
   build-depends:
