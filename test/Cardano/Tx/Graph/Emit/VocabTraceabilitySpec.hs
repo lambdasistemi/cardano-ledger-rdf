@@ -175,9 +175,10 @@ fixtureSpec (slug, tx) = describe slug $ do
     -- @cardano:Foo@ CURIE the emitter writes must trace to a
     -- declaration in 'vocab/cardano/transactions.ttl' — the source of
     -- truth for the namespace since the vocab migrated into this repo
-    -- (#19). The legacy vendored kmaps pin under
-    -- 'test/fixtures/canonical-vocab/' is orphaned; retiring it +
-    -- PINNED.md is tracked by #40 (validation-gate port).
+    -- (#19). The former vendored kmaps pin under
+    -- 'test/fixtures/canonical-vocab/' was retired in #40 once this gate
+    -- repointed at the owned ontology; only the Vocab.hs-derived
+    -- 'derived.ttl' fragment remains there.
     it "every emitted cardano: CURIE is declared in the owned ontology" $ do
         let emittedLocals = Set.fromList (extractCardanoLocalParts bytes)
             missing =
