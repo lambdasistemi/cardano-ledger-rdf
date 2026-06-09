@@ -171,25 +171,18 @@ fixtureSpec (slug, tx) = describe slug $ do
     it "no '_internal:' substring leak" $ do
         BS8.unpack bytes
             `shouldSatisfy` notContaining "_internal:"
-    -- T123a / S24: STRICT canonical-vocab traceability. Every
+    -- STRICT traceability against the OWNED cardano: ontology. Every
     -- @cardano:Foo@ CURIE the emitter writes must trace to a
-    -- declaration in 'test/fixtures/canonical-vocab/transactions.ttl'
-    -- (the pinned upstream kmaps fragment). Flipping this on
-    -- closes the A-006 invariant — the canonical fragment is now
-    -- derived from Vocab.hs (T122b), so every Vocab term
-    -- contributes one declaration here.
-    --
-    -- T128g / S32: kmaps#57 (Phase A.3 — witness-set seaboard)
-    -- merged at kmaps@f8ca275 and the pin refresh in that commit
-    -- landed the 15 net-new declarations canonically. The strict
-    -- gate now runs without a short-circuit.
-    it "every emitted cardano: CURIE is declared in the canonical pin" $ do
+    -- declaration in 'vocab/cardano/transactions.ttl' — the source of
+    -- truth for the namespace since the vocab migrated into this repo
+    -- (#19). The legacy vendored kmaps pin under
+    -- 'test/fixtures/canonical-vocab/' is orphaned; retiring it +
+    -- PINNED.md is tracked by #40 (validation-gate port).
+    it "every emitted cardano: CURIE is declared in the owned ontology" $ do
         let emittedLocals = Set.fromList (extractCardanoLocalParts bytes)
             missing =
                 Set.toList
-                    ( (emittedLocals `Set.difference` canonicalLocals)
-                        `Set.difference` pending062
-                    )
+                    (emittedLocals `Set.difference` canonicalLocals)
         missing `shouldBe` []
 
 ----------------------------------------------------------------------
@@ -198,43 +191,6 @@ fixtureSpec (slug, tx) = describe slug $ do
 
 emptyUtxo :: ResolvedUTxO
 emptyUtxo = Map.empty
-
-{- | pending062: the spec-062 transaction-metadata-decoding CURIEs
-the body emitter now writes but that the vendored canonical pin
-(@test/fixtures/canonical-vocab/transactions.ttl@, verbatim
-kmaps\@5108855) does not yet declare. Same short-circuit shape as
-the historical @pendingPhaseA3@ allowlist that this spec carried
-until the T128g pin refresh emptied it.
-
-These 17 emitted local-parts are tolerated until the companion
-cardano-knowledge-maps PR (parent-owned follow-up) merges and a
-dedicated @chore(070): refresh pin@ commit brings them into the
-pin verbatim — at which point this set empties. The pin is NOT
-edited locally (PINNED.md's decoupling rule). The wrapper classes
-@MetadatumEntry@ / @MetadatumElement@ / @MetadatumMapEntry@ are
-declared in Vocab.hs but not emitted, so they do not appear here.
--}
-pending062 :: Set String
-pending062 =
-    Set.fromList
-        [ "MetadatumValue"
-        , "MetaInt"
-        , "MetaBytes"
-        , "MetaText"
-        , "MetaList"
-        , "MetaMap"
-        , "hasMetadatum"
-        , "metadataLabel"
-        , "metadatumValue"
-        , "intValue"
-        , "textValue"
-        , "hasElement"
-        , "elementIndex"
-        , "hasEntry"
-        , "entryIndex"
-        , "metaKey"
-        , "metaValue"
-        ]
 
 loadRulesData ::
     FilePath ->
@@ -251,8 +207,9 @@ loadRulesData path = do
                     <> show err
 
 {- | Load the set of @cardano:Foo@ local-parts declared in the
-vendored canonical pin. T123a / S24: strict mode flips on, so
-every emitted CURIE must appear in this set.
+owned @cardano:@ ontology (@vocab/cardano/transactions.ttl@) — the
+source of truth for the namespace since the vocab migrated into
+this repo (#19). Every emitted CURIE must appear in this set.
 
 The parser is a regex sweep over lines beginning with
 @cardano:@ — full Turtle parsing is out of scope. Matches any
@@ -261,7 +218,7 @@ or @cardano:hasFoo a rdf:Property ;@.
 -}
 loadCanonicalLocals :: IO (Set String)
 loadCanonicalLocals = do
-    bs <- BS.readFile "test/fixtures/canonical-vocab/transactions.ttl"
+    bs <- BS.readFile "vocab/cardano/transactions.ttl"
     pure (extractDeclaredCardanoLocals bs)
 
 {- | Extract @Foo@ from every @cardano:Foo …@ declaration line in
