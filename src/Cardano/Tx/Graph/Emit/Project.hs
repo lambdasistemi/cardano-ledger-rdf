@@ -239,7 +239,13 @@ import Cardano.Ledger.Conway.TxCert (
     pattern UnRegDepositTxCert,
     pattern UpdateDRepTxCert,
  )
-import Cardano.Ledger.Core (Script, TxAuxData, TxCert, hashScript)
+import Cardano.Ledger.Core (
+    Script,
+    TxAuxData,
+    TxCert,
+    hashScript,
+    metadataTxAuxDataL,
+ )
 import Cardano.Ledger.Credential (
     Credential (KeyHashObj, ScriptHashObj),
     StakeReference (StakeRefBase, StakeRefNull, StakeRefPtr),
@@ -293,6 +299,7 @@ import Cardano.Tx.Graph.Emit.Lookup (
     txIri,
     utxoIri,
  )
+import Cardano.Tx.Graph.Emit.Metadatum (emitMetadataMap)
 import Cardano.Tx.Graph.Emit.Monad (
     Emit,
     groupBySubject,
@@ -1196,11 +1203,20 @@ emitCollateralReturnEdge txSubj True =
             (OBnode idCollateralReturnBnode)
         )
 
-{- | Emit the optional auxiliary-data body as an opaque CBOR leaf.
+{- | Emit the optional auxiliary-data body as an opaque CBOR leaf
+plus, additively, the decoded transaction-metadata value tree.
 
 The transaction body already carries @cardano:auxiliaryDataHash@; this block
 adds the auxiliary-data tuple slot itself so metadata-bearing transactions can
 be reconstructed from RDF without an out-of-band CBOR source.
+
+Spec 062: after the opaque-bytes triples, the auxiliary-data
+node's metadata map (@Map Word64 Metadatum@) is folded through
+'emitMetadataMap' into faithful @cardano:hasMetadatum@ edges —
+strictly additive, so the @cardano:hasRawBytes@ /
+@cardano:auxiliaryDataHash@ triples are unchanged (FR-006). An
+empty metadata map (e.g. scripts-only auxiliary data) emits no
+metadatum edges.
 -}
 emitAuxiliaryDataBody ::
     Subject ->
@@ -1227,6 +1243,7 @@ emitAuxiliaryDataBody txSubj (SJust auxData) = do
             (PIri (vocabCurie TermHasRawBytes))
             (OStringLit (hexText rawBytes))
         )
+    emitMetadataMap auxBnode auxSubj (auxData ^. metadataTxAuxDataL)
 
 {- | Emit one @cardano:hasRequiredSigner _:cred_paymentkey_X@
 edge per required-signer key-hash declared on the body, plus

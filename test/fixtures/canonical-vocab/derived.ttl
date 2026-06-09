@@ -79,6 +79,33 @@ cardano:InvalidHereafter a rdfs:Class ;
 cardano:KeyWitness a rdfs:Class ;
   rdfs:label "KeyWitness" .
 
+cardano:MetaBytes a rdfs:Class ;
+  rdfs:label "MetaBytes" .
+
+cardano:MetaInt a rdfs:Class ;
+  rdfs:label "MetaInt" .
+
+cardano:MetaList a rdfs:Class ;
+  rdfs:label "MetaList" .
+
+cardano:MetaMap a rdfs:Class ;
+  rdfs:label "MetaMap" .
+
+cardano:MetaText a rdfs:Class ;
+  rdfs:label "MetaText" .
+
+cardano:MetadatumElement a rdfs:Class ;
+  rdfs:label "MetadatumElement" .
+
+cardano:MetadatumEntry a rdfs:Class ;
+  rdfs:label "MetadatumEntry" .
+
+cardano:MetadatumMapEntry a rdfs:Class ;
+  rdfs:label "MetadatumMapEntry" .
+
+cardano:MetadatumValue a rdfs:Class ;
+  rdfs:label "MetadatumValue" .
+
 cardano:Mint a rdfs:Class ;
   rdfs:label "Mint" .
 
@@ -256,6 +283,12 @@ cardano:delegatesToDRep a rdf:Property ;
 cardano:delegatesToPool a rdf:Property ;
   rdfs:label "delegatesToPool" .
 
+cardano:elementIndex a rdf:Property ;
+  rdfs:label "elementIndex" .
+
+cardano:entryIndex a rdf:Property ;
+  rdfs:label "entryIndex" .
+
 cardano:fromTxOutRef a rdf:Property ;
   rdfs:label "fromTxOutRef" .
 
@@ -352,6 +385,12 @@ cardano:hasDnsName a rdf:Property ;
 cardano:hasDonation a rdf:Property ;
   rdfs:label "hasDonation" .
 
+cardano:hasElement a rdf:Property ;
+  rdfs:label "hasElement" .
+
+cardano:hasEntry a rdf:Property ;
+  rdfs:label "hasEntry" .
+
 cardano:hasExUnits a rdf:Property ;
   rdfs:label "hasExUnits" .
 
@@ -441,6 +480,9 @@ cardano:hasMaxValueSize a rdf:Property ;
 
 cardano:hasMemory a rdf:Property ;
   rdfs:label "hasMemory" .
+
+cardano:hasMetadatum a rdf:Property ;
+  rdfs:label "hasMetadatum" .
 
 cardano:hasMinFeeA a rdf:Property ;
   rdfs:label "hasMinFeeA" .
@@ -625,6 +667,9 @@ cardano:hasVrfKeyhash a rdf:Property ;
 cardano:hasWithdrawal a rdf:Property ;
   rdfs:label "hasWithdrawal" .
 
+cardano:intValue a rdf:Property ;
+  rdfs:label "intValue" .
+
 cardano:intervalEnd a rdf:Property ;
   rdfs:label "intervalEnd" .
 
@@ -642,6 +687,18 @@ cardano:lovelace a rdf:Property ;
 
 cardano:memoryUnits a rdf:Property ;
   rdfs:label "memoryUnits" .
+
+cardano:metaKey a rdf:Property ;
+  rdfs:label "metaKey" .
+
+cardano:metaValue a rdf:Property ;
+  rdfs:label "metaValue" .
+
+cardano:metadataLabel a rdf:Property ;
+  rdfs:label "metadataLabel" .
+
+cardano:metadatumValue a rdf:Property ;
+  rdfs:label "metadatumValue" .
 
 cardano:mintsAsset a rdf:Property ;
   rdfs:label "mintsAsset" .
@@ -675,6 +732,9 @@ cardano:scriptDataHash a rdf:Property ;
 
 cardano:termLimit a rdf:Property ;
   rdfs:label "termLimit" .
+
+cardano:textValue a rdf:Property ;
+  rdfs:label "textValue" .
 
 cardano:toDRep a rdf:Property ;
   rdfs:label "toDRep" .

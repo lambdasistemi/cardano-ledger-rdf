@@ -97,6 +97,7 @@ library
     Cardano.Tx.Graph.Emit.Certificate
     Cardano.Tx.Graph.Emit.GovAction
     Cardano.Tx.Graph.Emit.Lookup
+    Cardano.Tx.Graph.Emit.Metadatum
     Cardano.Tx.Graph.Emit.Monad
     Cardano.Tx.Graph.Emit.NativeScript
     Cardano.Tx.Graph.Emit.Serialize.JsonLd

@@ -1319,3 +1319,96 @@ cardano:hasVrfKeyhash a rdf:Property ; rdfs:label "hasVrfKeyhash" ;
 
 cardano:retireAtEpoch a rdf:Property ; rdfs:label "retireAtEpoch" ;
   rdfs:comment "Epoch at which a stake-pool retirement certificate scheduled the pool to retire." .
+
+# ==============================================================================
+# Transaction-metadata decoding (spec 062)
+# ==============================================================================
+# Generic, faithful decode of the Conway auxiliary-data metadata map
+# (`Map Word64 Metadatum`). One MetadatumEntry per top-level label; each
+# value is a typed node of one of the five Cardano metadatum kinds. Lists
+# keep their arity (chunked text is NOT joined — that is the downstream
+# typed-metadata pass); map keys are full value nodes, not assumed strings.
+# No label-specific or treasury interpretation lives here.
+
+cardano:MetadatumValue a rdfs:Class ;
+  rdfs:label "MetadatumValue" ;
+  dcterms:description "Abstract decoded transaction-metadatum value; every concrete node is also typed with exactly one kind subclass (MetaInt, MetaBytes, MetaText, MetaList, MetaMap)." ;
+  rdfs:comment "Abstract decoded transaction-metadatum value; every concrete node is also typed with exactly one kind subclass (MetaInt, MetaBytes, MetaText, MetaList, MetaMap)." .
+
+cardano:MetaInt a rdfs:Class ;
+  rdfs:subClassOf cardano:MetadatumValue ;
+  rdfs:label "MetaInt" ;
+  dcterms:description "Integer metadatum leaf; carries cardano:intValue (xsd:integer)." ;
+  rdfs:comment "Integer metadatum leaf; carries cardano:intValue (xsd:integer)." .
+
+cardano:MetaBytes a rdfs:Class ;
+  rdfs:subClassOf cardano:MetadatumValue ;
+  rdfs:label "MetaBytes" ;
+  dcterms:description "Byte-string metadatum leaf; carries cardano:bytesHex (lowercase hex). Distinguishable from MetaText so a hex byte value is never confused with UTF-8 text." ;
+  rdfs:comment "Byte-string metadatum leaf; carries cardano:bytesHex (lowercase hex). Distinguishable from MetaText so a hex byte value is never confused with UTF-8 text." .
+
+cardano:MetaText a rdfs:Class ;
+  rdfs:subClassOf cardano:MetadatumValue ;
+  rdfs:label "MetaText" ;
+  dcterms:description "Text-string metadatum leaf; carries cardano:textValue (xsd:string)." ;
+  rdfs:comment "Text-string metadatum leaf; carries cardano:textValue (xsd:string)." .
+
+cardano:MetaList a rdfs:Class ;
+  rdfs:subClassOf cardano:MetadatumValue ;
+  rdfs:label "MetaList" ;
+  dcterms:description "List metadatum; carries ordered cardano:hasElement edges to MetadatumElement wrappers. Element order and arity are preserved exactly — no joining." ;
+  rdfs:comment "List metadatum; carries ordered cardano:hasElement edges to MetadatumElement wrappers. Element order and arity are preserved exactly — no joining." .
+
+cardano:MetaMap a rdfs:Class ;
+  rdfs:subClassOf cardano:MetadatumValue ;
+  rdfs:label "MetaMap" ;
+  dcterms:description "Map metadatum; carries cardano:hasEntry edges to MetadatumMapEntry wrappers. Every key->value pair is preserved; keys are full value nodes." ;
+  rdfs:comment "Map metadatum; carries cardano:hasEntry edges to MetadatumMapEntry wrappers. Every key->value pair is preserved; keys are full value nodes." .
+
+cardano:MetadatumEntry a rdfs:Class ;
+  rdfs:label "MetadatumEntry" ;
+  dcterms:description "A top-level label->value association on an AuxiliaryData node, reached by cardano:hasMetadatum; carries the integer cardano:metadataLabel and a cardano:metadatumValue." ;
+  rdfs:comment "A top-level label->value association on an AuxiliaryData node, reached by cardano:hasMetadatum; carries the integer cardano:metadataLabel and a cardano:metadatumValue." .
+
+cardano:MetadatumElement a rdfs:Class ;
+  rdfs:label "MetadatumElement" ;
+  dcterms:description "Positional wrapper for one element of a MetaList; carries the 0-based cardano:elementIndex and a cardano:metadatumValue." ;
+  rdfs:comment "Positional wrapper for one element of a MetaList; carries the 0-based cardano:elementIndex and a cardano:metadatumValue." .
+
+cardano:MetadatumMapEntry a rdfs:Class ;
+  rdfs:label "MetadatumMapEntry" ;
+  dcterms:description "One key->value pair of a MetaMap; carries the 0-based cardano:entryIndex, a cardano:metaKey, and a cardano:metaValue." ;
+  rdfs:comment "One key->value pair of a MetaMap; carries the 0-based cardano:entryIndex, a cardano:metaKey, and a cardano:metaValue." .
+
+cardano:hasMetadatum a rdf:Property ; rdfs:label "hasMetadatum" ;
+  rdfs:comment "Relates an AuxiliaryData node to one MetadatumEntry per top-level metadata label." .
+
+cardano:metadataLabel a rdf:Property ; rdfs:label "metadataLabel" ;
+  rdfs:comment "The integer (Word64) label of a MetadatumEntry (xsd:integer)." .
+
+cardano:metadatumValue a rdf:Property ; rdfs:label "metadatumValue" ;
+  rdfs:comment "Links a MetadatumEntry or MetadatumElement to its decoded MetadatumValue." .
+
+cardano:intValue a rdf:Property ; rdfs:label "intValue" ;
+  rdfs:comment "Integer payload of a MetaInt leaf (xsd:integer)." .
+
+cardano:textValue a rdf:Property ; rdfs:label "textValue" ;
+  rdfs:comment "Text payload of a MetaText leaf (xsd:string)." .
+
+cardano:hasElement a rdf:Property ; rdfs:label "hasElement" ;
+  rdfs:comment "Relates a MetaList to one MetadatumElement wrapper per on-chain element, in order." .
+
+cardano:elementIndex a rdf:Property ; rdfs:label "elementIndex" ;
+  rdfs:comment "0-based position of a MetadatumElement within its MetaList (xsd:integer)." .
+
+cardano:hasEntry a rdf:Property ; rdfs:label "hasEntry" ;
+  rdfs:comment "Relates a MetaMap to one MetadatumMapEntry per key->value pair, in order." .
+
+cardano:entryIndex a rdf:Property ; rdfs:label "entryIndex" ;
+  rdfs:comment "0-based position of a MetadatumMapEntry within its MetaMap (xsd:integer)." .
+
+cardano:metaKey a rdf:Property ; rdfs:label "metaKey" ;
+  rdfs:comment "Links a MetadatumMapEntry to its key, itself a MetadatumValue (not assumed to be a string)." .
+
+cardano:metaValue a rdf:Property ; rdfs:label "metaValue" ;
+  rdfs:comment "Links a MetadatumMapEntry to its value MetadatumValue." .

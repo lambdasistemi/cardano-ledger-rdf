@@ -343,6 +343,36 @@ data VocabTerm
     | TermCpuUnits
     | TermHasSignature
     | TermHasVerificationKey
+    | -- Transaction-metadata decoding (spec 062). The
+      -- auxiliary-data metadata map (@Map Word64 Metadatum@)
+      -- decodes into a faithful generic value tree: one
+      -- @MetadatumEntry@ per top-level label, each value a
+      -- typed node of one of the five Cardano metadatum kinds
+      -- (@MetaInt@ / @MetaBytes@ / @MetaText@ / @MetaList@ /
+      -- @MetaMap@). Lists keep arity (no chunk joining — that
+      -- is spec 063); map keys are full value nodes, not
+      -- assumed strings. @bytesHex@ ('TermBytesHex') is reused
+      -- for the byte-string leaf.
+      TermMetadatumValue
+    | TermMetaInt
+    | TermMetaBytes
+    | TermMetaText
+    | TermMetaList
+    | TermMetaMap
+    | TermMetadatumEntry
+    | TermMetadatumElement
+    | TermMetadatumMapEntry
+    | TermHasMetadatum
+    | TermMetadataLabel
+    | TermMetadatumValueProp
+    | TermIntValue
+    | TermTextValue
+    | TermHasElement
+    | TermElementIndex
+    | TermHasEntry
+    | TermEntryIndex
+    | TermMetaKey
+    | TermMetaValue
     deriving stock (Eq, Ord, Show, Enum, Bounded)
 
 {- | The full IRI for a vocab term — e.g.
@@ -580,6 +610,26 @@ vocabIri = \case
     TermCpuUnits -> cardanoPrefix <> "cpuUnits"
     TermHasSignature -> cardanoPrefix <> "hasSignature"
     TermHasVerificationKey -> cardanoPrefix <> "hasVerificationKey"
+    TermMetadatumValue -> cardanoPrefix <> "MetadatumValue"
+    TermMetaInt -> cardanoPrefix <> "MetaInt"
+    TermMetaBytes -> cardanoPrefix <> "MetaBytes"
+    TermMetaText -> cardanoPrefix <> "MetaText"
+    TermMetaList -> cardanoPrefix <> "MetaList"
+    TermMetaMap -> cardanoPrefix <> "MetaMap"
+    TermMetadatumEntry -> cardanoPrefix <> "MetadatumEntry"
+    TermMetadatumElement -> cardanoPrefix <> "MetadatumElement"
+    TermMetadatumMapEntry -> cardanoPrefix <> "MetadatumMapEntry"
+    TermHasMetadatum -> cardanoPrefix <> "hasMetadatum"
+    TermMetadataLabel -> cardanoPrefix <> "metadataLabel"
+    TermMetadatumValueProp -> cardanoPrefix <> "metadatumValue"
+    TermIntValue -> cardanoPrefix <> "intValue"
+    TermTextValue -> cardanoPrefix <> "textValue"
+    TermHasElement -> cardanoPrefix <> "hasElement"
+    TermElementIndex -> cardanoPrefix <> "elementIndex"
+    TermHasEntry -> cardanoPrefix <> "hasEntry"
+    TermEntryIndex -> cardanoPrefix <> "entryIndex"
+    TermMetaKey -> cardanoPrefix <> "metaKey"
+    TermMetaValue -> cardanoPrefix <> "metaValue"
 
 {- | The prefixed CURIE form, e.g. @"cardano:hasInput"@. Every
 term in this registry lives under the @cardano:@ prefix; the
@@ -816,6 +866,26 @@ vocabCurie = \case
     TermCpuUnits -> "cardano:cpuUnits"
     TermHasSignature -> "cardano:hasSignature"
     TermHasVerificationKey -> "cardano:hasVerificationKey"
+    TermMetadatumValue -> "cardano:MetadatumValue"
+    TermMetaInt -> "cardano:MetaInt"
+    TermMetaBytes -> "cardano:MetaBytes"
+    TermMetaText -> "cardano:MetaText"
+    TermMetaList -> "cardano:MetaList"
+    TermMetaMap -> "cardano:MetaMap"
+    TermMetadatumEntry -> "cardano:MetadatumEntry"
+    TermMetadatumElement -> "cardano:MetadatumElement"
+    TermMetadatumMapEntry -> "cardano:MetadatumMapEntry"
+    TermHasMetadatum -> "cardano:hasMetadatum"
+    TermMetadataLabel -> "cardano:metadataLabel"
+    TermMetadatumValueProp -> "cardano:metadatumValue"
+    TermIntValue -> "cardano:intValue"
+    TermTextValue -> "cardano:textValue"
+    TermHasElement -> "cardano:hasElement"
+    TermElementIndex -> "cardano:elementIndex"
+    TermHasEntry -> "cardano:hasEntry"
+    TermEntryIndex -> "cardano:entryIndex"
+    TermMetaKey -> "cardano:metaKey"
+    TermMetaValue -> "cardano:metaValue"
 
 {- | Every vocab term registered in 'VocabTerm', in declaration
 order.
