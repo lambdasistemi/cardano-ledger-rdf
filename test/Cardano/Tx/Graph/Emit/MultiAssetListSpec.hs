@@ -22,7 +22,7 @@ _:outputMultiAssetN_tailM rdf:first _:assetEntry_outputN_\<M+1\> ;
 @
 
 The list-head binding predicate is @cardano:hasAssetValue@
-(not @cardano:mintsAsset@) per A-001: the canonical-vocab pin
+(not @cardano:mintsAsset@) per A-001: the canonical ontology
 declares @cardano:mintsAsset@ with @rdfs:domain cardano:Mint@,
 so reusing it on an @Output@ subject would violate the domain
 axiom.
