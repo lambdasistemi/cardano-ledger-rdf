@@ -1,0 +1,142 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/34-metadata-faithful#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/34-metadata-faithful#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+<urn:cardano:tx:8195bff911377174ed3d8af2417e0f188ac56e808ea12a86bc35799942a9a213> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:8195bff911377174ed3d8af2417e0f188ac56e808ea12a86bc35799942a9a213> ;
+  cardano:isValid "true"^^xsd:boolean ;
+  cardano:hasInput _:8195bff9_input1 ;
+  cardano:hasOutput <urn:cardano:utxo:8195bff911377174ed3d8af2417e0f188ac56e808ea12a86bc35799942a9a213:0> ;
+  cardano:hasFee 0 ;
+  cardano:hasAuxiliaryData _:8195bff9_auxiliaryData1 ;
+  cardano:auxiliaryDataHash <urn:cardano:id:AuxiliaryDataHash:afff211cfc0bb66a4a6e4d2fac1eca27f3cd6b64acfb652ed2b1c9e7b92292d2> .
+
+<urn:cardano:id:TxId:8195bff911377174ed3d8af2417e0f188ac56e808ea12a86bc35799942a9a213> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "8195bff911377174ed3d8af2417e0f188ac56e808ea12a86bc35799942a9a213" .
+
+_:8195bff9_auxiliaryData1 a cardano:AuxiliaryData ;
+  a cardano:OpaqueLeaf ;
+  cardano:hasRawBytes "d90103a100a30a82696368756e6b2d6f6e65696368756e6b2d74776f1444deadbeef181ea2016a62792d696e742d6b657944feedface6c62792d62797465732d6b6579" ;
+  cardano:hasMetadatum _:8195bff9_auxiliaryData1_md10 ;
+  cardano:hasMetadatum _:8195bff9_auxiliaryData1_md20 ;
+  cardano:hasMetadatum _:8195bff9_auxiliaryData1_md30 .
+
+_:8195bff9_auxiliaryData1_md10 cardano:metadataLabel 10 ;
+  cardano:metadatumValue _:8195bff9_auxiliaryData1_md10_v .
+
+_:8195bff9_auxiliaryData1_md10_v a cardano:MetadatumValue ;
+  a cardano:MetaList ;
+  cardano:hasElement _:8195bff9_auxiliaryData1_md10_v_l0 ;
+  cardano:hasElement _:8195bff9_auxiliaryData1_md10_v_l1 .
+
+_:8195bff9_auxiliaryData1_md10_v_l0 cardano:elementIndex 0 ;
+  cardano:metadatumValue _:8195bff9_auxiliaryData1_md10_v_l0v .
+
+_:8195bff9_auxiliaryData1_md10_v_l0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "chunk-one" .
+
+_:8195bff9_auxiliaryData1_md10_v_l1 cardano:elementIndex 1 ;
+  cardano:metadatumValue _:8195bff9_auxiliaryData1_md10_v_l1v .
+
+_:8195bff9_auxiliaryData1_md10_v_l1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "chunk-two" .
+
+_:8195bff9_auxiliaryData1_md20 cardano:metadataLabel 20 ;
+  cardano:metadatumValue _:8195bff9_auxiliaryData1_md20_v .
+
+_:8195bff9_auxiliaryData1_md20_v a cardano:MetadatumValue ;
+  a cardano:MetaBytes ;
+  cardano:bytesHex "deadbeef" .
+
+_:8195bff9_auxiliaryData1_md30 cardano:metadataLabel 30 ;
+  cardano:metadatumValue _:8195bff9_auxiliaryData1_md30_v .
+
+_:8195bff9_auxiliaryData1_md30_v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:8195bff9_auxiliaryData1_md30_v_e0 ;
+  cardano:hasEntry _:8195bff9_auxiliaryData1_md30_v_e1 .
+
+_:8195bff9_auxiliaryData1_md30_v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:8195bff9_auxiliaryData1_md30_v_e0k ;
+  cardano:metaValue _:8195bff9_auxiliaryData1_md30_v_e0v .
+
+_:8195bff9_auxiliaryData1_md30_v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaInt ;
+  cardano:intValue 1 .
+
+_:8195bff9_auxiliaryData1_md30_v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "by-int-key" .
+
+_:8195bff9_auxiliaryData1_md30_v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:8195bff9_auxiliaryData1_md30_v_e1k ;
+  cardano:metaValue _:8195bff9_auxiliaryData1_md30_v_e1v .
+
+_:8195bff9_auxiliaryData1_md30_v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaBytes ;
+  cardano:bytesHex "feedface" .
+
+_:8195bff9_auxiliaryData1_md30_v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "by-bytes-key" .
+
+<urn:cardano:id:AuxiliaryDataHash:afff211cfc0bb66a4a6e4d2fac1eca27f3cd6b64acfb652ed2b1c9e7b92292d2> a cardano:Identifier ;
+  cardano:leafType "AuxiliaryDataHash" ;
+  cardano:bytesHex "afff211cfc0bb66a4a6e4d2fac1eca27f3cd6b64acfb652ed2b1c9e7b92292d2" .
+
+#
+# Input 1
+#
+
+_:8195bff9_input1 a cardano:Input ;
+  cardano:fromTxOutRef _:8195bff9_inputTxOutRef1 .
+
+_:8195bff9_inputTxOutRef1 a cardano:TxOutRef ;
+  cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000022> ;
+  cardano:hasIndex 0 .
+
+<urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000022> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000022" .
+
+#
+# Output 1
+#
+
+<urn:cardano:utxo:8195bff911377174ed3d8af2417e0f188ac56e808ea12a86bc35799942a9a213:0> a cardano:Output ;
+  cardano:hasIndex 0 ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:lovelace 42000000 .
+
+#
+# Address decompositions — payment + stake credential per leaf.
+#
+
+_:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
+  cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
+
+<urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "00000000000000000000000000000000000000000000000000000000" .
+
+_:00000000000000000000000000000000000000000000000000000000CredPayment a cardano:PaymentCredential ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> .
