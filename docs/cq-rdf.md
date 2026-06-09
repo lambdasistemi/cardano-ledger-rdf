@@ -6,6 +6,12 @@ each other via plain shell pipes. There is no meta-orchestrator
 subcommand and no recipe file — composition is the operator's
 documented `bash` pipe.
 
+The same four subcommands serve two consumers: a transaction **author**
+runs the pipe over a tx they just built and reads `shacl` as a pre-sign
+gate; an **auditor** runs it over a lattice of on-chain txids and reads
+`shacl` + SPARQL as a classifier. Both are parametrized by the same
+app-shipped assets — see [For app developers](for-app-developers.md).
+
 | Subcommand | Pure function | Reads | Writes |
 |---|---|---|---|
 | [`overlay`](#overlay) | operator YAML → overlay TTL | `--in overlay.yaml` (or stdin) | overlay-only Turtle |

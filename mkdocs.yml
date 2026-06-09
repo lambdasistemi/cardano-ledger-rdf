@@ -62,6 +62,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - Demo: demo.md
+  - For app developers: for-app-developers.md
   - Vocabulary:
       - Overview: vocab.md
       - "cardano: namespace": vocab/cardano/index.md
