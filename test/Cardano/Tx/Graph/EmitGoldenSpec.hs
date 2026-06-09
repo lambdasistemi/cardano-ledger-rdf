@@ -85,6 +85,7 @@ import Fixtures.TxGraph.S32_GovActionHardForkInitiation qualified as S32
 import Fixtures.TxGraph.S33_MetadataScalarMap qualified as S33
 import Fixtures.TxGraph.S34_MetadataFaithful qualified as S34
 import Fixtures.TxGraph.S35_MetadataContingency1694 qualified as S35
+import Fixtures.TxGraph.S36_MetadataEmptyContainers qualified as S36
 
 import Test.Hspec (
     Spec,
@@ -139,6 +140,7 @@ allFixtures =
     , ("33-metadata-scalar-map", S33.tx)
     , ("34-metadata-faithful", S34.tx)
     , ("35-metadata-contingency-1694", S35.tx)
+    , ("36-metadata-empty-containers", S36.tx)
     ]
 
 {- | One Hspec @it@ per fixture: byte-diff the emitted Turtle

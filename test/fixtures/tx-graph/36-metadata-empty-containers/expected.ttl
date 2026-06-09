@@ -1,0 +1,111 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/36-metadata-empty-containers#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/36-metadata-empty-containers#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+<urn:cardano:tx:9dc0a5887dc9490b16a87fab02c3d6e5a9fdbf928da69f756a0677f182b7dbab> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:9dc0a5887dc9490b16a87fab02c3d6e5a9fdbf928da69f756a0677f182b7dbab> ;
+  cardano:isValid "true"^^xsd:boolean ;
+  cardano:hasInput _:9dc0a588_input1 ;
+  cardano:hasOutput <urn:cardano:utxo:9dc0a5887dc9490b16a87fab02c3d6e5a9fdbf928da69f756a0677f182b7dbab:0> ;
+  cardano:hasFee 0 ;
+  cardano:hasAuxiliaryData _:9dc0a588_auxiliaryData1 ;
+  cardano:auxiliaryDataHash <urn:cardano:id:AuxiliaryDataHash:e423cab0d50ffe959720835a7423e05f1c619772acae2abfe20e7655277c8350> .
+
+<urn:cardano:id:TxId:9dc0a5887dc9490b16a87fab02c3d6e5a9fdbf928da69f756a0677f182b7dbab> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "9dc0a5887dc9490b16a87fab02c3d6e5a9fdbf928da69f756a0677f182b7dbab" .
+
+_:9dc0a588_auxiliaryData1 a cardano:AuxiliaryData ;
+  a cardano:OpaqueLeaf ;
+  cardano:hasRawBytes "d90103a100a3018002a003a10080" ;
+  cardano:hasMetadatum _:9dc0a588_auxiliaryData1_md1 ;
+  cardano:hasMetadatum _:9dc0a588_auxiliaryData1_md2 ;
+  cardano:hasMetadatum _:9dc0a588_auxiliaryData1_md3 .
+
+_:9dc0a588_auxiliaryData1_md1 cardano:metadataLabel 1 ;
+  cardano:metadatumValue _:9dc0a588_auxiliaryData1_md1_v .
+
+_:9dc0a588_auxiliaryData1_md1_v a cardano:MetadatumValue ;
+  a cardano:MetaList .
+
+_:9dc0a588_auxiliaryData1_md2 cardano:metadataLabel 2 ;
+  cardano:metadatumValue _:9dc0a588_auxiliaryData1_md2_v .
+
+_:9dc0a588_auxiliaryData1_md2_v a cardano:MetadatumValue ;
+  a cardano:MetaMap .
+
+_:9dc0a588_auxiliaryData1_md3 cardano:metadataLabel 3 ;
+  cardano:metadatumValue _:9dc0a588_auxiliaryData1_md3_v .
+
+_:9dc0a588_auxiliaryData1_md3_v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:9dc0a588_auxiliaryData1_md3_v_e0 .
+
+_:9dc0a588_auxiliaryData1_md3_v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:9dc0a588_auxiliaryData1_md3_v_e0k ;
+  cardano:metaValue _:9dc0a588_auxiliaryData1_md3_v_e0v .
+
+_:9dc0a588_auxiliaryData1_md3_v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaInt ;
+  cardano:intValue 0 .
+
+_:9dc0a588_auxiliaryData1_md3_v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaList .
+
+<urn:cardano:id:AuxiliaryDataHash:e423cab0d50ffe959720835a7423e05f1c619772acae2abfe20e7655277c8350> a cardano:Identifier ;
+  cardano:leafType "AuxiliaryDataHash" ;
+  cardano:bytesHex "e423cab0d50ffe959720835a7423e05f1c619772acae2abfe20e7655277c8350" .
+
+#
+# Input 1
+#
+
+_:9dc0a588_input1 a cardano:Input ;
+  cardano:fromTxOutRef _:9dc0a588_inputTxOutRef1 .
+
+_:9dc0a588_inputTxOutRef1 a cardano:TxOutRef ;
+  cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000024> ;
+  cardano:hasIndex 0 .
+
+<urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000024> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000024" .
+
+#
+# Output 1
+#
+
+<urn:cardano:utxo:9dc0a5887dc9490b16a87fab02c3d6e5a9fdbf928da69f756a0677f182b7dbab:0> a cardano:Output ;
+  cardano:hasIndex 0 ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:lovelace 42000000 .
+
+#
+# Address decompositions — payment + stake credential per leaf.
+#
+
+_:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
+  cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
+
+<urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "00000000000000000000000000000000000000000000000000000000" .
+
+_:00000000000000000000000000000000000000000000000000000000CredPayment a cardano:PaymentCredential ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> .
