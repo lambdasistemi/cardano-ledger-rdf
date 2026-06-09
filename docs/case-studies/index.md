@@ -6,6 +6,11 @@ invariants, presentation prose, and SPARQL evidence stay separate. The
 reproduce step is a documented Unix pipe in each case study's
 `README.md` — no per-case shell scripts, no orchestrator binaries.
 
+A case-study directory *is* an application's [RDF asset
+bundle](../for-app-developers.md): the `overlay.yaml`, `blueprints/`, and
+`shapes/` are exactly what an app developer ships to give transaction
+authors a pre-sign gate and auditors a lattice classifier.
+
 ```text
 docs/case-studies/<slug>/
 ├── README.md            # documents the reproduce pipe
