@@ -178,7 +178,10 @@ fixtureSpec (slug, tx) = describe slug $ do
     it "every emitted cardano: CURIE is declared in the canonical pin" $ do
         let emittedLocals = Set.fromList (extractCardanoLocalParts bytes)
             missing =
-                Set.toList (emittedLocals `Set.difference` canonicalLocals)
+                Set.toList
+                    ( (emittedLocals `Set.difference` canonicalLocals)
+                        `Set.difference` pending062
+                    )
         missing `shouldBe` []
 
 ----------------------------------------------------------------------
@@ -187,6 +190,43 @@ fixtureSpec (slug, tx) = describe slug $ do
 
 emptyUtxo :: ResolvedUTxO
 emptyUtxo = Map.empty
+
+{- | pending062: the spec-062 transaction-metadata-decoding CURIEs
+the body emitter now writes but that the vendored canonical pin
+(@test/fixtures/canonical-vocab/transactions.ttl@, verbatim
+kmaps\@5108855) does not yet declare. Same short-circuit shape as
+the historical @pendingPhaseA3@ allowlist that this spec carried
+until the T128g pin refresh emptied it.
+
+These 17 emitted local-parts are tolerated until the companion
+cardano-knowledge-maps PR (parent-owned follow-up) merges and a
+dedicated @chore(070): refresh pin@ commit brings them into the
+pin verbatim — at which point this set empties. The pin is NOT
+edited locally (PINNED.md's decoupling rule). The wrapper classes
+@MetadatumEntry@ / @MetadatumElement@ / @MetadatumMapEntry@ are
+declared in Vocab.hs but not emitted, so they do not appear here.
+-}
+pending062 :: Set String
+pending062 =
+    Set.fromList
+        [ "MetadatumValue"
+        , "MetaInt"
+        , "MetaBytes"
+        , "MetaText"
+        , "MetaList"
+        , "MetaMap"
+        , "hasMetadatum"
+        , "metadataLabel"
+        , "metadatumValue"
+        , "intValue"
+        , "textValue"
+        , "hasElement"
+        , "elementIndex"
+        , "hasEntry"
+        , "entryIndex"
+        , "metaKey"
+        , "metaValue"
+        ]
 
 loadRulesData ::
     FilePath ->
