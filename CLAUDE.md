@@ -26,3 +26,10 @@ description matches your task.
 
 No operator-specific local config is required for the repository bootstrap.
 Networked fetchers or hosted services may add a first-run skill later.
+
+## Active Technologies
+- Haskell, GHC 9.12.3 (`haskell.nix`, `ghc9123`) + `cardano-ledger-core` (`TxAuxData ConwayEra`), `Cardano.Ledger.Metadata` (`Metadatum(..)`), the in-repo Emit DSL (`Cardano.Tx.Graph.Emit.*`: `Triple`/`Subject`/`Object`/`tellTriple`/`vocabCurie`/`BnodeName`), `bytestring`, `text` (062-tx-metadata-decode)
+- N/A — pure emission over the already-decoded `TxAuxData` value (062-tx-metadata-decode)
+
+## Recent Changes
+- 062-tx-metadata-decode: Added Haskell, GHC 9.12.3 (`haskell.nix`, `ghc9123`) + `cardano-ledger-core` (`TxAuxData ConwayEra`), `Cardano.Ledger.Metadata` (`Metadatum(..)`), the in-repo Emit DSL (`Cardano.Tx.Graph.Emit.*`: `Triple`/`Subject`/`Object`/`tellTriple`/`vocabCurie`/`BnodeName`), `bytestring`, `text`
