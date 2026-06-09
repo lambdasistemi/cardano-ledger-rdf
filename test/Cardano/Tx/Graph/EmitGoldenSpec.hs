@@ -82,6 +82,7 @@ import Fixtures.TxGraph.S29_GovActionParameterChange qualified as S29
 import Fixtures.TxGraph.S30_GovActionUpdateCommittee qualified as S30
 import Fixtures.TxGraph.S31_GovActionNewConstitution qualified as S31
 import Fixtures.TxGraph.S32_GovActionHardForkInitiation qualified as S32
+import Fixtures.TxGraph.S33_MetadataScalarMap qualified as S33
 
 import Test.Hspec (
     Spec,
@@ -133,6 +134,7 @@ allFixtures =
     , ("30-govaction-update-committee", S30.tx)
     , ("31-govaction-new-constitution", S31.tx)
     , ("32-govaction-hard-fork-initiation", S32.tx)
+    , ("33-metadata-scalar-map", S33.tx)
     ]
 
 {- | One Hspec @it@ per fixture: byte-diff the emitted Turtle
