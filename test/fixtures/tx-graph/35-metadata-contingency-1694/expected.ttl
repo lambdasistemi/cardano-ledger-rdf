@@ -1,0 +1,292 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/35-metadata-contingency-1694#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/35-metadata-contingency-1694#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+<urn:cardano:tx:e1acd00b7ba4cedd195c2fca9b453050341c5e8aa899a576bf22076f1e6bb078> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:e1acd00b7ba4cedd195c2fca9b453050341c5e8aa899a576bf22076f1e6bb078> ;
+  cardano:isValid "true"^^xsd:boolean ;
+  cardano:hasInput _:e1acd00b_input1 ;
+  cardano:hasOutput <urn:cardano:utxo:e1acd00b7ba4cedd195c2fca9b453050341c5e8aa899a576bf22076f1e6bb078:0> ;
+  cardano:hasFee 0 ;
+  cardano:hasAuxiliaryData _:e1acd00b_auxiliaryData1 ;
+  cardano:auxiliaryDataHash <urn:cardano:id:AuxiliaryDataHash:a97c94d99ed2770a85e1ba0fa5949ffab6d891c23d6fea154637b08e27426541> .
+
+<urn:cardano:id:TxId:e1acd00b7ba4cedd195c2fca9b453050341c5e8aa899a576bf22076f1e6bb078> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "e1acd00b7ba4cedd195c2fca9b453050341c5e8aa899a576bf22076f1e6bb078" .
+
+_:e1acd00b_auxiliaryData1 a cardano:AuxiliaryData ;
+  a cardano:OpaqueLeaf ;
+  cardano:hasRawBytes "d90103a100a119069ea264626f6479a7656576656e74686469736275727365656c6162656c781e416d61727520636f6e74696e67656e63792064697362757273656d656e746a7265666572656e63657381a2656c6162656c75416d61727520747265617375727920706f6c69637963757269782b68747470733a2f2f6769746875622e636f6d2f63617264616e6f2d666f756e646174696f6e2f616d6172756b6465736372697074696f6e8278405468697320636f6e74696e67656e63792064697362757273656d656e742072656c65617365732074726561737572792066756e64732070657220746865206170783c70726f76656420726174696f6e616c653b2073656520746865207265666572656e63657320656e74727920666f722066756c6c20636f6e746578742e6b64657374696e6174696f6ea16761646472657373782761646472317178636b7ae280a6616d6172752d74726561737572792d636f6e74696e67656e63796d6a757374696669636174696f6e81783c4d61696e7461696e73207472656173757279206f7065726174696f6e7320647572696e672074686520636f6e74696e67656e63792077696e646f772e67636f6e74657874a269406c616e677561676562656e676e6574776f726b676d61696e6e657468696e7374616e636578383764323735636638633039666439316537333837393939336566313363623733393135313936343738643565333737373939326639383838" ;
+  cardano:hasMetadatum _:e1acd00b_auxiliaryData1_md1694 .
+
+_:e1acd00b_auxiliaryData1_md1694 cardano:metadataLabel 1694 ;
+  cardano:metadatumValue _:e1acd00b_auxiliaryData1_md1694_v .
+
+_:e1acd00b_auxiliaryData1_md1694_v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e1 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "body" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e0 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e1 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e4 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e5 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e0k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "event" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "disburse" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e1k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e1v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "label" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "Amaru contingency disbursement" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2 cardano:entryIndex 2 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "references" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v a cardano:MetadatumValue ;
+  a cardano:MetaList ;
+  cardano:hasElement _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0 cardano:elementIndex 0 ;
+  cardano:metadatumValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e0 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e1 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e0k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "label" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "Amaru treasury policy" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e1k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e1v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "uri" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e2v_l0v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "https://github.com/cardano-foundation/amaru" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3 cardano:entryIndex 3 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "description" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v a cardano:MetadatumValue ;
+  a cardano:MetaList ;
+  cardano:hasElement _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l0 ;
+  cardano:hasElement _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l1 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l0 cardano:elementIndex 0 ;
+  cardano:metadatumValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "This contingency disbursement releases treasury funds per the ap" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l1 cardano:elementIndex 1 ;
+  cardano:metadatumValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l1v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e3v_l1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "proved rationale; see the references entry for full context." .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e4 cardano:entryIndex 4 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e4k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e4k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "destination" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v_e0 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v_e0k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v_e0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "address" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e4v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "addr1qxckz…amaru-treasury-contingency" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e5 cardano:entryIndex 5 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e5k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e5v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e5k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "justification" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e5v a cardano:MetadatumValue ;
+  a cardano:MetaList ;
+  cardano:hasElement _:e1acd00b_auxiliaryData1_md1694_v_e0v_e5v_l0 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e5v_l0 cardano:elementIndex 0 ;
+  cardano:metadatumValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e5v_l0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e5v_l0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "Maintains treasury operations during the contingency window." .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6 cardano:entryIndex 6 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "context" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e0 ;
+  cardano:hasEntry _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e1 .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e0k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e0v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "@language" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "en" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e1k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e1v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "network" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e0v_e6v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "mainnet" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:e1acd00b_auxiliaryData1_md1694_v_e1k ;
+  cardano:metaValue _:e1acd00b_auxiliaryData1_md1694_v_e1v .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "instance" .
+
+_:e1acd00b_auxiliaryData1_md1694_v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "7d275cf8c09fd91e73879993ef13cb73915196478d5e3777992f9888" .
+
+<urn:cardano:id:AuxiliaryDataHash:a97c94d99ed2770a85e1ba0fa5949ffab6d891c23d6fea154637b08e27426541> a cardano:Identifier ;
+  cardano:leafType "AuxiliaryDataHash" ;
+  cardano:bytesHex "a97c94d99ed2770a85e1ba0fa5949ffab6d891c23d6fea154637b08e27426541" .
+
+#
+# Input 1
+#
+
+_:e1acd00b_input1 a cardano:Input ;
+  cardano:fromTxOutRef _:e1acd00b_inputTxOutRef1 .
+
+_:e1acd00b_inputTxOutRef1 a cardano:TxOutRef ;
+  cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000023> ;
+  cardano:hasIndex 0 .
+
+<urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000023> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "0000000000000000000000000000000000000000000000000000000000000023" .
+
+#
+# Output 1
+#
+
+<urn:cardano:utxo:e1acd00b7ba4cedd195c2fca9b453050341c5e8aa899a576bf22076f1e6bb078:0> a cardano:Output ;
+  cardano:hasIndex 0 ;
+  cardano:atAddress _:00000000000000000000000000000000000000000000000000000000Addr ;
+  cardano:lovelace 42000000 .
+
+#
+# Address decompositions — payment + stake credential per leaf.
+#
+
+_:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
+  cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
+
+<urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;
+  cardano:leafType "PaymentKey" ;
+  cardano:bytesHex "00000000000000000000000000000000000000000000000000000000" .
+
+_:00000000000000000000000000000000000000000000000000000000CredPayment a cardano:PaymentCredential ;
+  cardano:hasIdentifier <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> .

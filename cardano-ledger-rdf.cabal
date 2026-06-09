@@ -311,6 +311,7 @@ test-suite unit-tests
     Fixtures.TxGraph.S32_GovActionHardForkInitiation
     Fixtures.TxGraph.S33_MetadataScalarMap
     Fixtures.TxGraph.S34_MetadataFaithful
+    Fixtures.TxGraph.S35_MetadataContingency1694
     Fixtures.TxGraph.TurtleShim
 
   build-depends:
