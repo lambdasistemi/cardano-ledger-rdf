@@ -82,7 +82,7 @@ import Cardano.Ledger.Plutus.Language (
 import Cardano.Ledger.TxIn (TxId (..), TxIn (..))
 
 import Cardano.Tx.Balance (computeScriptIntegrity, languagesUsedInTx)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 -- | Test suite root.
 spec :: Spec

@@ -34,6 +34,7 @@ import Data.Either (isRight)
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as Text
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     BnodeName (..),
     BodySection (..),
@@ -43,7 +44,6 @@ import Cardano.Tx.Graph.Emit (
     SubjectBlock (..),
     emit,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
 import Fixtures.TxGraph.S02_AliceBobAda qualified as S02

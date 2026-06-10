@@ -40,7 +40,7 @@ import Cardano.Ledger.Shelley.Scripts (
     pattern RequireSignature,
  )
 
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 tx :: ConwayTx
 tx =

@@ -10,6 +10,7 @@ owns input normalization only; graph construction and presentation live in
 the graph/view modules.
 -}
 module Cardano.Tx.Decode (
+    ConwayTx,
     TxInputDecodeError (..),
     decodeBech32Address,
     decodeConwayTxInput,
@@ -28,6 +29,7 @@ import Data.Text qualified as Text
 import Data.Text.Encoding qualified as TextEncoding
 
 import Cardano.Ledger.Address (Addr, decodeAddrEither)
+import Cardano.Ledger.Alonzo.Core (TopTx, Tx)
 import Cardano.Ledger.Binary (
     Annotator,
     Decoder,
@@ -36,7 +38,16 @@ import Cardano.Ledger.Binary (
     decodeFullAnnotatorFromHexText,
     natVersion,
  )
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Ledger.Conway (ConwayEra)
+
+{- | Conway-era top-level transaction.
+
+'ConwayTx' is a Haskell type synonym, so it is interchangeable with any
+identical synonym defined elsewhere (e.g. the copy in
+@cardano-tx-tools:tx-build@): the type checker sees through both to
+@'Tx' 'TopTx' 'ConwayEra'@.
+-}
+type ConwayTx = Tx TopTx ConwayEra
 
 -- | Failure while decoding transaction input bytes.
 newtype TxInputDecodeError = TxInputDecodeError Text

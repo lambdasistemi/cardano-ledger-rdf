@@ -76,7 +76,7 @@ import Cardano.Tx.Balance (
     evalBudgetExUnits,
     languagesUsedInTx,
  )
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 {- | Per-script evaluation result, matching the shape returned by a
 node-client evaluator.

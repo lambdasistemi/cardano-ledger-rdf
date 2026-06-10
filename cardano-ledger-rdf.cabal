@@ -88,7 +88,6 @@ library
     Cardano.Tx.Graph.Resolve.Web2
     Cardano.Tx.Graph.Rules.Load
     Cardano.Tx.Graph.Rules.Load.Imports
-    Cardano.Tx.Ledger
     Cardano.Tx.View
 
   other-modules:

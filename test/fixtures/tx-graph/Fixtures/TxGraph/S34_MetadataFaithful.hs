@@ -27,7 +27,7 @@ import Data.ByteString.Char8 qualified as BS8
 
 import Cardano.Ledger.Metadata (Metadatum (B, I, List, Map, S))
 import Cardano.Tx.Build (output, setMetadata, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),

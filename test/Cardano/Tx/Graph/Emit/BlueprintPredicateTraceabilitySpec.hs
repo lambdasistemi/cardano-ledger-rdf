@@ -79,6 +79,7 @@ import Cardano.Tx.Blueprint (
     blueprintValidators,
     resolveBlueprintSchema,
  )
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (Turtle),
     ResolvedUTxO,
@@ -91,7 +92,6 @@ import Cardano.Tx.Graph.Rules.Load (
     rulesBlueprints,
     rulesEntities,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (stubTxIn, stubTxOutMA)
 import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01

@@ -270,8 +270,8 @@ import Cardano.Tx.Balance (
     CollateralUtxos (..),
     balanceTxWith,
  )
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Inputs (spendingIndex)
-import Cardano.Tx.Ledger (ConwayTx)
 import Cardano.Tx.Scripts (
     computeScriptIntegrity,
     evalBudgetExUnits,

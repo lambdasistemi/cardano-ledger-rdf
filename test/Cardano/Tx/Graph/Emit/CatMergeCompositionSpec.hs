@@ -24,12 +24,12 @@ import Cardano.Ledger.TxIn (TxId (..), TxIn (..))
 import Lens.Micro ((^.))
 
 import Cardano.Tx.Build (output, spend)
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     emit,
     serialize,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 import Fixtures.TxGraph.Helpers (
     TxBuilder (..),
     mkTx,

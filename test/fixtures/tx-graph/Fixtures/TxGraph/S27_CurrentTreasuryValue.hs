@@ -19,7 +19,7 @@ import Cardano.Ledger.Api.Tx.Body (
 import Cardano.Ledger.BaseTypes (StrictMaybe (SJust))
 import Cardano.Ledger.Coin (Coin (..))
 
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 import Fixtures.TxGraph.Helpers (ExpectedShape, StoryId (..), baseShape)
 
 storyId :: StoryId

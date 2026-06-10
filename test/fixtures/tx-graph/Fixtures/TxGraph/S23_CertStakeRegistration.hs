@@ -31,7 +31,7 @@ import Cardano.Ledger.DRep (DRep (DRepKeyHash))
 import Cardano.Ledger.Hashes (ADDRHASH, Hash, KeyHash (..))
 import Cardano.Ledger.Keys (KeyRole (..))
 
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 import Fixtures.TxGraph.Helpers (ExpectedShape (..), StoryId (..), baseShape)
 
 storyId :: StoryId

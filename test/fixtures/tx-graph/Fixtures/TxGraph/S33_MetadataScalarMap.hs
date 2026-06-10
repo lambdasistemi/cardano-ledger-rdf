@@ -20,7 +20,7 @@ module Fixtures.TxGraph.S33_MetadataScalarMap (
 
 import Cardano.Ledger.Metadata (Metadatum (I, Map, S))
 import Cardano.Tx.Build (output, setMetadata, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),
