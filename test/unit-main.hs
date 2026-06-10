@@ -54,6 +54,7 @@ import Cardano.Tx.Graph.Rules.LoadValidationSpec qualified as GraphRulesLoadVali
 import Cardano.Tx.Graph.Rules.LoadYamlSpec qualified as GraphRulesLoadYamlSpec
 import Cardano.Tx.Graph.ShapesAmaruMay2026Spec qualified as GraphShapesAmaruMay2026Spec
 import Cardano.Tx.Graph.TxGraphExeSpec qualified as GraphTxGraphExeSpec
+import Cardano.Tx.Metadata.ProjectSpec qualified as MetadataProjectSpec
 import Cardano.Tx.View.AssetFlowSpec qualified as ViewAssetFlowSpec
 import Cardano.Tx.View.CliTreeEntitySpec qualified as ViewCliTreeEntitySpec
 import Cardano.Tx.View.CliTreeGoldenSpec qualified as ViewCliTreeGoldenSpec
@@ -116,6 +117,7 @@ main = hspec $ do
     GraphResolveWeb2Spec.spec
     GraphShapesAmaruMay2026Spec.spec
     GraphTxGraphExeSpec.spec
+    MetadataProjectSpec.spec
     ViewAssetFlowSpec.spec
     ViewCliTreeGoldenSpec.spec
     ViewCliTreeEntitySpec.spec

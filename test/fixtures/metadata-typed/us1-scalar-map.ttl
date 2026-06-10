@@ -1,0 +1,96 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+<urn:cardano:tx:us1> a cardano:Transaction ;
+  cardano:hasAuxiliaryData _:us1_auxiliaryData1 .
+
+_:us1_auxiliaryData1 a cardano:AuxiliaryData ;
+  cardano:hasMetadatum _:us1_auxiliaryData1_md999 ;
+  cardano:hasMetadatum _:us1_auxiliaryData1_md1694 .
+
+_:us1_auxiliaryData1_md999 cardano:metadataLabel 999 ;
+  cardano:metadatumValue _:us1_auxiliaryData1_md999_v .
+
+_:us1_auxiliaryData1_md999_v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "ignored" .
+
+_:us1_auxiliaryData1_md1694 cardano:metadataLabel 1694 ;
+  cardano:metadatumValue _:us1_auxiliaryData1_md1694_v .
+
+_:us1_auxiliaryData1_md1694_v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:us1_auxiliaryData1_md1694_v_e0 ;
+  cardano:hasEntry _:us1_auxiliaryData1_md1694_v_e1 .
+
+_:us1_auxiliaryData1_md1694_v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:us1_auxiliaryData1_md1694_v_e0k ;
+  cardano:metaValue _:us1_auxiliaryData1_md1694_v_e0v .
+
+_:us1_auxiliaryData1_md1694_v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "body" .
+
+_:us1_auxiliaryData1_md1694_v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:us1_auxiliaryData1_md1694_v_e0v_e0 ;
+  cardano:hasEntry _:us1_auxiliaryData1_md1694_v_e0v_e1 ;
+  cardano:hasEntry _:us1_auxiliaryData1_md1694_v_e0v_e2 .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:us1_auxiliaryData1_md1694_v_e0v_e0k ;
+  cardano:metaValue _:us1_auxiliaryData1_md1694_v_e0v_e0v .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "event" .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "disburse" .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:us1_auxiliaryData1_md1694_v_e0v_e1k ;
+  cardano:metaValue _:us1_auxiliaryData1_md1694_v_e0v_e1v .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "count" .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaInt ;
+  cardano:intValue 3 .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e2 cardano:entryIndex 2 ;
+  cardano:metaKey _:us1_auxiliaryData1_md1694_v_e0v_e2k ;
+  cardano:metaValue _:us1_auxiliaryData1_md1694_v_e0v_e2v .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e2k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "blob" .
+
+_:us1_auxiliaryData1_md1694_v_e0v_e2v a cardano:MetadatumValue ;
+  a cardano:MetaBytes ;
+  cardano:bytesHex "deadbeef" .
+
+_:us1_auxiliaryData1_md1694_v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:us1_auxiliaryData1_md1694_v_e1k ;
+  cardano:metaValue _:us1_auxiliaryData1_md1694_v_e1v .
+
+_:us1_auxiliaryData1_md1694_v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "instance" .
+
+_:us1_auxiliaryData1_md1694_v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "abc123" .
+@prefix meta: <https://example.test/meta#> .
+
+#
+# Metadata typed projection.
+#
+
+<urn:cardano:tx:us1> meta:event "disburse" .
+<urn:cardano:tx:us1> meta:count 3 .
+<urn:cardano:tx:us1> meta:blob "deadbeef" .
+<urn:cardano:tx:us1> meta:registryInstance "abc123" .

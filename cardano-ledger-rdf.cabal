@@ -273,6 +273,7 @@ test-suite unit-tests
     Cardano.Tx.Graph.Rules.LoadYamlSpec
     Cardano.Tx.Graph.ShapesAmaruMay2026Spec
     Cardano.Tx.Graph.TxGraphExeSpec
+    Cardano.Tx.Metadata.ProjectSpec
     Cardano.Tx.View.AssetFlowSpec
     Cardano.Tx.View.CliTreeEntitySpec
     Cardano.Tx.View.CliTreeGoldenSpec
