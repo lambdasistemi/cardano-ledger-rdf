@@ -30,6 +30,17 @@
   reconciled API demands it; full gate green; goldens byte-identical;
   commit `refactor: swap the local builder copy for cardano-tx-tools:tx-build`.
 
+## Slice S4 — reconcile haddock-coverage check with the deleted modules
+
+- [X] T086-S4 The `haddock-coverage` flake check in `nix/checks.nix`
+  (run by CI's Build Gate but NOT by `just ci`) still listed the deleted
+  exposed modules. Remove `Cardano-Tx-Balance`, `Cardano-Tx-Build`,
+  `Cardano-Tx-Evaluate` (S3) and `Cardano-Tx-Ledger` (S2) from
+  `expected_modules`, drop the two `Cardano-Tx-Build.html` regression
+  guards, and refresh the stale comment. Verify with the real Build Gate
+  set (`nix build .#checks.x86_64-linux.{build,unit,lint,vocab-validate,vocab-owl-smoke,haddock-coverage}`);
+  forward commit `fix(checks): drop deleted builder modules from haddock coverage`.
+
 ## Finalization
 
 - [ ] T086-F PR body audit (living document), label + assignee set,
