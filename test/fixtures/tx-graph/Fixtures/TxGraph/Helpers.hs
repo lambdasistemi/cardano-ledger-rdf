@@ -159,7 +159,7 @@ import Cardano.Ledger.Plutus.Data (mkInlineDatum)
 import Cardano.Ledger.TxIn (TxId (..), TxIn (..))
 
 import Cardano.Tx.Build (TxBuild, draft)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.TurtleShim (isWellFormedTurtle)
 

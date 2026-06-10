@@ -42,7 +42,7 @@ import Cardano.Ledger.Keys (KeyRole (Payment))
 import Cardano.Ledger.Mary.Value (MaryValue (..), MultiAsset (..))
 import Cardano.Ledger.Shelley.Scripts (pattern RequireAllOf)
 
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 tx :: ConwayTx
 tx =

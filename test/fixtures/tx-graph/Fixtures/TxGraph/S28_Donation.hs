@@ -15,7 +15,7 @@ import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx)
 import Cardano.Ledger.Api.Tx.Body (mkBasicTxBody, treasuryDonationTxBodyL)
 import Cardano.Ledger.Coin (Coin (..))
 
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 import Fixtures.TxGraph.Helpers (ExpectedShape, StoryId (..), baseShape)
 
 storyId :: StoryId

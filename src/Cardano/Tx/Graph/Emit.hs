@@ -96,6 +96,7 @@ import Cardano.Ledger.TxIn (TxIn)
 import Lens.Micro ((^.))
 
 import Cardano.Tx.Blueprint (Blueprint)
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit.Blueprint (
     BlueprintDecodeResult (..),
     RdmrPurpose (..),
@@ -136,7 +137,6 @@ import Cardano.Tx.Graph.Emit.Triple (
 import Cardano.Tx.Graph.Emit.VocabExport (renderVocabFragment)
 import Cardano.Tx.Graph.Emit.Witness (projectWitness)
 import Cardano.Tx.Graph.Rules.Load (EntityDecl)
-import Cardano.Tx.Ledger (ConwayTx)
 
 {- $blueprintSurface
 The blueprint-decode seam introduced by feature #50 (T101 / T102).

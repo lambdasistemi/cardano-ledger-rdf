@@ -49,7 +49,7 @@ import Fixtures.TxGraph.Helpers (
  )
 
 import Cardano.Tx.Build (collateral, output, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 -- | Story slug — kebab directory name under @test/fixtures/tx-graph/@.
 storyId :: StoryId

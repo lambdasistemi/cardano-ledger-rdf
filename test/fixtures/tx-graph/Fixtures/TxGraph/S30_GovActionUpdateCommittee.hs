@@ -51,7 +51,7 @@ import Cardano.Ledger.Hashes (
 import Cardano.Ledger.Keys (KeyRole (ColdCommitteeRole))
 import Cardano.Ledger.TxIn (TxId (..))
 
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),
     StoryId (..),

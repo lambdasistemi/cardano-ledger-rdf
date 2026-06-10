@@ -32,6 +32,7 @@ import Cardano.Ledger.Api.Tx.Body (outputsTxBodyL)
 import Cardano.Ledger.Api.Tx.Out (referenceScriptTxOutL)
 import Cardano.Ledger.BaseTypes (StrictMaybe (SJust, SNothing))
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
@@ -44,7 +45,6 @@ import Cardano.Tx.Graph.Rules.Load (
     loadRulesFile,
     rulesEntities,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
 import Fixtures.TxGraph.S02_AliceBobAda qualified as S02

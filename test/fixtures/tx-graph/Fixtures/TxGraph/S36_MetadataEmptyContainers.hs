@@ -25,7 +25,7 @@ module Fixtures.TxGraph.S36_MetadataEmptyContainers (
 
 import Cardano.Ledger.Metadata (Metadatum (I, List, Map))
 import Cardano.Tx.Build (output, setMetadata, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),

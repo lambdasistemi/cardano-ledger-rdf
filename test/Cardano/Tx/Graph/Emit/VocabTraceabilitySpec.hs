@@ -47,6 +47,7 @@ import System.FilePath ((</>))
 
 import Cardano.Ledger.Hashes (ScriptHash)
 import Cardano.Tx.Blueprint (Blueprint)
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
@@ -60,7 +61,6 @@ import Cardano.Tx.Graph.Rules.Load (
     rulesBlueprints,
     rulesEntities,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
 import Fixtures.TxGraph.S02_AliceBobAda qualified as S02

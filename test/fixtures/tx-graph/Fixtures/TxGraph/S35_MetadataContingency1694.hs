@@ -33,7 +33,7 @@ module Fixtures.TxGraph.S35_MetadataContingency1694 (
 
 import Cardano.Ledger.Metadata (Metadatum (List, Map, S))
 import Cardano.Tx.Build (output, setMetadata, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),

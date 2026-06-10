@@ -35,6 +35,7 @@ import Data.Text qualified as Text
 import Data.Text.Encoding qualified as TextEncoding
 import System.FilePath ((</>))
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     EmittedGraph (..),
@@ -48,7 +49,6 @@ import Cardano.Tx.Graph.Rules.Load (
     loadRulesFile,
     rulesEntities,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.S01_AmaruTreasurySwap qualified as S01
 import Fixtures.TxGraph.S03_MultiAssetTransfer qualified as S03

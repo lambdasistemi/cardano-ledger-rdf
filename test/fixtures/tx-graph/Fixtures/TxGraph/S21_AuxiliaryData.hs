@@ -15,7 +15,7 @@ module Fixtures.TxGraph.S21_AuxiliaryData (
 
 import Cardano.Ledger.Metadata (Metadatum (S))
 import Cardano.Tx.Build (output, setMetadata, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),

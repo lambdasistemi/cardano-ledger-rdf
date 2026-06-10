@@ -12,7 +12,7 @@
 
 ## Slice S2 — inline ConwayTx, delete Cardano.Tx.Ledger
 
-- [ ] T086-S2 Move `ConwayTx` to `Cardano.Tx.Decode` (exported, with
+- [X] T086-S2 Move `ConwayTx` to `Cardano.Tx.Decode` (exported, with
   haddock); retarget every in-repo `import Cardano.Tx.Ledger` to
   `Cardano.Tx.Decode`; delete `src/Cardano/Tx/Ledger.hs` and its
   exposed-modules entry; full gate green; goldens byte-identical;

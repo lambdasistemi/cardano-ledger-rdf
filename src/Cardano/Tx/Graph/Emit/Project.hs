@@ -284,6 +284,7 @@ import Cardano.Tx.Blueprint (
     blueprintValidators,
     resolveBlueprintSchema,
  )
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit.Blueprint (
     BlueprintDecodeResult (..),
     blueprintFieldPredicate,
@@ -321,7 +322,6 @@ import Cardano.Tx.Graph.Rules.Load (
     EntityDecl (..),
     LeafType (..),
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 {- | Walk the @ConwayBodyValue tx@ projection and produce the
 body section list — transaction block, per-input + per-output

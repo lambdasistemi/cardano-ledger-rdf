@@ -68,7 +68,7 @@ import Cardano.Ledger.Api.Tx (witsTxL)
 import Cardano.Ledger.Api.Tx.Wits (rdmrsTxWitsL)
 import Lens.Micro ((^.))
 
-import Cardano.Tx.Decode (decodeConwayTxInput)
+import Cardano.Tx.Decode (ConwayTx, decodeConwayTxInput)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
@@ -76,7 +76,6 @@ import Cardano.Tx.Graph.Emit (
     renderEmitError,
     serialize,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Test.Hspec (
     Expectation,

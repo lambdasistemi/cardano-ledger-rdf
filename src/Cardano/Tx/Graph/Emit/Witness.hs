@@ -117,6 +117,7 @@ import Cardano.Ledger.Plutus.Language (
 import Cardano.Ledger.TxIn (TxIn)
 
 import Cardano.Tx.Blueprint (Blueprint)
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit.Blueprint (
     BlueprintDecodeResult (..),
     RdmrPurpose (..),
@@ -148,7 +149,6 @@ import Cardano.Tx.Graph.Emit.Triple (
  )
 import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
 import Cardano.Tx.Graph.Rules.Load (EntityDecl, LeafType (..))
-import Cardano.Tx.Ledger (ConwayTx)
 
 ----------------------------------------------------------------------
 -- Counts

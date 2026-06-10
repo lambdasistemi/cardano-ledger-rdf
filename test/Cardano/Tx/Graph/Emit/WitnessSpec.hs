@@ -55,13 +55,13 @@ import Cardano.Ledger.Shelley.Scripts (
     pattern RequireSignature,
  )
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
     emit,
     serialize,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 

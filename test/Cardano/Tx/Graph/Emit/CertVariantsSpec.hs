@@ -46,13 +46,13 @@ import Cardano.Ledger.Hashes (KeyHash (..))
 import Cardano.Ledger.Keys (KeyRole (..))
 import Data.Sequence.Strict qualified as StrictSeq
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
     emit,
     serialize,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 

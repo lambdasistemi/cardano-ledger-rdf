@@ -153,7 +153,7 @@ import Lens.Micro ((^.))
 import Data.Char (isHexDigit)
 import Network.HTTP.Client.TLS (newTlsManager)
 
-import Cardano.Tx.Decode (decodeConwayTxInput)
+import Cardano.Tx.Decode (ConwayTx, decodeConwayTxInput)
 import Cardano.Tx.Graph.Provider (
     CborProvider,
     ProviderConfig (..),
@@ -162,7 +162,6 @@ import Cardano.Tx.Graph.Provider (
     renderProviderError,
  )
 import Cardano.Tx.Graph.Resolve (Resolver (..), resolveChain)
-import Cardano.Tx.Ledger (ConwayTx)
 
 {- | Command-line options. Issue #59 consolidation: @--rules@,
 optional single positional CBOR / stdin, @--out@, and @--format@.

@@ -109,7 +109,7 @@ import Cardano.Tx.Build (
     spendScript,
     withdrawScript,
  )
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 -- | Story slug — kebab directory name under @test/fixtures/tx-graph/@.
 storyId :: StoryId

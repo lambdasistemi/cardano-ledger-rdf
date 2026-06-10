@@ -17,7 +17,7 @@ import Lens.Micro ((&), (.~))
 
 import Cardano.Ledger.Api.Tx (IsValid (..), isValidTxL)
 import Cardano.Tx.Build (output, spend)
-import Cardano.Tx.Ledger (ConwayTx)
+import Cardano.Tx.Decode (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     ExpectedShape (..),

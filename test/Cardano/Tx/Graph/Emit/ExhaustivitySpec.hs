@@ -12,7 +12,7 @@ outside literal pattern matches, e.g. a fail-loudly stub that compiles
 but raises 'PUnsupportedLeafType' at runtime.
 
 Per A-007 v3 corrected scope: the spec asserts coverage of the
-__full chain-visible surface__ of a 'Cardano.Tx.Ledger.ConwayTx',
+__full chain-visible surface__ of a 'Cardano.Tx.Decode.ConwayTx',
 not the body-only subset the earlier A-006 framing carved out.
 For each constructor in 'allConwayGraphFields' the spec ships
 a synthetic 'ConwayTx' that populates the field labelled by the
@@ -103,12 +103,12 @@ import Cardano.Ledger.Plutus.ExUnits (ExUnits (..))
 
 import Data.Sequence.Strict qualified as StrictSeq
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     ResolvedUTxO,
     emit,
     renderEmitError,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     stubMintEntry,

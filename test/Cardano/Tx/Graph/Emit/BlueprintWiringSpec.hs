@@ -88,6 +88,7 @@ import Cardano.Tx.Blueprint (
     BlueprintValidator (..),
  )
 import Cardano.Tx.Build (output)
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (Turtle),
     EmittedGraph (..),
@@ -101,7 +102,6 @@ import Cardano.Tx.Graph.Rules.Load (
     loadRulesFile,
     rulesEntities,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.Helpers (
     TxBuilder (..),

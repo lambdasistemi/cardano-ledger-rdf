@@ -55,6 +55,7 @@ import Cardano.Ledger.Hashes (KeyHash (..), unsafeMakeSafeHash)
 import Cardano.Ledger.Keys (KeyRole (..))
 import Cardano.Ledger.TxIn (TxId (..))
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
@@ -66,7 +67,6 @@ import Cardano.Tx.Graph.Rules.Load (
     EntityIdentifier (..),
     LeafType (..),
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Test.Hspec (Spec, describe, it, shouldSatisfy)
 

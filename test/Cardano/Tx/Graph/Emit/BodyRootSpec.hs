@@ -71,13 +71,13 @@ import Cardano.Ledger.Coin (Coin (..))
 import Cardano.Ledger.Conway (ConwayEra)
 import Cardano.Ledger.Hashes (HASH, TxAuxDataHash (..), unsafeMakeSafeHash)
 
+import Cardano.Tx.Decode (ConwayTx)
 import Cardano.Tx.Graph.Emit (
     EmitFormat (..),
     ResolvedUTxO,
     emit,
     serialize,
  )
-import Cardano.Tx.Ledger (ConwayTx)
 
 import Fixtures.TxGraph.S21_AuxiliaryData qualified as S21
 import Fixtures.TxGraph.S22_IsValidFalse qualified as S22
