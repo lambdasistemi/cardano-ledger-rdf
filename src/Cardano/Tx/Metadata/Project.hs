@@ -117,10 +117,11 @@ metadataProjections schemas graph fullText =
                     (objectFor "cardano:metadatumValue" entryBlock)
             rendered <- traverse (projectField graph rootSubj) (schemaFields schema)
             let linesOut =
-                    zipWith
-                        (renderProjection txSubj schema)
-                        (schemaFields schema)
-                        rendered
+                    concat $
+                        zipWith
+                            (renderProjection txSubj schema)
+                            (schemaFields schema)
+                            rendered
             if any (`Text.isInfixOf` fullText) (projectedPredicates schema)
                 then Right []
                 else Right linesOut
@@ -140,7 +141,7 @@ projectField ::
     TurtleGraph ->
     Text ->
     MetadataSchemaField ->
-    Either Text Text
+    Either Text [Text]
 projectField graph rootSubj MetadataSchemaField{fieldPath, fieldKind} = do
     terminal <- resolvePath graph rootSubj fieldPath
     terminalBlock <-
@@ -150,15 +151,102 @@ projectField graph rootSubj MetadataSchemaField{fieldPath, fieldKind} = do
             (Map.lookup terminal (tgBlocks graph))
     case fieldKind of
         FieldText ->
-            turtleString <$> requireLiteral "cardano:textValue" terminalBlock
+            singletonObject . turtleString
+                <$> requireLiteral "cardano:textValue" terminalBlock
         FieldInt ->
-            requireObject "cardano:intValue" terminalBlock
+            singletonObject <$> requireObject "cardano:intValue" terminalBlock
         FieldBytes ->
-            turtleString <$> requireLiteral "cardano:bytesHex" terminalBlock
+            singletonObject . turtleString
+                <$> requireLiteral "cardano:bytesHex" terminalBlock
         FieldJoinedText ->
-            Left "joinedText is not implemented in this slice"
+            singletonObject . turtleString
+                <$> joinedTextValue graph terminal terminalBlock
         FieldUriList ->
-            Left "uriList is not implemented in this slice"
+            uriListObjects graph terminal terminalBlock
+
+singletonObject :: Text -> [Text]
+singletonObject obj = [obj]
+
+joinedTextValue :: TurtleGraph -> Text -> Text -> Either Text Text
+joinedTextValue graph terminalSubj terminalBlock =
+    case literalFor "cardano:textValue" terminalBlock of
+        Just text -> Right text
+        Nothing -> do
+            elementValues <- listElementValues graph terminalSubj
+            chunks <- traverse (textNodeValue graph) elementValues
+            Right (Text.concat chunks)
+
+uriListObjects :: TurtleGraph -> Text -> Text -> Either Text [Text]
+uriListObjects graph terminalSubj terminalBlock =
+    case literalFor "cardano:textValue" terminalBlock of
+        Just uri -> Right [iriObject uri]
+        Nothing -> do
+            elementValues <- listElementValues graph terminalSubj
+            uris <- traverse (uriNodeValue graph) elementValues
+            Right (map iriObject uris)
+
+textNodeValue :: TurtleGraph -> Text -> Either Text Text
+textNodeValue graph subj = do
+    block <-
+        maybe
+            (Left ("missing text node " <> subj))
+            Right
+            (Map.lookup subj (tgBlocks graph))
+    requireLiteral "cardano:textValue" block
+
+uriNodeValue :: TurtleGraph -> Text -> Either Text Text
+uriNodeValue graph subj = do
+    block <-
+        maybe
+            (Left ("missing URI node " <> subj))
+            Right
+            (Map.lookup subj (tgBlocks graph))
+    case literalFor "cardano:textValue" block of
+        Just uri -> Right uri
+        Nothing -> do
+            uriSubj <- mapLookupText graph subj "uri"
+            textNodeValue graph uriSubj
+
+iriObject :: Text -> Text
+iriObject uri =
+    "<" <> uri <> ">"
+
+listElementValues :: TurtleGraph -> Text -> Either Text [Text]
+listElementValues graph listSubj = do
+    listBlock <-
+        maybe
+            (Left ("missing list node " <> listSubj))
+            Right
+            (Map.lookup listSubj (tgBlocks graph))
+    elements <-
+        traverse elementValue $
+            objectsFor "cardano:hasElement" listBlock
+    pure (map snd (List.sortOn fst elements))
+  where
+    elementValue elemSubj = do
+        elemBlock <-
+            maybe
+                (Left ("missing list element " <> elemSubj))
+                Right
+                (Map.lookup elemSubj (tgBlocks graph))
+        index <- elementIndex elemBlock
+        valueSubj <-
+            maybe
+                (Left ("missing list element value " <> elemSubj))
+                Right
+                (objectFor "cardano:metadatumValue" elemBlock)
+        pure (index, valueSubj)
+
+elementIndex :: Text -> Either Text Integer
+elementIndex block = do
+    raw <-
+        maybe
+            (Left "missing cardano:elementIndex")
+            Right
+            (objectFor "cardano:elementIndex" block)
+    case TextRead.decimal raw of
+        Right (n, rest) | Text.null rest -> Right n
+        _ -> Left ("invalid cardano:elementIndex " <> raw)
 
 resolvePath :: TurtleGraph -> Text -> [Text] -> Either Text Text
 resolvePath _graph current [] =
@@ -206,17 +294,20 @@ renderProjection ::
     Text ->
     MetadataSchema ->
     MetadataSchemaField ->
-    Text ->
-    Text
-renderProjection txSubj MetadataSchema{schemaPrefix} MetadataSchemaField{fieldPredicate} renderedObject =
-    txSubj
-        <> " "
-        <> schemaPrefix
-        <> ":"
-        <> fieldPredicate
-        <> " "
-        <> renderedObject
-        <> " ."
+    [Text] ->
+    [Text]
+renderProjection txSubj MetadataSchema{schemaPrefix} MetadataSchemaField{fieldPredicate} =
+    map
+        ( \renderedObject ->
+            txSubj
+                <> " "
+                <> schemaPrefix
+                <> ":"
+                <> fieldPredicate
+                <> " "
+                <> renderedObject
+                <> " ."
+        )
 
 projectedPredicates :: MetadataSchema -> [Text]
 projectedPredicates MetadataSchema{schemaPrefix, schemaFields} =

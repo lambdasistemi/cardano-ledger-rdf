@@ -38,6 +38,12 @@ spec =
             actual <- enrichMetadataTurtle schemas expected
             actual `shouldBe` expected
 
+        it "joins chunked text and preserves the generic list tree" $
+            assertGolden
+                "schemas-us2"
+                "us2-faithful.input.ttl"
+                "us2-faithful.ttl"
+
 assertGolden :: FilePath -> FilePath -> FilePath -> IO ()
 assertGolden schemaSubdir inputName expectedName = do
     schemas <- loadSchemas schemaSubdir
