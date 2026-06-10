@@ -76,6 +76,24 @@ consumer that depends on this repository when backed by `cq-rdf body`
 output. This repository's boundary is graph/RDF: the engine, the
 vocabulary, and the asset slots an application parametrizes.
 
+### Relationship to cardano-tx-tools
+
+The dependency graph between the two repositories is acyclic by
+construction, and each direction crosses a deliberate boundary:
+
+- **`cardano-tx-tools` → `cardano-ledger-rdf`, at the CLI boundary
+  only.** `cardano-tx-tools` consumes this repository by piping over
+  `cq-rdf body` output; it never links the `cardano-ledger-rdf`
+  library. The RDF surface stays a process boundary, not a Haskell
+  dependency.
+- **`cardano-ledger-rdf` → `cardano-tx-tools:tx-build`, as a
+  test-suite-only dependency.** The transaction builder has a single
+  source of truth — the public `tx-build` sub-library in
+  `cardano-tx-tools` — which this repository's fixture generators link
+  to construct the sample transactions behind the golden graphs. The
+  library and the `cq-rdf` / `tx-view` executables gain nothing from it:
+  the emitter walks ledger-native types directly.
+
 `tx-graph --rules X` is deprecated for one release. Use
 `cq-rdf overlay --in X` for the operator overlay and concatenate that
 with one or more `cq-rdf body ...` outputs. See

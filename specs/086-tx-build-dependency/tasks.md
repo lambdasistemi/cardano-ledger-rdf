@@ -4,7 +4,7 @@
 
 ## Slice S1 — README integration-policy paragraph
 
-- [ ] T086-S1 Add the "Relationship to cardano-tx-tools" policy to
+- [X] T086-S1 Add the "Relationship to cardano-tx-tools" policy to
   README.md (single source of truth = tx-build, test-suite-only dep
   here; cardano-tx-tools consumes cq-rdf at the CLI boundary, never by
   linking this library); gate green; commit
