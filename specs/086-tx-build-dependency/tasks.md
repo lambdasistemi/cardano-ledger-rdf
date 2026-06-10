@@ -20,7 +20,7 @@
 
 ## Slice S3 — pin tx-build, atomic swap + deletion (BLOCKED by cardano-tx-tools#127)
 
-- [ ] T086-S3 Pin cardano-tx-tools at the post-#127 SHA
+- [X] T086-S3 Pin cardano-tx-tools at the post-#127 SHA
   (`source-repository-package` + nix32 `--sha256:` comment, plus
   `-build-node-tools` flag stanza if the solver needs it); add
   `cardano-tx-tools:tx-build` to test-suite build-depends; delete

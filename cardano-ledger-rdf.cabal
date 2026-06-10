@@ -75,11 +75,8 @@ library
   hs-source-dirs:   src
   default-language: GHC2021
   exposed-modules:
-    Cardano.Tx.Balance
     Cardano.Tx.Blueprint
-    Cardano.Tx.Build
     Cardano.Tx.Decode
-    Cardano.Tx.Evaluate
     Cardano.Tx.Graph.Emit
     Cardano.Tx.Graph.Emit.Blueprint
     Cardano.Tx.Graph.Emit.Project
@@ -91,8 +88,6 @@ library
     Cardano.Tx.View
 
   other-modules:
-    Cardano.Tx.Credentials
-    Cardano.Tx.Deposits
     Cardano.Tx.Graph.Emit.Certificate
     Cardano.Tx.Graph.Emit.GovAction
     Cardano.Tx.Graph.Emit.Lookup
@@ -112,14 +107,11 @@ library
     Cardano.Tx.Graph.Rules.Load.Parse.Yaml
     Cardano.Tx.Graph.Rules.Load.Resolve.Imports
     Cardano.Tx.Graph.Rules.Load.Types
-    Cardano.Tx.Inputs
-    Cardano.Tx.Scripts
     Cardano.Tx.View.AssetFlow
     Cardano.Tx.View.CliTree
     Cardano.Tx.View.EntityOccurrences
     Cardano.Tx.View.JsonLd
     Cardano.Tx.View.Turtle
-    Cardano.Tx.Witnesses
 
   build-depends:
     , aeson                      >=2.2  && <2.3
@@ -218,8 +210,6 @@ test-suite unit-tests
   default-language:   GHC2021
   other-modules:
     Cardano.Tx.BlueprintSpec
-    Cardano.Tx.Build.MinUtxoSpec
-    Cardano.Tx.BuildSpec
     Cardano.Tx.Doc.ExamplesSpec
     Cardano.Tx.Graph.CqRdfExeSpec
     Cardano.Tx.Graph.Emit.BlockfrostSampleSmokeSpec
@@ -334,6 +324,7 @@ test-suite unit-tests
     , cardano-ledger-shelley     >=1.18 && <3
     , cardano-slotting           >=0.2  && <0.4
     , cardano-strict-containers  >=0.1  && <0.3
+    , cardano-tx-tools:tx-build
     , containers                 >=0.7  && <0.8
     , data-default               >=0.8  && <0.9
     , directory                  >=1.3  && <1.4

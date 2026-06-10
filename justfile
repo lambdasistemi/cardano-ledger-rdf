@@ -15,13 +15,13 @@ unit match="":
     #!/usr/bin/env bash
     set -euo pipefail
     cabal build exe:cq-rdf -O0 >/dev/null
-    cabal build exe:tx-view -O0 >/dev/null
+    cabal build cardano-ledger-rdf:exe:tx-view -O0 >/dev/null
     cq_rdf="$(cabal list-bin exe:cq-rdf -O0)"
     tx_graph_link="$(mktemp -d)/tx-graph"
     ln -s "$cq_rdf" "$tx_graph_link"
     export CQ_RDF_EXE="$cq_rdf"
     export TX_GRAPH_EXE="$tx_graph_link"
-    export TX_VIEW_EXE="$(cabal list-bin exe:tx-view -O0)"
+    export TX_VIEW_EXE="$(cabal list-bin cardano-ledger-rdf:exe:tx-view -O0)"
     if [[ '{{ match }}' == "" ]]; then
         cabal test cardano-ledger-rdf:unit-tests -O0 --test-show-details=direct
     else
@@ -40,8 +40,8 @@ smoke-graph:
 smoke-view:
     #!/usr/bin/env bash
     set -euo pipefail
-    cabal build exe:tx-view -O0 >/dev/null
-    "$(cabal list-bin exe:tx-view -O0)" --help >/dev/null
+    cabal build cardano-ledger-rdf:exe:tx-view -O0 >/dev/null
+    "$(cabal list-bin cardano-ledger-rdf:exe:tx-view -O0)" --help >/dev/null
 
 vocab-validate:
     python3 scripts/validate-ttl.py

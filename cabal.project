@@ -49,3 +49,12 @@ package ouroboros-network
 
 package cardano-ledger-rdf
   flags: +werror
+
+source-repository-package
+  type: git
+  location: https://github.com/lambdasistemi/cardano-tx-tools.git
+  tag: f5bed571f5c783ce3ed2efc797b814f14f22bf9f
+  --sha256: 0ynidivb59484rz67qmp018alb26gslwxmwhgm51wm38nn8avfcw
+
+package cardano-tx-tools
+  flags: -build-node-tools
