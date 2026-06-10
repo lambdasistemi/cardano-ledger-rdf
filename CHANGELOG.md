@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## [0.4.0.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.3.0.0...v0.4.0.0) (2026-06-10)
+
+This release completes the builder-ownership inversion ([#86](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/86)): the transaction-builder DSL now has a single home in `cardano-tx-tools:tx-build`, and this library's public API is purely RDF.
+
+### Breaking Changes
+
+* **Builder modules removed from the public API**: `Cardano.Tx.Build`, `Cardano.Tx.Balance`, `Cardano.Tx.Evaluate`, `Cardano.Tx.Witnesses`, `Cardano.Tx.Deposits`, `Cardano.Tx.Scripts`, `Cardano.Tx.Credentials`, and `Cardano.Tx.Inputs` are deleted ([#88](https://github.com/lambdasistemi/cardano-ledger-rdf/pull/88)). Downstream consumers should depend on the `cardano-tx-tools:tx-build` public sub-library, which exposes the same modules as the canonical copy.
+* **`Cardano.Tx.Ledger` removed**: the `ConwayTx` type alias now lives in `Cardano.Tx.Decode`; import it from there.
+* **Integration policy**: `cardano-tx-tools` consumes `cq-rdf` output at the CLI boundary (pipes); it never links this library. Recorded in both READMEs to keep the cross-repo dependency graph acyclic.
+
+### Features
+
+* **release:** use shared linux artifacts ([65c74a5](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/65c74a5047396c3ab505b3b614a754d59ae295e9))
+* **emit:** decode transaction metadata into generic cardano: RDF ([e115fc7](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/e115fc78a14236aa786f569d93749d26a20bd745))
+
+### Bug Fixes
+
+* **emit:** trace vocab against the owned ontology, drop kmaps-pin allowlist ([27b68fc](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/27b68fc0f8eda2f8b2f66db7728781888e60bbea))
+* **checks:** drop deleted builder modules from haddock coverage ([72d2685](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/72d2685ee4ca1dd327ae370d038be86c40e1bb98))
+
 ## [0.3.0.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.2.5.0...v0.3.0.0) (2026-05-30)
 
 This release lands epic [#66](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/66) — the runtime/app separation. The on-disk shape every operator depends on changes; see Breaking Changes.
