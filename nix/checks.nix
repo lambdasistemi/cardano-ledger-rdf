@@ -123,15 +123,10 @@ let
       # page, and (c) a small set of high-value doc strings written by
       # issue #76 has survived in the rendered output.
       #
-      # The upstream re-export gaps in Cardano.Tx.Build (ConwayEra,
-      # AccountId, Anchor, ConwayGovCert, ConwayTxCert, DRep,
-      # GovActionId, GovActionIx, ProposalProcedure, ScriptHash,
-      # StrictMaybe, Vote, Voter, VotingProcedure, VotingProcedures)
-      # cannot be closed locally — their home declarations live in
-      # `cardano-ledger-*` and ship no Haddock string. The
-      # `$conwayLedgerTypes` documentation chunk above the section
-      # provides the navigational text; it is asserted below so a
-      # silent removal of that chunk fails the gate.
+      # The transaction-builder modules (Cardano.Tx.Build and friends)
+      # no longer live here — issue #86 deleted the local copy in favour
+      # of cardano-tx-tools:tx-build — so they are absent from both the
+      # expected-page list and the doc-string guards below.
       text = ''
         set -euo pipefail
 
@@ -142,11 +137,8 @@ let
         fi
 
         expected_modules=(
-          Cardano-Tx-Balance
           Cardano-Tx-Blueprint
-          Cardano-Tx-Build
           Cardano-Tx-Decode
-          Cardano-Tx-Evaluate
           Cardano-Tx-Graph-Emit
           Cardano-Tx-Graph-Emit-Blueprint
           Cardano-Tx-Graph-Emit-Project
@@ -155,7 +147,6 @@ let
           Cardano-Tx-Graph-Resolve-Web2
           Cardano-Tx-Graph-Rules-Load
           Cardano-Tx-Graph-Rules-Load-Imports
-          Cardano-Tx-Ledger
           Cardano-Tx-View
         )
         for m in "''${expected_modules[@]}"; do
@@ -172,8 +163,6 @@ let
         declare -a guards=(
           "Cardano-Tx-Blueprint.html:A CIP-0057 Plutus blueprint as parsed from JSON"
           "Cardano-Tx-Blueprint.html:Open, schema-driven projection of a"
-          "Cardano-Tx-Build.html:Re-exports of"
-          "Cardano-Tx-Build.html:phantom era tag for Conway-era"
           "Cardano-Tx-Decode.html:Decode a bech32-encoded Cardano address"
           "Cardano-Tx-Decode.html:02-alice-bob-ada"
           "Cardano-Tx-Graph-Emit.html:body emitter introduced by"
