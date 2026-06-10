@@ -44,19 +44,45 @@ spec =
                 "us2-faithful.input.ttl"
                 "us2-faithful.ttl"
 
+        it "projects the worked treasury label-1694 schema" $
+            assertGoldenFrom
+                treasurySchemaDir
+                "contingency-1694.input.ttl"
+                "contingency-1694.ttl"
+
+        it "emits a schema error instead of partial typed fields" $
+            assertGoldenFrom
+                treasurySchemaDir
+                "missing-event.input.ttl"
+                "missing-event.ttl"
+
 assertGolden :: FilePath -> FilePath -> FilePath -> IO ()
 assertGolden schemaSubdir inputName expectedName = do
-    schemas <- loadSchemas schemaSubdir
+    assertGoldenFrom
+        ("test/fixtures/metadata-typed" </> schemaSubdir)
+        inputName
+        expectedName
+
+assertGoldenFrom :: FilePath -> FilePath -> FilePath -> IO ()
+assertGoldenFrom schemaDir inputName expectedName = do
+    schemas <- loadSchemasFrom schemaDir
     input <- readFixture inputName
     expected <- readFixture expectedName
     actual <- enrichMetadataTurtle schemas input
     actual `shouldBe` expected
 
+treasurySchemaDir :: FilePath
+treasurySchemaDir =
+    "docs/case-studies/2026-05-amaru-treasury/schemas"
+
 loadSchemas :: FilePath -> IO [MetadataSchema]
-loadSchemas subdir = do
+loadSchemas subdir =
+    loadSchemasFrom ("test/fixtures/metadata-typed" </> subdir)
+
+loadSchemasFrom :: FilePath -> IO [MetadataSchema]
+loadSchemasFrom schemaDir = do
     result <-
-        loadMetadataSchemaDirectory
-            ("test/fixtures/metadata-typed" </> subdir)
+        loadMetadataSchemaDirectory schemaDir
     case result of
         Right schemas -> pure schemas
         Left err -> do

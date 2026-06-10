@@ -1,0 +1,25 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+
+<urn:cardano:tx:missing-event> a cardano:Transaction ;
+  cardano:hasAuxiliaryData _:missing_auxiliaryData1 .
+
+_:missing_auxiliaryData1 a cardano:AuxiliaryData ;
+  cardano:hasMetadatum _:missing_auxiliaryData1_md1694 .
+
+_:missing_auxiliaryData1_md1694 cardano:metadataLabel 1694 ;
+  cardano:metadatumValue _:missing_auxiliaryData1_md1694_v .
+
+_:missing_auxiliaryData1_md1694_v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:missing_auxiliaryData1_md1694_v_e0 .
+
+_:missing_auxiliaryData1_md1694_v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:missing_auxiliaryData1_md1694_v_e0k ;
+  cardano:metaValue _:missing_auxiliaryData1_md1694_v_e0v .
+
+_:missing_auxiliaryData1_md1694_v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "body" .
+
+_:missing_auxiliaryData1_md1694_v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaMap .

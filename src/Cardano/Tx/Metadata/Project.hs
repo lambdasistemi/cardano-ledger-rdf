@@ -109,26 +109,26 @@ metadataProjections schemas graph fullText =
         [schema | schema <- schemas, schemaLabel schema == label]
 
     schemaLines txSubj entryBlock schema =
-        fromMaybeLines $ do
-            rootSubj <-
-                maybe
-                    (Left "missing cardano:metadatumValue")
-                    Right
-                    (objectFor "cardano:metadatumValue" entryBlock)
-            rendered <- traverse (projectField graph rootSubj) (schemaFields schema)
-            let linesOut =
-                    concat $
-                        zipWith
-                            (renderProjection txSubj schema)
-                            (schemaFields schema)
-                            rendered
-            if any (`Text.isInfixOf` fullText) (projectedPredicates schema)
-                then Right []
-                else Right linesOut
+        if any (`Text.isInfixOf` fullText) (projectedPredicates schema)
+            then []
+            else
+                case projectSchema txSubj entryBlock schema of
+                    Right linesOut -> linesOut
+                    Left err -> [schemaErrorLine txSubj schema err]
 
-    fromMaybeLines = \case
-        Right linesOut -> linesOut
-        Left _err -> []
+    projectSchema txSubj entryBlock schema = do
+        rootSubj <-
+            maybe
+                (Left "missing cardano:metadatumValue")
+                Right
+                (objectFor "cardano:metadatumValue" entryBlock)
+        rendered <- traverse (projectField graph rootSubj) (schemaFields schema)
+        pure $
+            concat $
+                zipWith
+                    (renderProjection txSubj schema)
+                    (schemaFields schema)
+                    rendered
 
 metadataLabel :: Text -> Maybe Word64
 metadataLabel block = do
@@ -249,11 +249,16 @@ elementIndex block = do
         _ -> Left ("invalid cardano:elementIndex " <> raw)
 
 resolvePath :: TurtleGraph -> Text -> [Text] -> Either Text Text
-resolvePath _graph current [] =
-    Right current
-resolvePath graph current (key : rest) = do
-    next <- mapLookupText graph current key
-    resolvePath graph next rest
+resolvePath graph rootSubj =
+    go [] rootSubj
+  where
+    go _seen current [] =
+        Right current
+    go seen current (key : rest) =
+        case mapLookupText graph current key of
+            Right next -> go (seen <> [key]) next rest
+            Left _err ->
+                Left ("missing key " <> Text.intercalate "/" (seen <> [key]))
 
 mapLookupText :: TurtleGraph -> Text -> Text -> Either Text Text
 mapLookupText graph mapSubj key = do
@@ -311,9 +316,24 @@ renderProjection txSubj MetadataSchema{schemaPrefix} MetadataSchemaField{fieldPr
 
 projectedPredicates :: MetadataSchema -> [Text]
 projectedPredicates MetadataSchema{schemaPrefix, schemaFields} =
-    [ schemaPrefix <> ":" <> fieldPredicate
+    (schemaPrefix <> ":schemaError")
+        : [ schemaPrefix <> ":" <> fieldPredicate
     | MetadataSchemaField{fieldPredicate} <- schemaFields
-    ]
+          ]
+
+schemaErrorLine :: Text -> MetadataSchema -> Text -> Text
+schemaErrorLine txSubj MetadataSchema{schemaLabel, schemaPrefix} err =
+    txSubj
+        <> " "
+        <> schemaPrefix
+        <> ":schemaError "
+        <> turtleString
+            ( "label "
+                <> Text.pack (show schemaLabel)
+                <> ": "
+                <> err
+            )
+        <> " ."
 
 prefixDirectives :: [(MetadataSchema, [Text])] -> [Text]
 prefixDirectives projections =
