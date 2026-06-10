@@ -65,6 +65,19 @@ import Cardano.Tx.Graph.Rules.Load (
     renderRulesLoadWarning,
     rulesEntities,
  )
+import Cardano.Tx.Metadata.Project (
+    TurtleGraph (..),
+    enrichMetadataTurtle,
+    ensureTrailingNewline,
+    literalFor,
+    objectFor,
+    parseCanonicalTurtle,
+    turtleString,
+ )
+import Cardano.Tx.Metadata.Schema (
+    loadMetadataSchemaDirectory,
+    renderMetadataSchemaParseError,
+ )
 
 import Cardano.Ledger.Hashes (ScriptHash (..), extractHash, hashAnnotated)
 import Data.Text (Text)
@@ -79,7 +92,7 @@ import Data.Aeson.KeyMap qualified as KeyMap
 import Data.ByteString qualified as BS
 import Data.ByteString.Char8 qualified as BS8
 import Data.ByteString.Lazy qualified as LBS
-import Data.Foldable (asum, toList)
+import Data.Foldable (toList)
 import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
@@ -191,6 +204,7 @@ data Command
     = CmdOverlay !OverlayOptions
     | CmdBody !BodyOptions
     | CmdBlueprint !BlueprintOptions
+    | CmdMetadata !MetadataOptions
     | CmdShacl !ShaclOptions
 
 data OverlayOptions = OverlayOptions
@@ -210,6 +224,10 @@ data BodyOptions = BodyOptions
 
 newtype BlueprintOptions = BlueprintOptions
     { blueprintDir :: FilePath
+    }
+
+newtype MetadataOptions = MetadataOptions
+    { metadataSchemas :: FilePath
     }
 
 data ShaclSeverity
@@ -261,6 +279,14 @@ commandParser =
                     )
                 )
             <> command
+                "metadata"
+                ( info
+                    (CmdMetadata <$> metadataOptionsParser <**> helper)
+                    ( progDesc
+                        "Read Turtle on stdin and append schema-typed metadata triples."
+                    )
+                )
+            <> command
                 "shacl"
                 ( info
                     (CmdShacl <$> shaclOptionsParser <**> helper)
@@ -279,7 +305,8 @@ commandInfo =
             <> progDesc
                 ( "Pure subcommands: overlay (YAML/Turtle to overlay TTL), "
                     <> "body (txid/CBOR to body TTL), blueprint (TTL to typed "
-                    <> "TTL), and shacl (TTL to validation report)."
+                    <> "datum TTL), metadata (TTL to typed metadata TTL), "
+                    <> "and shacl (TTL to validation report)."
                 )
         )
 
@@ -375,6 +402,15 @@ blueprintOptionsParser =
             ( long "blueprints"
                 <> metavar "DIR"
                 <> help "Directory containing *.cip57.json blueprint files."
+            )
+
+metadataOptionsParser :: Parser MetadataOptions
+metadataOptionsParser =
+    MetadataOptions
+        <$> strOption
+            ( long "schemas"
+                <> metavar "DIR"
+                <> help "Directory containing *.schema.json metadata schema files."
             )
 
 shaclOptionsParser :: Parser ShaclOptions
@@ -561,6 +597,7 @@ dispatchCommand = \case
     CmdOverlay opts -> overlayCommand opts
     CmdBody opts -> bodyCommand opts
     CmdBlueprint opts -> blueprintCommand opts
+    CmdMetadata opts -> metadataCommand opts
     CmdShacl opts -> shaclCommand opts
 
 {- | Dispatch on input presence. Overlay-only when @--rules@ is the
@@ -908,6 +945,18 @@ blueprintCommand BlueprintOptions{blueprintDir} = do
     enriched <- enrichBlueprintTurtle index ttl
     BS.hPut stdout enriched
 
+metadataCommand :: MetadataOptions -> IO ()
+metadataCommand MetadataOptions{metadataSchemas} = do
+    ttl <- BS.hGetContents stdin
+    loadedSchemas <- loadMetadataSchemaDirectory metadataSchemas
+    schemas <- case loadedSchemas of
+        Right loaded -> pure loaded
+        Left err -> do
+            hPutStrLn stderr (renderMetadataSchemaParseError err)
+            exitWith (ExitFailure 1)
+    enriched <- enrichMetadataTurtle schemas ttl
+    BS.hPut stdout enriched
+
 loadBlueprintDirectory :: FilePath -> IO BlueprintRegistry
 loadBlueprintDirectory dir = do
     exists <- doesDirectoryExist dir
@@ -991,41 +1040,6 @@ enrichBlueprintTurtle index ttlBytes = do
                                 <> decorations
                         )
 
-newtype TurtleGraph = TurtleGraph
-    { tgBlocks :: Map Text Text
-    }
-
-parseCanonicalTurtle :: Text -> TurtleGraph
-parseCanonicalTurtle =
-    TurtleGraph . Map.fromList . mapMaybe parseBlock . splitStatements
-
-splitStatements :: Text -> [Text]
-splitStatements = go [] [] . Text.lines
-  where
-    go acc current [] =
-        reverse (finish current acc)
-    go acc current (line : rest)
-        | skipLine line && null current = go acc [] rest
-        | statementEnd line =
-            go (Text.unlines (reverse (line : current)) : acc) [] rest
-        | otherwise = go acc (line : current) rest
-    finish [] acc = acc
-    finish current acc = Text.unlines (reverse current) : acc
-    skipLine line =
-        let t = Text.strip line
-         in Text.null t || "#" `Text.isPrefixOf` t || "@prefix" `Text.isPrefixOf` t
-    statementEnd line = "." `Text.isSuffixOf` Text.strip line
-
-parseBlock :: Text -> Maybe (Text, Text)
-parseBlock block = do
-    firstLine <- List.find (not . Text.null . Text.strip) (Text.lines block)
-    subject <- listToMaybeText (Text.words firstLine)
-    pure (subject, block)
-
-listToMaybeText :: [Text] -> Maybe Text
-listToMaybeText [] = Nothing
-listToMaybeText (x : _) = Just x
-
 blueprintDecorations ::
     BlueprintRegistry ->
     TurtleGraph ->
@@ -1106,36 +1120,6 @@ scriptHashFromIdentifier ident =
             then scriptHashFromHex (Text.dropEnd 1 (Text.drop (Text.length prefix) ident))
             else Nothing
 
-objectFor :: Text -> Text -> Maybe Text
-objectFor predName block =
-    asum (map objectFromLine (Text.lines block))
-  where
-    objectFromLine line = do
-        rest <- Text.stripPrefix predName (Text.strip (dropSubject line))
-        pure (stripObject rest)
-    dropSubject line =
-        let stripped = Text.strip line
-         in case Text.words stripped of
-                _subject : pred0 : more
-                    | pred0 == predName -> Text.unwords (pred0 : more)
-                _ -> stripped
-    stripObject =
-        Text.strip
-            . Text.dropWhileEnd (`elem` [';', '.'])
-            . Text.strip
-
-literalFor :: Text -> Text -> Maybe Text
-literalFor predName block = do
-    obj <- objectFor predName block
-    quotedText obj
-
-quotedText :: Text -> Maybe Text
-quotedText t =
-    case Text.uncons (Text.strip t) of
-        Just ('"', rest) ->
-            Just (Text.takeWhile (/= '"') rest)
-        _ -> Nothing
-
 decodeDatumBytes :: BS.ByteString -> Maybe (Data ConwayEra)
 decodeDatumBytes raw =
     either (const Nothing) Just $
@@ -1208,22 +1192,6 @@ blueprintPredicate ctor fieldName = ":" <> ctor <> "_" <> fieldName
 bnodeBase :: Text -> Text
 bnodeBase subject =
     fromMaybe subject (Text.stripPrefix "_:" subject)
-
-turtleString :: Text -> Text
-turtleString t =
-    "\"" <> Text.concatMap escapeChar t <> "\""
-  where
-    escapeChar = \case
-        '"' -> "\\\""
-        '\\' -> "\\\\"
-        '\n' -> "\\n"
-        c -> Text.singleton c
-
-ensureTrailingNewline :: BS.ByteString -> BS.ByteString
-ensureTrailingNewline bs
-    | BS.null bs = BS.empty
-    | BS.last bs == 0x0A = BS.empty
-    | otherwise = "\n"
 
 ----------------------------------------------------------------------
 -- cq-rdf shacl

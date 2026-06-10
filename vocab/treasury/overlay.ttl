@@ -46,3 +46,45 @@ treasury:role a rdf:Property ;
   rdfs:comment "Records an operator-authored free-text role for an entity in a treasury/accountability overlay." ;
   rdfs:domain cardano:Entity ;
   rdfs:range xsd:string .
+
+treasury:event a rdf:Property ;
+  rdfs:label "event" ;
+  rdfs:comment "Typed transaction metadata event projected from an operator-supplied metadata schema." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range xsd:string .
+
+treasury:label a rdf:Property ;
+  rdfs:label "label" ;
+  rdfs:comment "Human-readable typed metadata label projected from an operator-supplied metadata schema; distinct from cardano:metadataLabel." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range xsd:string .
+
+treasury:justification a rdf:Property ;
+  rdfs:label "justification" ;
+  rdfs:comment "Joined free-text justification projected from chunked transaction metadata by a metadata schema." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range xsd:string .
+
+treasury:references a rdf:Property ;
+  rdfs:label "references" ;
+  rdfs:comment "External reference URI projected from transaction metadata by a metadata schema." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range rdfs:Resource .
+
+treasury:registryInstance a rdf:Property ;
+  rdfs:label "registryInstance" ;
+  rdfs:comment "Registry-script hash projected verbatim from transaction metadata for scope hygiene checks." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range xsd:string .
+
+treasury:destination a rdf:Property ;
+  rdfs:label "destination" ;
+  rdfs:comment "Typed transaction metadata destination projected from an operator-supplied metadata schema." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range xsd:string .
+
+treasury:schemaError a rdf:Property ;
+  rdfs:label "schemaError" ;
+  rdfs:comment "Schema-level decode error emitted when a metadata tree does not match the operator-supplied schema." ;
+  rdfs:domain cardano:Transaction ;
+  rdfs:range xsd:string .

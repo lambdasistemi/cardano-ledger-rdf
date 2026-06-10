@@ -89,6 +89,8 @@ library
     Cardano.Tx.Graph.Rules.Load
     Cardano.Tx.Graph.Rules.Load.Imports
     Cardano.Tx.Ledger
+    Cardano.Tx.Metadata.Project
+    Cardano.Tx.Metadata.Schema
     Cardano.Tx.View
 
   other-modules:
