@@ -1,0 +1,14 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+
+<urn:cardano:tx:no-schema> a cardano:Transaction ;
+  cardano:hasAuxiliaryData _:noschema_auxiliaryData1 .
+
+_:noschema_auxiliaryData1 a cardano:AuxiliaryData ;
+  cardano:hasMetadatum _:noschema_auxiliaryData1_md999 .
+
+_:noschema_auxiliaryData1_md999 cardano:metadataLabel 999 ;
+  cardano:metadatumValue _:noschema_auxiliaryData1_md999_v .
+
+_:noschema_auxiliaryData1_md999_v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "left generic" .

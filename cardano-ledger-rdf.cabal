@@ -89,6 +89,8 @@ library
     Cardano.Tx.Graph.Rules.Load
     Cardano.Tx.Graph.Rules.Load.Imports
     Cardano.Tx.Ledger
+    Cardano.Tx.Metadata.Project
+    Cardano.Tx.Metadata.Schema
     Cardano.Tx.View
 
   other-modules:
@@ -271,6 +273,7 @@ test-suite unit-tests
     Cardano.Tx.Graph.Rules.LoadYamlSpec
     Cardano.Tx.Graph.ShapesAmaruMay2026Spec
     Cardano.Tx.Graph.TxGraphExeSpec
+    Cardano.Tx.Metadata.ProjectSpec
     Cardano.Tx.View.AssetFlowSpec
     Cardano.Tx.View.CliTreeEntitySpec
     Cardano.Tx.View.CliTreeGoldenSpec

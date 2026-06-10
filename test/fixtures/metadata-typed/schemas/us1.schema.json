@@ -1,0 +1,27 @@
+{
+  "label": 1694,
+  "prefix": "meta",
+  "namespace": "https://example.test/meta#",
+  "fields": [
+    {
+      "predicate": "event",
+      "path": ["body", "event"],
+      "kind": "text"
+    },
+    {
+      "predicate": "count",
+      "path": ["body", "count"],
+      "kind": "int"
+    },
+    {
+      "predicate": "blob",
+      "path": ["body", "blob"],
+      "kind": "bytes"
+    },
+    {
+      "predicate": "registryInstance",
+      "path": ["instance"],
+      "kind": "text"
+    }
+  ]
+}

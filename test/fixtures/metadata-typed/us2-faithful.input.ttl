@@ -1,0 +1,118 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+
+<urn:cardano:tx:us2> a cardano:Transaction ;
+  cardano:hasAuxiliaryData _:us2_auxiliaryData1 .
+
+_:us2_auxiliaryData1 a cardano:AuxiliaryData ;
+  cardano:hasMetadatum _:us2_auxiliaryData1_md1694 .
+
+_:us2_auxiliaryData1_md1694 cardano:metadataLabel 1694 ;
+  cardano:metadatumValue _:us2_auxiliaryData1_md1694_v .
+
+_:us2_auxiliaryData1_md1694_v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:us2_auxiliaryData1_md1694_v_e0 .
+
+_:us2_auxiliaryData1_md1694_v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:us2_auxiliaryData1_md1694_v_e0k ;
+  cardano:metaValue _:us2_auxiliaryData1_md1694_v_e0v .
+
+_:us2_auxiliaryData1_md1694_v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "body" .
+
+_:us2_auxiliaryData1_md1694_v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:us2_auxiliaryData1_md1694_v_e0v_e0 ;
+  cardano:hasEntry _:us2_auxiliaryData1_md1694_v_e0v_e1 .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:us2_auxiliaryData1_md1694_v_e0v_e0k ;
+  cardano:metaValue _:us2_auxiliaryData1_md1694_v_e0v_e0v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "justification" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaList ;
+  cardano:hasElement _:us2_auxiliaryData1_md1694_v_e0v_e0v_l0 ;
+  cardano:hasElement _:us2_auxiliaryData1_md1694_v_e0v_e0v_l1 .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0v_l0 cardano:elementIndex 0 ;
+  cardano:metadatumValue _:us2_auxiliaryData1_md1694_v_e0v_e0v_l0v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0v_l0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "chunk-one " .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0v_l1 cardano:elementIndex 1 ;
+  cardano:metadatumValue _:us2_auxiliaryData1_md1694_v_e0v_e0v_l1v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e0v_l1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "chunk-two" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:us2_auxiliaryData1_md1694_v_e0v_e1k ;
+  cardano:metaValue _:us2_auxiliaryData1_md1694_v_e0v_e1v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "references" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaList ;
+  cardano:hasElement _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0 ;
+  cardano:hasElement _:us2_auxiliaryData1_md1694_v_e0v_e1v_l1 .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0 cardano:elementIndex 0 ;
+  cardano:metadatumValue _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e0 ;
+  cardano:hasEntry _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e1 .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e0k ;
+  cardano:metaValue _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e0v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "label" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "one" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e1 cardano:entryIndex 1 ;
+  cardano:metaKey _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e1k ;
+  cardano:metaValue _:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e1v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e1k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "uri" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l0v_e1v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "ipfs://bafy-one" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l1 cardano:elementIndex 1 ;
+  cardano:metadatumValue _:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v a cardano:MetadatumValue ;
+  a cardano:MetaMap ;
+  cardano:hasEntry _:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v_e0 .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v_e0 cardano:entryIndex 0 ;
+  cardano:metaKey _:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v_e0k ;
+  cardano:metaValue _:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v_e0v .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v_e0k a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "uri" .
+
+_:us2_auxiliaryData1_md1694_v_e0v_e1v_l1v_e0v a cardano:MetadatumValue ;
+  a cardano:MetaText ;
+  cardano:textValue "https://example.test/two" .

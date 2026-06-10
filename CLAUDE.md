@@ -30,6 +30,8 @@ Networked fetchers or hosted services may add a first-run skill later.
 ## Active Technologies
 - Haskell, GHC 9.12.3 (`haskell.nix`, `ghc9123`) + `cardano-ledger-core` (`TxAuxData ConwayEra`), `Cardano.Ledger.Metadata` (`Metadatum(..)`), the in-repo Emit DSL (`Cardano.Tx.Graph.Emit.*`: `Triple`/`Subject`/`Object`/`tellTriple`/`vocabCurie`/`BnodeName`), `bytestring`, `text` (062-tx-metadata-decode)
 - N/A — pure emission over the already-decoded `TxAuxData` value (062-tx-metadata-decode)
+- Haskell, GHC 9.12.3 (`haskell.nix`, `ghc9123`) + the in-repo custom Turtle pass in `app/tx-graph/Main.hs` (`parseCanonicalTurtle`, `TurtleGraph`, `objectFor`/`literalFor`, the enrich-append pattern from `enrichBlueprintTurtle`); `aeson` (schema JSON, like `*.cip57.json` blueprints); `text`, `bytestring`. Reads the `cardano:` metadatum tree from 062. (063-typed-metadata-schemas)
+- N/A — pure stdin-Turtle → stdout-Turtle transform over local schema files (063-typed-metadata-schemas)
 
 ## Recent Changes
 - 062-tx-metadata-decode: Added Haskell, GHC 9.12.3 (`haskell.nix`, `ghc9123`) + `cardano-ledger-core` (`TxAuxData ConwayEra`), `Cardano.Ledger.Metadata` (`Metadatum(..)`), the in-repo Emit DSL (`Cardano.Tx.Graph.Emit.*`: `Triple`/`Subject`/`Object`/`tellTriple`/`vocabCurie`/`BnodeName`), `bytestring`, `text`

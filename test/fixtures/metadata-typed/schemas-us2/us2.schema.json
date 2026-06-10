@@ -1,0 +1,17 @@
+{
+  "label": 1694,
+  "prefix": "meta",
+  "namespace": "https://example.test/meta#",
+  "fields": [
+    {
+      "predicate": "justification",
+      "path": ["body", "justification"],
+      "kind": "joinedText"
+    },
+    {
+      "predicate": "references",
+      "path": ["body", "references"],
+      "kind": "uriList"
+    }
+  ]
+}
