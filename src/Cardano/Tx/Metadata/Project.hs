@@ -82,8 +82,9 @@ metadataProjections ::
     Text ->
     [(MetadataSchema, [Text])]
 metadataProjections schemas graph fullText =
-    filter (not . null . snd) $
-        concatMap decorateTx (Map.toList (tgBlocks graph))
+    concatMap
+        (filter (not . null . snd) . decorateTx)
+        (Map.toList (tgBlocks graph))
   where
     decorateTx (txSubj, txBlock)
         | not ("cardano:Transaction" `Text.isInfixOf` txBlock) = []
@@ -111,10 +112,9 @@ metadataProjections schemas graph fullText =
     schemaLines txSubj entryBlock schema =
         if any (`Text.isInfixOf` fullText) (projectedPredicates schema)
             then []
-            else
-                case projectSchema txSubj entryBlock schema of
-                    Right linesOut -> linesOut
-                    Left err -> [schemaErrorLine txSubj schema err]
+            else case projectSchema txSubj entryBlock schema of
+                Right linesOut -> linesOut
+                Left err -> [schemaErrorLine txSubj schema err]
 
     projectSchema txSubj entryBlock schema = do
         rootSubj <-
@@ -249,8 +249,8 @@ elementIndex block = do
         _ -> Left ("invalid cardano:elementIndex " <> raw)
 
 resolvePath :: TurtleGraph -> Text -> [Text] -> Either Text Text
-resolvePath graph rootSubj =
-    go [] rootSubj
+resolvePath graph =
+    go []
   where
     go _seen current [] =
         Right current
@@ -318,7 +318,7 @@ projectedPredicates :: MetadataSchema -> [Text]
 projectedPredicates MetadataSchema{schemaPrefix, schemaFields} =
     (schemaPrefix <> ":schemaError")
         : [ schemaPrefix <> ":" <> fieldPredicate
-    | MetadataSchemaField{fieldPredicate} <- schemaFields
+          | MetadataSchemaField{fieldPredicate} <- schemaFields
           ]
 
 schemaErrorLine :: Text -> MetadataSchema -> Text -> Text

@@ -60,6 +60,7 @@ spec = describe "cq-rdf executable subcommands" $ do
                     [ ["overlay", "--help"]
                     , ["body", "--help"]
                     , ["blueprint", "--help"]
+                    , ["metadata", "--help"]
                     , ["shacl", "--help"]
                     ]
 
@@ -107,6 +108,30 @@ spec = describe "cq-rdf executable subcommands" $ do
                         runExeWithStdin cqRdf ["blueprint", "--blueprints", bpDir] typed1
                     code2 `shouldBe` ExitSuccess
                     typed2 `shouldBe` typed1
+
+            it "metadata appends typed metadata triples idempotently" $ do
+                input <-
+                    BS.readFile $
+                        "test/fixtures/metadata-typed"
+                            </> "contingency-1694.input.ttl"
+                expected <-
+                    BS.readFile $
+                        "test/fixtures/metadata-typed"
+                            </> "contingency-1694.ttl"
+                (code1, typed1, _err1) <-
+                    runExeWithStdin
+                        cqRdf
+                        ["metadata", "--schemas", treasurySchemaDir]
+                        input
+                code1 `shouldBe` ExitSuccess
+                typed1 `shouldBe` expected
+                (code2, typed2, _err2) <-
+                    runExeWithStdin
+                        cqRdf
+                        ["metadata", "--schemas", treasurySchemaDir]
+                        typed1
+                code2 `shouldBe` ExitSuccess
+                typed2 `shouldBe` typed1
 
             it "shacl exits 0 on a pass and non-zero on a planted violation" $
                 withSystemTempDirectory "cq-rdf-shacl" $ \dir -> do
@@ -212,3 +237,7 @@ runExeWithStdin prog args input = do
 isFailure :: ExitCode -> Bool
 isFailure ExitSuccess = False
 isFailure (ExitFailure _) = True
+
+treasurySchemaDir :: FilePath
+treasurySchemaDir =
+    "docs/case-studies/2026-05-amaru-treasury/schemas"

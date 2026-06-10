@@ -56,6 +56,12 @@ spec =
                 "missing-event.input.ttl"
                 "missing-event.ttl"
 
+        it "leaves labels without registered schemas unchanged" $
+            assertGolden
+                "schemas"
+                "no-registered-label.input.ttl"
+                "no-registered-label.ttl"
+
 assertGolden :: FilePath -> FilePath -> FilePath -> IO ()
 assertGolden schemaSubdir inputName expectedName = do
     assertGoldenFrom
