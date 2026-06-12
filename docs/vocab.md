@@ -59,6 +59,16 @@ non-imported ontologies fail the YAML parser with a clear error.
 
 ## Validation
 
-A local validation gate (TTL well-formedness + OWL 2 RL inference smokes)
-is being ported from `cardano-knowledge-maps`; see
-[#40](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/40).
+A local validation gate ([#40](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/40),
+ported from `cardano-knowledge-maps`) runs in CI and `nix flake check`,
+and locally via `just`:
+
+| Gate | Recipe | Script | Checks |
+|---|---|---|---|
+| `vocab-validate` | `just vocab-validate` | `scripts/validate-ttl.py` | TTL well-formedness of every `vocab/**/*.ttl` |
+| `vocab-owl-smoke` | `just vocab-owl-smoke` | `scripts/owl-smoke.py` | OWL 2 RL inference smokes over the EYE closure |
+| `vocab-accessibility` | `just vocab-accessibility` | `scripts/vocab-accessibility.py` | every term carries a label/comment for dereference |
+
+All three are also `nix flake check` derivations (`vocab-validate`,
+`vocab-owl-smoke`, `vocab-accessibility` in `nix/checks.nix`) and run on
+every push.

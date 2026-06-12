@@ -76,6 +76,12 @@ entities:
   - name: usdm
     asset: { policy: c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad, name: USDM }
 
+  - name: a-pool
+    pool: pool1...                              # pool1 bech32 → PoolId
+
+  - name: a-drep
+    drep: drep1...                              # CIP-129 bech32 → DRepKey/DRepScript
+
   - name: usdm-control
     keys: [PaymentScript, Policy]
     bytes: c48cbb3d5e57ed56e276bc45f99ab39abe94e6cd7ac39fb402da47ad
@@ -91,14 +97,19 @@ entities:
 
 `from-address` decomposes Conway addresses into payment and stake
 credentials. `script` creates a `PaymentScript` identifier. `asset`
-stores `policy ++ hex(assetName)`. `keys` plus `bytes` lets one byte
-string be declared under multiple Cardano leaf types. The case-study
+stores `policy ++ hex(assetName)`. `pool` decodes a `pool1` bech32 into
+a `PoolId`; `drep` decodes a CIP-129 bech32 into a `DRepKey` or
+`DRepScript`. `keys` plus `bytes` lets one byte string be declared under
+multiple Cardano leaf types. The case-study
 [overlay.yaml](case-studies/2026-05-amaru-treasury/overlay.yaml) is a
-worked example exercising every entity shape.
+worked example exercising several of these entity shapes.
 
-Supported `keys:` labels are `PaymentKey`, `PaymentScript`, `StakeKey`,
-`StakeScript`, `DRepKey`, `DRepScript`, `PoolId`, `Policy`,
-`AssetClass`, `TxId`, and `GovActionId`.
+Supported `keys:` labels (the leaf types `parseLeafType` accepts) are
+`PaymentKey`, `PaymentScript`, `StakeKey`, `StakeScript`,
+`CommitteeColdKey`, `CommitteeColdScript`, `CommitteeHotKey`,
+`CommitteeHotScript`, `DRepKey`, `DRepScript`, `PoolId`, `Policy`,
+`AssetClass`, `TxId`, `GovActionId`, `AnchorDataHash`, `VrfKeyHash`,
+and `PoolMetadataHash`.
 
 Most key labels use 28-byte hex in `bytes:`. `TxId` uses a 32-byte
 transaction hash. `GovActionId` uses `<txid_hex>:<index>`, where
