@@ -16,7 +16,7 @@ thing that makes them speak your language.
 
 ## The asset bundle
 
-You parametrize the engine through four slots. Each is an ordinary file
+You parametrize the engine through three slots. Each is an ordinary file
 (or directory) you version and ship alongside your app — the way you
 already ship a policy id or a script address.
 
@@ -24,8 +24,12 @@ already ship a policy id or a script address.
 |---|---|---|
 | **overlay** | `cq-rdf overlay` | Your on-chain and off-chain entities, human labels, vendor/attestation links — operator/app reference data in YAML or Turtle. |
 | **blueprints** | `cq-rdf blueprint` | Your CIP-57 blueprints, so datum/redeemer fields decode into typed, queryable predicates instead of opaque bytes. |
-| **metadata schemas** | `cq-rdf metadata` *(landing)* | A typed interpretation of your transaction-metadata labels, so the fields inside (e.g. a governance rationale block) become triples a shape or query can target. |
 | **shapes** | `cq-rdf shacl` | SHACL constraints — both *mirror* shapes (a declarative echo of your on-chain validators) and *hygiene* shapes (rules with no on-chain twin that you nonetheless want every authored tx to satisfy). |
+
+Transaction metadata needs no slot of its own: `cq-rdf body` decodes
+every metadata label into faithful triples as part of the body graph,
+so the fields inside (e.g. a governance rationale block) are already
+triples a shape or query can target.
 
 Nothing in the core knows what these mean — that is deliberate
 (`cardano:` models the ledger; your meaning lives in your assets and, if
@@ -40,7 +44,8 @@ different intent:
 
 ```bash
 cq-rdf overlay --in overlay.yaml > overlay.ttl
-xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  < selections.txt > bodies.ttl
 cat overlay.ttl bodies.ttl \
   | cq-rdf blueprint --blueprints blueprints/ \
   > package.ttl
@@ -94,4 +99,4 @@ case study is the canary: a complete asset bundle —
 set — that drives both the author gate and the auditor classifier over a
 real mainnet batch. Start a new application by copying the
 [case-study template](case-studies/_template/README.md) and filling the
-four slots with your own assets.
+three slots with your own assets.

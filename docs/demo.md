@@ -26,18 +26,20 @@ path that fits you; they all produce identical graphs.
     release artifact — no toolchain, no build:
 
     ```bash
-    # Linux x86_64 — AppImage (also .deb / .rpm on the releases page)
-    base=https://github.com/lambdasistemi/cardano-ledger-rdf/releases/latest/download
-    curl -L "$base/cq-rdf-x86_64-linux.AppImage" -o cq-rdf && chmod +x cq-rdf
-    curl -L "$base/tx-view-x86_64-linux.AppImage" -o tx-view && chmod +x tx-view
-    # macOS arm64 — tarball: cq-rdf-aarch64-darwin.tar.gz (and tx-view-…)
+    # Linux x86_64 — AppImage (also .deb / .rpm / musl tarball on the releases page)
+    v=0.4.0.0
+    base=https://github.com/lambdasistemi/cardano-ledger-rdf/releases/download/v$v
+    curl -L "$base/cq-rdf-$v-x86_64-linux.AppImage"  -o cq-rdf  && chmod +x cq-rdf
+    curl -L "$base/tx-view-$v-x86_64-linux.AppImage" -o tx-view && chmod +x tx-view
+    # macOS arm64 — tarball: cq-rdf-$v-aarch64-darwin.tar.gz (and tx-view-…)
     ```
 
+    Release assets are versioned, so set `v` to the version you want.
     Browse [the latest release](https://github.com/lambdasistemi/cardano-ledger-rdf/releases/latest)
-    for the exact asset names and your architecture. The same release
-    still ships a deprecated `tx-graph` compatibility symlink for one
-    cycle so existing scripts keep working; new work should target
-    `cq-rdf` directly.
+    for the current version string and the asset names for your
+    architecture. The same release still ships a deprecated `tx-graph`
+    compatibility symlink for one cycle so existing scripts keep working;
+    new work should target `cq-rdf` directly.
 
 === "Build from source (Nix)"
 
@@ -638,13 +640,16 @@ the May 2026 walk-through above:
 
 ```bash
 cq-rdf overlay --in overlay.yaml > overlay.ttl
-xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  < selections.txt > bodies.ttl
 cat overlay.ttl bodies.ttl \
   | cq-rdf blueprint --blueprints blueprints/ \
-  | cq-rdf shacl --shapes shapes/ \
   > package.ttl
+cq-rdf shacl --shapes shapes/ < package.ttl   # author gate: exits non-zero on violations
 ```
 
+`package.ttl` is the typed lattice; `cq-rdf shacl` reads it as a
+separate gate (an empty report and exit 0 means the invariants held).
 Then `arq --data package.ttl --query <some-query>.rq` for any SPARQL on
 this page. The full case-study package, including `overlay.yaml`,
 `selections.txt`, `blueprints/`, and `shapes/`, is in

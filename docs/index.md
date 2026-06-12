@@ -34,8 +34,11 @@ RDF assets the developer ships and parametrizes:
 |---|---|---|
 | **overlay** | `cq-rdf overlay` | the app's entities, labels, attestations |
 | **blueprints** | `cq-rdf blueprint` | typed datum/redeemer decode (CIP-57) |
-| **metadata schemas** | `cq-rdf metadata` *(landing)* | typed interpretation of the app's transaction-metadata labels |
 | **shapes** | `cq-rdf shacl` | SHACL conformance + hygiene constraints |
+
+Transaction metadata needs no asset slot: `cq-rdf body` decodes every
+metadata label into faithful triples as part of the body graph, so
+shapes and queries can target metadata fields directly.
 
 Case studies under [Case studies](case-studies/index.md) ship exactly
 this bundle — their `overlay.yaml`, `selections.txt`, `blueprints/`,
@@ -66,7 +69,8 @@ shapes (author gate) or query the lattice (auditor):
 
 ```bash
 cq-rdf overlay --in overlay.yaml > overlay.ttl
-xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  < selections.txt > bodies.ttl
 cat overlay.ttl bodies.ttl \
   | cq-rdf blueprint --blueprints blueprints/ \
   > package.ttl
@@ -76,8 +80,9 @@ arq --data package.ttl --query my.rq            # auditor: Apache Jena or any SP
 
 The SPARQL and SHACL stages are offline and deterministic. The only
 network boundary is `cq-rdf body --provider`, which fetches CBOR by txid
-from a koios / blockfrost / generic-HTTP indexer; with `--provider file`
-(the default) `cq-rdf body` reads CBOR from a local path instead.
+from a koios / blockfrost / generic-HTTP indexer (blockfrost requires
+`--token`; koios has a free tier); with `--provider file` (the default)
+`cq-rdf body` reads CBOR from a local path instead.
 
 ## Tools
 

@@ -42,7 +42,8 @@ cleanly with the next stage:
 
 ```bash
 cq-rdf overlay --in overlay.yaml > overlay.ttl
-xargs -P8 -n1 cq-rdf body --provider blockfrost < selections.txt > bodies.ttl
+xargs -P8 -n1 cq-rdf body --provider blockfrost --token "$BLOCKFROST_PROJECT_ID" \
+  < selections.txt > bodies.ttl
 cat overlay.ttl bodies.ttl \
   | cq-rdf blueprint --blueprints blueprints/ \
   > package.ttl
