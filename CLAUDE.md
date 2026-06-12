@@ -1,31 +1,11 @@
-# Repository Agent Guide
+# CLAUDE.md
 
-## What This Repo Is
+The agent guide for this repository is **[AGENTS.md](AGENTS.md)** — what
+the repo is, how to build/test/run it, and the skills under `skills/`.
+Start there.
 
-`cardano-ledger-rdf` owns generic Cardano RDF vocabulary, graph extraction,
-serialisation, packaged views, and export tooling. Transaction RDF is the
-first surface, but the repository is intentionally broader than transaction
-graphs.
-
-## How To Work Here
-
-- Read `.specify/memory/constitution.md` before planning or editing.
-- Use Spec Kit for feature work: specify, plan, tasks, then implement.
-- Use `just` recipes for local work once the Haskell/Nix scaffold exists.
-- Do not delete old `cardano-tx-tools` source during migration unless the user
-  explicitly approves a separate deletion plan.
-- Do not populate secrets from an agent session. Leave exact `gh secret set`
-  commands for the operator instead.
-
-## Skills
-
-Activatable procedures live under `skills/` when present. Load the one whose
-description matches your task.
-
-## First-Run Setup
-
-No operator-specific local config is required for the repository bootstrap.
-Networked fetchers or hosted services may add a first-run skill later.
+The sections below are managed automatically by Spec Kit
+(`.specify/scripts/bash/update-agent-context.sh`); leave them in place.
 
 ## Active Technologies
 - Haskell, GHC 9.12.3 (`haskell.nix`, `ghc9123`) + `cardano-ledger-core` (`TxAuxData ConwayEra`), `Cardano.Ledger.Metadata` (`Metadatum(..)`), the in-repo Emit DSL (`Cardano.Tx.Graph.Emit.*`: `Triple`/`Subject`/`Object`/`tellTriple`/`vocabCurie`/`BnodeName`), `bytestring`, `text` (062-tx-metadata-decode)
