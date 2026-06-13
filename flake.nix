@@ -122,6 +122,7 @@
             };
           };
           components = project.hsPkgs.cardano-ledger-rdf.components;
+          txRdfCoreComponents = project.hsPkgs.tx-rdf-core.components;
           muslComponents =
             if system == "x86_64-linux"
             then project.projectCross.musl64.hsPkgs.cardano-ledger-rdf.components
@@ -325,6 +326,7 @@
             inherit pkgs components lintPkgs pythonEnv eye cqRdf txGraphCompat;
             src = ./.;
             libraryDoc = components.library.doc;
+            coreLibraryDoc = txRdfCoreComponents.library.doc;
           };
           checkApps = import ./nix/apps.nix {
             inherit pkgs;

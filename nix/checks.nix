@@ -1,4 +1,14 @@
-{ pkgs, src, components, libraryDoc, lintPkgs ? pkgs, pythonEnv, eye, cqRdf, txGraphCompat }:
+{ pkgs
+, src
+, components
+, libraryDoc
+, coreLibraryDoc
+, lintPkgs ? pkgs
+, pythonEnv
+, eye
+, cqRdf
+, txGraphCompat
+}:
 let
   lib = pkgs.lib;
 
@@ -130,56 +140,90 @@ let
       text = ''
         set -euo pipefail
 
-        DOC_HTML="${libraryDoc}/share/doc/cardano-ledger-rdf/html"
-        if [ ! -d "$DOC_HTML" ]; then
-          echo "✗ haddock html tree missing at $DOC_HTML" >&2
-          exit 1
-        fi
+        FAT_DOC_HTML="${libraryDoc}/share/doc/cardano-ledger-rdf/html"
+        CORE_DOC_HTML="${coreLibraryDoc}/share/doc/tx-rdf-core/html"
+        for doc_html in "$FAT_DOC_HTML" "$CORE_DOC_HTML"; do
+          if [ ! -d "$doc_html" ]; then
+            echo "✗ haddock html tree missing at $doc_html" >&2
+            exit 1
+          fi
+        done
 
-        expected_modules=(
+        check_page() {
+          doc_html="$1"
+          module_page="$2"
+          if [ ! -f "$doc_html/$module_page.html" ]; then
+            echo "✗ haddock page missing: $module_page.html in $doc_html" >&2
+            exit 1
+          fi
+        }
+
+        check_guard() {
+          doc_html="$1"
+          guard="$2"
+          file="''${guard%%:*}"
+          needle="''${guard#*:}"
+          if ! grep -F -q "$needle" "$doc_html/$file"; then
+            echo "✗ regression: '$needle' not found in $doc_html/$file" >&2
+            exit 1
+          fi
+        }
+
+        core_expected_modules=(
           Cardano-Tx-Blueprint
           Cardano-Tx-Decode
           Cardano-Tx-Graph-Emit
           Cardano-Tx-Graph-Emit-Blueprint
           Cardano-Tx-Graph-Emit-Project
+          Cardano-Tx-Graph-Rules-Load-Imports
+          Cardano-Tx-View
+        )
+        for m in "''${core_expected_modules[@]}"; do
+          check_page "$CORE_DOC_HTML" "$m"
+        done
+
+        fat_expected_modules=(
           Cardano-Tx-Graph-Provider
           Cardano-Tx-Graph-Resolve
           Cardano-Tx-Graph-Resolve-Web2
           Cardano-Tx-Graph-Rules-Load
-          Cardano-Tx-Graph-Rules-Load-Imports
-          Cardano-Tx-View
         )
-        for m in "''${expected_modules[@]}"; do
-          if [ ! -f "$DOC_HTML/$m.html" ]; then
-            echo "✗ haddock page missing: $m.html" >&2
-            exit 1
-          fi
+        for m in "''${fat_expected_modules[@]}"; do
+          check_page "$FAT_DOC_HTML" "$m"
         done
 
         # Doc-string regression guard: the strings below were written
         # by issue #76's slices 1-4 and ANCHOR the documentation
         # surface a Hackage reader sees. A silent deletion of any of
         # them fails this gate.
-        declare -a guards=(
+        declare -a core_guards=(
           "Cardano-Tx-Blueprint.html:A CIP-0057 Plutus blueprint as parsed from JSON"
           "Cardano-Tx-Blueprint.html:Open, schema-driven projection of a"
           "Cardano-Tx-Decode.html:Decode a bech32-encoded Cardano address"
           "Cardano-Tx-Decode.html:02-alice-bob-ada"
           "Cardano-Tx-Graph-Emit.html:body emitter introduced by"
           "Cardano-Tx-Graph-Emit-Project.html:Render a"
-          "Cardano-Tx-Graph-Rules-Load.html:operator-authored rule files"
           "Cardano-Tx-View.html:in-repo view runner. Loads"
         )
-        for guard in "''${guards[@]}"; do
-          file="''${guard%%:*}"
-          needle="''${guard#*:}"
-          if ! grep -F -q "$needle" "$DOC_HTML/$file"; then
-            echo "✗ regression: '$needle' not found in $file" >&2
-            exit 1
-          fi
+        for guard in "''${core_guards[@]}"; do
+          check_guard "$CORE_DOC_HTML" "$guard"
         done
 
-        echo "✓ haddock-coverage gate passed (''${#expected_modules[@]} modules, ''${#guards[@]} regression guards)"
+        declare -a fat_guards=(
+          "Cardano-Tx-Graph-Rules-Load.html:operator-authored rule files"
+        )
+        for guard in "''${fat_guards[@]}"; do
+          check_guard "$FAT_DOC_HTML" "$guard"
+        done
+
+        expected_count=$((
+          ''${#core_expected_modules[@]} + ''${#fat_expected_modules[@]}
+        ))
+        guard_count=$((
+          ''${#core_guards[@]} + ''${#fat_guards[@]}
+        ))
+
+        echo "✓ haddock-coverage gate passed ($expected_count modules, $guard_count regression guards)"
       '';
     };
   };
