@@ -69,10 +69,10 @@ before while consuming `tx-rdf-core`.
 
 **Purpose**: Prove acceptance and prepare the PR.
 
-- [ ] T016 Run `nix build` and record the result
-- [ ] T017 Run `nix develop --quiet -c just ci` and record the result
-- [ ] T018 Verify `tx-rdf-core` against the inspector CHaP pin dated 2026-04-15, or write a Q-file with exact incompatibility details
-- [ ] T019 Update PR metadata for issue #90 with package split, dependency proof, golden proof, and verification evidence
+- [X] T016 Run `nix build` and record the result
+- [X] T017 Run `nix develop --quiet -c just ci` and record the result
+- [X] T018 Verify `tx-rdf-core` against the inspector CHaP pin dated 2026-04-15, or write a Q-file with exact incompatibility details
+- [X] T019 Update PR metadata for issue #90 with package split, dependency proof, golden proof, and verification evidence
 
 ## Dependencies & Execution Order
 
