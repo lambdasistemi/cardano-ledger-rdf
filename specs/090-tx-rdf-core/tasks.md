@@ -17,7 +17,7 @@ change with public build behavior.
 **Purpose**: Establish the split contract before source changes.
 
 - [X] T001 Record the module classification and any corrections in `specs/090-tx-rdf-core/plan.md`
-- [ ] T002 [P] Add a package-boundary verification test or script for `tx-rdf-core` dependency exclusions in `test/` or `scripts/`
+- [X] T002 [P] Add a package-boundary verification test or script for `tx-rdf-core` dependency exclusions in `test/` or `scripts/`
 - [X] T003 [P] Identify exact existing golden tests that prove byte-identical emit output in `specs/090-tx-rdf-core/plan.md`
 
 ---
@@ -32,15 +32,15 @@ does not contain fat packages.
 
 ### Tests for User Story 1
 
-- [ ] T004 [US1] Add or update the failing package-boundary test/proof for forbidden `tx-rdf-core` dependencies in `test/` or `scripts/`
+- [X] T004 [US1] Add or update the failing package-boundary test/proof for forbidden `tx-rdf-core` dependencies in `test/` or `scripts/`
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Add the `tx-rdf-core` package metadata and local package wiring in `cardano-ledger-rdf.cabal` and/or `cabal.project`
-- [ ] T006 [US1] Assign pure modules (`Cardano.Tx.Decode`, `Cardano.Tx.Blueprint`, `Cardano.Tx.Graph.Emit/**`, pure Turtle rule parsing/types, `Cardano.Tx.View/**`) to `tx-rdf-core`
-- [ ] T007 [US1] Split any mixed rule-loader surface so core gets only pure types/Turtle parsing and fat code keeps YAML/import IO
-- [ ] T008 [US1] Prove `nix develop --quiet -c cabal build tx-rdf-core:lib:tx-rdf-core -O0` succeeds
-- [ ] T009 [US1] Prove the `tx-rdf-core` dependency closure excludes `http-client`, `http-client-tls`, `libyaml`, `yaml`, `optparse-applicative`, `directory`, `filepath`, and `process`
+- [X] T005 [US1] Add the `tx-rdf-core` package metadata and local package wiring in `cardano-ledger-rdf.cabal` and/or `cabal.project`
+- [X] T006 [US1] Assign pure modules (`Cardano.Tx.Decode`, `Cardano.Tx.Blueprint`, `Cardano.Tx.Graph.Emit/**`, pure Turtle rule parsing/types, `Cardano.Tx.View/**`) to `tx-rdf-core`
+- [X] T007 [US1] Split any mixed rule-loader surface so core gets only pure types/Turtle parsing and fat code keeps YAML/import IO
+- [X] T008 [US1] Prove `nix develop --quiet -c cabal build tx-rdf-core:lib:tx-rdf-core -O0` succeeds
+- [X] T009 [US1] Prove the `tx-rdf-core` dependency closure excludes `http-client`, `http-client-tls`, `libyaml`, `yaml`, `optparse-applicative`, `directory`, `filepath`, and `process`
 
 ---
 
@@ -53,15 +53,15 @@ before while consuming `tx-rdf-core`.
 
 ### Tests for User Story 2
 
-- [ ] T010 [US2] Run the existing emit golden tests and confirm byte-identical Turtle output
+- [X] T010 [US2] Run the existing emit golden tests and confirm byte-identical Turtle output
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] Update `cardano-ledger-rdf` library dependencies/imports so fat modules consume `tx-rdf-core`
-- [ ] T012 [US2] Update executable dependencies for `cq-rdf` and `tx-view` so both build through the split packages
-- [ ] T013 [US2] Update tests/build-tool dependencies so pure tests can see `tx-rdf-core` and CLI tests can see fat executables
-- [ ] T014 [US2] Prove `nix develop --quiet -c cabal build all -O0` succeeds
-- [ ] T015 [US2] Prove `nix develop --quiet -c just unit` succeeds
+- [X] T011 [US2] Update `cardano-ledger-rdf` library dependencies/imports so fat modules consume `tx-rdf-core`
+- [X] T012 [US2] Update executable dependencies for `cq-rdf` and `tx-view` so both build through the split packages
+- [X] T013 [US2] Update tests/build-tool dependencies so pure tests can see `tx-rdf-core` and CLI tests can see fat executables
+- [X] T014 [US2] Prove `nix develop --quiet -c cabal build all -O0` succeeds
+- [X] T015 [US2] Prove `nix develop --quiet -c just unit` succeeds
 
 ---
 

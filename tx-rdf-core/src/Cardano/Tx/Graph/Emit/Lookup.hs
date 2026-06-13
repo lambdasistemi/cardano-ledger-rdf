@@ -55,12 +55,12 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as TextEncoding
 
-import Cardano.Tx.Graph.Rules.Load (
+import Cardano.Tx.Graph.Rules.Load.Naming (roleSuffix)
+import Cardano.Tx.Graph.Rules.Load.Types (
     EntityDecl (..),
     EntityIdentifier (..),
     LeafType (..),
  )
-import Cardano.Tx.Graph.Rules.Load.Naming (roleSuffix)
 
 {- | A blank-node local name. The wrapped 'Text' is the bare
 local part — e.g. @"alice_paymentKey"@ or

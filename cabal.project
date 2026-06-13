@@ -6,6 +6,7 @@ index-state:
 
 packages:
   .
+  tx-rdf-core
 
 repository cardano-haskell-packages
   url: https://chap.intersectmbo.org/
@@ -48,6 +49,9 @@ package ouroboros-network
   benchmarks: False
 
 package cardano-ledger-rdf
+  flags: +werror
+
+package tx-rdf-core
   flags: +werror
 
 source-repository-package

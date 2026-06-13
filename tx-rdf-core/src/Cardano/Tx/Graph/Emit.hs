@@ -136,7 +136,7 @@ import Cardano.Tx.Graph.Emit.Triple (
  )
 import Cardano.Tx.Graph.Emit.VocabExport (renderVocabFragment)
 import Cardano.Tx.Graph.Emit.Witness (projectWitness)
-import Cardano.Tx.Graph.Rules.Load (EntityDecl)
+import Cardano.Tx.Graph.Rules.Load.Types (EntityDecl)
 
 {- $blueprintSurface
 The blueprint-decode seam introduced by feature #50 (T101 / T102).

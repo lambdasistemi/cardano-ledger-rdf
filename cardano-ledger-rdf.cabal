@@ -71,47 +71,29 @@ common warnings
     ViewPatterns
 
 library
-  import:           warnings
-  hs-source-dirs:   src
-  default-language: GHC2021
+  import:             warnings
+  hs-source-dirs:     src
+  default-language:   GHC2021
   exposed-modules:
-    Cardano.Tx.Blueprint
-    Cardano.Tx.Decode
-    Cardano.Tx.Graph.Emit
-    Cardano.Tx.Graph.Emit.Blueprint
-    Cardano.Tx.Graph.Emit.Project
     Cardano.Tx.Graph.Provider
     Cardano.Tx.Graph.Resolve
     Cardano.Tx.Graph.Resolve.Web2
     Cardano.Tx.Graph.Rules.Load
-    Cardano.Tx.Graph.Rules.Load.Imports
-    Cardano.Tx.View
+
+  reexported-modules:
+    tx-rdf-core:Cardano.Tx.Blueprint
+    , tx-rdf-core:Cardano.Tx.Decode
+    , tx-rdf-core:Cardano.Tx.Graph.Emit
+    , tx-rdf-core:Cardano.Tx.Graph.Emit.Blueprint
+    , tx-rdf-core:Cardano.Tx.Graph.Emit.Project
+    , tx-rdf-core:Cardano.Tx.Graph.Rules.Load.Imports
+    , tx-rdf-core:Cardano.Tx.View
 
   other-modules:
-    Cardano.Tx.Graph.Emit.Certificate
-    Cardano.Tx.Graph.Emit.GovAction
-    Cardano.Tx.Graph.Emit.Lookup
-    Cardano.Tx.Graph.Emit.Metadatum
-    Cardano.Tx.Graph.Emit.Monad
-    Cardano.Tx.Graph.Emit.NativeScript
-    Cardano.Tx.Graph.Emit.Serialize.JsonLd
-    Cardano.Tx.Graph.Emit.Serialize.Turtle
-    Cardano.Tx.Graph.Emit.Triple
-    Cardano.Tx.Graph.Emit.Vocab
-    Cardano.Tx.Graph.Emit.VocabExport
-    Cardano.Tx.Graph.Emit.Witness
     Cardano.Tx.Graph.Rules.Load.Bech32
     Cardano.Tx.Graph.Rules.Load.Emit.Overlay
-    Cardano.Tx.Graph.Rules.Load.Naming
-    Cardano.Tx.Graph.Rules.Load.Parse.Turtle
     Cardano.Tx.Graph.Rules.Load.Parse.Yaml
     Cardano.Tx.Graph.Rules.Load.Resolve.Imports
-    Cardano.Tx.Graph.Rules.Load.Types
-    Cardano.Tx.View.AssetFlow
-    Cardano.Tx.View.CliTree
-    Cardano.Tx.View.EntityOccurrences
-    Cardano.Tx.View.JsonLd
-    Cardano.Tx.View.Turtle
 
   build-depends:
     , aeson                      >=2.2  && <2.3
@@ -157,6 +139,7 @@ library
     , time                       >=1.12 && <1.13
     , transformers               >=0.6  && <0.7
     , tree-view                  >=0.5  && <0.6
+    , tx-rdf-core                >=0.4  && <0.5
     , yaml                       >=0.11 && <0.12
 
 executable cq-rdf
