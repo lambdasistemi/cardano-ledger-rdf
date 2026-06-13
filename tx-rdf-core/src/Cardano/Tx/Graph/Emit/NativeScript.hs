@@ -40,7 +40,7 @@ import Cardano.Tx.Graph.Emit.Triple (
     Triple (..),
  )
 import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
-import Cardano.Tx.Graph.Rules.Load (LeafType (LtScriptHash, PaymentKey))
+import Cardano.Tx.Graph.Rules.Load.Types (LeafType (LtScriptHash, PaymentKey))
 
 {- | Emit a typed native-script tree rooted at the supplied bnode.
 

@@ -81,7 +81,7 @@ import Cardano.Tx.Graph.Emit.Triple (
     Triple (..),
  )
 import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
-import Cardano.Tx.Graph.Rules.Load (LeafType (..))
+import Cardano.Tx.Graph.Rules.Load.Types (LeafType (..))
 
 type ResolveIdent =
     LookupTable -> LeafType -> ByteString -> Emit Object

@@ -16,7 +16,6 @@ module Cardano.Tx.Decode (
     decodeConwayTxInput,
 ) where
 
-import Codec.Binary.Bech32 qualified as Bech32
 import Data.Aeson ((.:))
 import Data.Aeson qualified as Aeson
 import Data.ByteString (ByteString)
@@ -39,6 +38,7 @@ import Cardano.Ledger.Binary (
     natVersion,
  )
 import Cardano.Ledger.Conway (ConwayEra)
+import Cardano.Tx.Bech32 (decodeBech32Bytes)
 
 {- | Conway-era top-level transaction.
 
@@ -140,16 +140,11 @@ Left "bech32 decode failed: StringToDecodeMissingSeparatorChar"
 -}
 decodeBech32Address :: Text -> Either String Addr
 decodeBech32Address keyText =
-    case Bech32.decodeLenient keyText of
-        Left err ->
-            Left ("bech32 decode failed: " <> show err)
-        Right (_hrp, dataPart) ->
-            case Bech32.dataPartToBytes dataPart of
-                Nothing ->
-                    Left "bech32 data-part not byte-aligned"
-                Just bytes ->
-                    case decodeAddrEither bytes of
-                        Left err ->
-                            Left ("ledger address decode failed: " <> err)
-                        Right addr ->
-                            Right addr
+    case decodeBech32Bytes keyText of
+        Left err -> Left err
+        Right bytes ->
+            case decodeAddrEither bytes of
+                Left err ->
+                    Left ("ledger address decode failed: " <> err)
+                Right addr ->
+                    Right addr

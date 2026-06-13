@@ -1,0 +1,111 @@
+cabal-version:   3.4
+name:            tx-rdf-core
+version:         0.4.0.0
+synopsis:        Pure Cardano transaction RDF core
+description:
+  Lean library for decoding Cardano Conway transactions, emitting
+  deterministic transaction RDF, serialising Turtle/JSON-LD, parsing
+  in-memory Turtle rule overlays, and rendering packaged transaction views.
+  .
+  Network fetchers, filesystem import resolution, YAML parsing, and command
+  line executables remain in the @cardano-ledger-rdf@ package.
+
+license:         Apache-2.0
+license-file:    LICENSE
+author:          Paolo Veronelli
+maintainer:      paolo.veronelli@gmail.com
+copyright:       2025-2026 Paolo Veronelli
+homepage:        https://lambdasistemi.github.io/cardano-ledger-rdf/
+bug-reports:     https://github.com/lambdasistemi/cardano-ledger-rdf/issues
+category:        Cardano
+build-type:      Simple
+tested-with:     GHC ==9.12.3
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
+flag werror
+  description: Enable -Werror (compile-time enforcement of warnings).
+  default:     False
+  manual:      True
+
+common warnings
+  ghc-options:
+    -Wall -Wunused-imports -Wmissing-export-lists -Wname-shadowing
+    -Wredundant-constraints
+
+  if flag(werror)
+    ghc-options: -Werror
+
+  default-extensions:
+    DataKinds
+    DerivingStrategies
+    DuplicateRecordFields
+    FlexibleContexts
+    GADTs
+    ImportQualifiedPost
+    LambdaCase
+    OverloadedStrings
+    PatternSynonyms
+    ScopedTypeVariables
+    StrictData
+    TypeApplications
+    TypeOperators
+    ViewPatterns
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  default-language: GHC2021
+  exposed-modules:
+    Cardano.Tx.Blueprint
+    Cardano.Tx.Decode
+    Cardano.Tx.Graph.Emit
+    Cardano.Tx.Graph.Emit.Blueprint
+    Cardano.Tx.Graph.Emit.Certificate
+    Cardano.Tx.Graph.Emit.GovAction
+    Cardano.Tx.Graph.Emit.Lookup
+    Cardano.Tx.Graph.Emit.Metadatum
+    Cardano.Tx.Graph.Emit.Monad
+    Cardano.Tx.Graph.Emit.NativeScript
+    Cardano.Tx.Graph.Emit.Project
+    Cardano.Tx.Graph.Emit.Serialize.JsonLd
+    Cardano.Tx.Graph.Emit.Serialize.Turtle
+    Cardano.Tx.Graph.Emit.Triple
+    Cardano.Tx.Graph.Emit.Vocab
+    Cardano.Tx.Graph.Emit.VocabExport
+    Cardano.Tx.Graph.Emit.Witness
+    Cardano.Tx.Graph.Rules.Load.Imports
+    Cardano.Tx.Graph.Rules.Load.Naming
+    Cardano.Tx.Graph.Rules.Load.Parse.Turtle
+    Cardano.Tx.Graph.Rules.Load.Types
+    Cardano.Tx.View
+    Cardano.Tx.View.AssetFlow
+    Cardano.Tx.View.CliTree
+    Cardano.Tx.View.EntityOccurrences
+    Cardano.Tx.View.JsonLd
+    Cardano.Tx.View.Turtle
+
+  other-modules:    Cardano.Tx.Bech32
+  build-depends:
+    , aeson                   >=2.2  && <2.3
+    , base                    <5
+    , base16-bytestring       >=1.0  && <1.1
+    , bytestring              >=0.12 && <0.13
+    , cardano-crypto          >=1.3  && <3
+    , cardano-crypto-class    >=2.3  && <4
+    , cardano-ledger-allegra  >=1.9  && <3
+    , cardano-ledger-alonzo   >=1.15 && <3
+    , cardano-ledger-api      >=1.13 && <3
+    , cardano-ledger-binary   >=1.8  && <3
+    , cardano-ledger-conway   >=1.21 && <3
+    , cardano-ledger-core     >=1.19 && <3
+    , cardano-ledger-mary     >=1.10 && <3
+    , cardano-ledger-shelley  >=1.18 && <3
+    , cardano-slotting        >=0.2  && <0.4
+    , containers              >=0.7  && <0.8
+    , mempack                 >=0.2  && <0.3
+    , microlens               >=0.4  && <0.5
+    , plutus-core             >=1.60 && <3
+    , text                    >=2.1  && <2.2
+    , transformers            >=0.6  && <0.7

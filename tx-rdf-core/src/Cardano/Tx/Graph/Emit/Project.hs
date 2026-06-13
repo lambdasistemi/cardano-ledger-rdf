@@ -136,7 +136,6 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as TextEncoding
 
-import Codec.Binary.Bech32 qualified as Bech32
 import Lens.Micro ((^.))
 
 import Cardano.Crypto.Hash (hashToBytes)
@@ -274,6 +273,7 @@ import Cardano.Ledger.Plutus.Language (
 import Cardano.Ledger.TxIn (TxId (..), TxIn (..))
 import Data.Foldable (toList)
 
+import Cardano.Tx.Bech32 (encodeBech32Text)
 import Cardano.Tx.Blueprint (
     Blueprint,
     BlueprintArgument (..),
@@ -318,7 +318,7 @@ import Cardano.Tx.Graph.Emit.Triple (
     Triple (..),
  )
 import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
-import Cardano.Tx.Graph.Rules.Load (
+import Cardano.Tx.Graph.Rules.Load.Types (
     EntityDecl (..),
     LeafType (..),
  )
@@ -3313,16 +3313,7 @@ testnet); the data part is the raw ledger serialization bytes
 -}
 encodeBech32 :: Network -> Addr -> Text
 encodeBech32 network addr =
-    case Bech32.humanReadablePartFromText hrp of
-        Right h ->
-            Bech32.encodeLenient
-                h
-                (Bech32.dataPartFromBytes (serialiseAddr addr))
-        Left _ ->
-            error
-                ( "Cardano.Tx.Graph.Emit.Project: invalid bech32 HRP "
-                    <> Text.unpack hrp
-                )
+    encodeBech32Text hrp (serialiseAddr addr)
   where
     hrp = case network of
         Mainnet -> "addr"

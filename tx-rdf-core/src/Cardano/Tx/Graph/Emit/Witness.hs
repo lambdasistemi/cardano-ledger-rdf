@@ -148,7 +148,7 @@ import Cardano.Tx.Graph.Emit.Triple (
     Triple (..),
  )
 import Cardano.Tx.Graph.Emit.Vocab (VocabTerm (..), vocabCurie)
-import Cardano.Tx.Graph.Rules.Load (EntityDecl, LeafType (..))
+import Cardano.Tx.Graph.Rules.Load.Types (EntityDecl, LeafType (..))
 
 ----------------------------------------------------------------------
 -- Counts

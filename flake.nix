@@ -112,7 +112,10 @@
             };
             modules = [
               fix-libs
-              { packages.cardano-ledger-rdf.flags.werror = true; }
+              {
+                packages.cardano-ledger-rdf.flags.werror = true;
+                packages.tx-rdf-core.flags.werror = true;
+              }
             ];
             inputMap = {
               "https://chap.intersectmbo.org/" = CHaP;
