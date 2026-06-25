@@ -240,6 +240,7 @@ data VocabTerm
     | TermHasMinorVersion
     | TermDecodedAs
     | TermFromTxOutRef
+    | TermTxOutRef
     | -- Value semantics (T104 / S3 — output ADA + multi-asset)
       TermLovelace
     | TermHasAssetValue
@@ -318,7 +319,7 @@ data VocabTerm
       -- so SPARQL views can join across positions referencing
       -- the same TxId without literal-string surgery
       -- (operator A-007).
-      TermTxOutRef
+      TermTxOutRefClass
     | TermHasTxId
     | TermHasIndex
     | -- Witness-set seaboard (T128b / S31). PlutusData interpretation
@@ -544,6 +545,7 @@ vocabIri = \case
     TermHasMinorVersion -> cardanoPrefix <> "hasMinorVersion"
     TermDecodedAs -> cardanoPrefix <> "decodedAs"
     TermFromTxOutRef -> cardanoPrefix <> "fromTxOutRef"
+    TermTxOutRef -> cardanoPrefix <> "txOutRef"
     TermLovelace -> cardanoPrefix <> "lovelace"
     TermHasAssetValue -> cardanoPrefix <> "hasAssetValue"
     TermMintsAsset -> cardanoPrefix <> "mintsAsset"
@@ -592,7 +594,7 @@ vocabIri = \case
     TermBytesHex -> cardanoPrefix <> "bytesHex"
     TermCertificate -> cardanoPrefix <> "Certificate"
     TermOpaqueLeaf -> cardanoPrefix <> "OpaqueLeaf"
-    TermTxOutRef -> cardanoPrefix <> "TxOutRef"
+    TermTxOutRefClass -> cardanoPrefix <> "TxOutRef"
     TermHasTxId -> cardanoPrefix <> "hasTxId"
     TermHasIndex -> cardanoPrefix <> "hasIndex"
     TermRedeemer -> cardanoPrefix <> "Redeemer"
@@ -800,6 +802,7 @@ vocabCurie = \case
     TermHasMinorVersion -> "cardano:hasMinorVersion"
     TermDecodedAs -> "cardano:decodedAs"
     TermFromTxOutRef -> "cardano:fromTxOutRef"
+    TermTxOutRef -> "cardano:txOutRef"
     TermLovelace -> "cardano:lovelace"
     TermHasAssetValue -> "cardano:hasAssetValue"
     TermMintsAsset -> "cardano:mintsAsset"
@@ -848,7 +851,7 @@ vocabCurie = \case
     TermBytesHex -> "cardano:bytesHex"
     TermCertificate -> "cardano:Certificate"
     TermOpaqueLeaf -> "cardano:OpaqueLeaf"
-    TermTxOutRef -> "cardano:TxOutRef"
+    TermTxOutRefClass -> "cardano:TxOutRef"
     TermHasTxId -> "cardano:hasTxId"
     TermHasIndex -> "cardano:hasIndex"
     TermRedeemer -> "cardano:Redeemer"

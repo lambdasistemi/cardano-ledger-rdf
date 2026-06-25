@@ -1662,6 +1662,10 @@ emitFromTxOutRef ::
 emitFromTxOutRef lookupTbl parentSubj refBnode (TxIn (TxId safeHash) (TxIx index)) = do
     let refSubj = SBnode refBnode
         txIdBytes = hashToBytes (extractHash safeHash)
+        flatTxOutRef =
+            hexText txIdBytes
+                <> Text.pack "#"
+                <> Text.pack (show index)
     tellTriple
         ( Triple
             parentSubj
@@ -1669,7 +1673,13 @@ emitFromTxOutRef lookupTbl parentSubj refBnode (TxIn (TxId safeHash) (TxIx index
             (OBnode refBnode)
         )
     tellTriple
-        (Triple refSubj PRdfType (OIri (vocabCurie TermTxOutRef)))
+        ( Triple
+            parentSubj
+            (PIri (vocabCurie TermTxOutRef))
+            (OStringLit flatTxOutRef)
+        )
+    tellTriple
+        (Triple refSubj PRdfType (OIri (vocabCurie TermTxOutRefClass)))
     txIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl LtTxId txIdBytes
     tellTriple

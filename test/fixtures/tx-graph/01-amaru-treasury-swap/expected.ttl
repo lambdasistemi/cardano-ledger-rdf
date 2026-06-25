@@ -118,7 +118,8 @@
 #
 
 _:4418c14b_input1 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef1 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef1 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000001#0" .
 
 _:4418c14b_inputTxOutRef1 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000001> ;
@@ -133,7 +134,8 @@ _:4418c14b_inputTxOutRef1 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input2 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef2 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef2 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000002#0" .
 
 _:4418c14b_inputTxOutRef2 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000002> ;
@@ -148,7 +150,8 @@ _:4418c14b_inputTxOutRef2 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input3 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef3 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef3 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000003#0" .
 
 _:4418c14b_inputTxOutRef3 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000003> ;
@@ -163,7 +166,8 @@ _:4418c14b_inputTxOutRef3 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input4 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef4 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef4 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000004#0" .
 
 _:4418c14b_inputTxOutRef4 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000004> ;
@@ -178,7 +182,8 @@ _:4418c14b_inputTxOutRef4 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input5 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef5 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef5 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000005#0" .
 
 _:4418c14b_inputTxOutRef5 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000005> ;
@@ -193,7 +198,8 @@ _:4418c14b_inputTxOutRef5 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input6 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef6 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef6 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000006#0" .
 
 _:4418c14b_inputTxOutRef6 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000006> ;
@@ -208,7 +214,8 @@ _:4418c14b_inputTxOutRef6 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input7 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef7 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef7 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000007#0" .
 
 _:4418c14b_inputTxOutRef7 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000007> ;
@@ -223,7 +230,8 @@ _:4418c14b_inputTxOutRef7 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input8 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef8 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef8 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000008#0" .
 
 _:4418c14b_inputTxOutRef8 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000008> ;
@@ -238,7 +246,8 @@ _:4418c14b_inputTxOutRef8 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input9 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef9 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef9 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000009#0" .
 
 _:4418c14b_inputTxOutRef9 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000009> ;
@@ -253,7 +262,8 @@ _:4418c14b_inputTxOutRef9 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input10 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef10 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef10 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000000a#0" .
 
 _:4418c14b_inputTxOutRef10 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000000a> ;
@@ -268,7 +278,8 @@ _:4418c14b_inputTxOutRef10 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input11 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef11 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef11 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000000b#0" .
 
 _:4418c14b_inputTxOutRef11 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000000b> ;
@@ -283,7 +294,8 @@ _:4418c14b_inputTxOutRef11 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input12 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef12 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef12 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000000c#0" .
 
 _:4418c14b_inputTxOutRef12 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000000c> ;
@@ -298,7 +310,8 @@ _:4418c14b_inputTxOutRef12 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input13 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef13 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef13 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000000d#0" .
 
 _:4418c14b_inputTxOutRef13 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000000d> ;
@@ -313,7 +326,8 @@ _:4418c14b_inputTxOutRef13 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input14 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef14 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef14 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000000e#0" .
 
 _:4418c14b_inputTxOutRef14 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000000e> ;
@@ -328,7 +342,8 @@ _:4418c14b_inputTxOutRef14 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input15 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef15 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef15 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000000f#0" .
 
 _:4418c14b_inputTxOutRef15 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000000f> ;
@@ -343,7 +358,8 @@ _:4418c14b_inputTxOutRef15 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input16 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef16 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef16 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000010#0" .
 
 _:4418c14b_inputTxOutRef16 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000010> ;
@@ -358,7 +374,8 @@ _:4418c14b_inputTxOutRef16 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input17 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef17 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef17 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000011#0" .
 
 _:4418c14b_inputTxOutRef17 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000011> ;
@@ -373,7 +390,8 @@ _:4418c14b_inputTxOutRef17 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input18 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef18 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef18 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000012#0" .
 
 _:4418c14b_inputTxOutRef18 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000012> ;
@@ -388,7 +406,8 @@ _:4418c14b_inputTxOutRef18 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input19 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef19 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef19 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000013#0" .
 
 _:4418c14b_inputTxOutRef19 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000013> ;
@@ -403,7 +422,8 @@ _:4418c14b_inputTxOutRef19 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input20 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef20 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef20 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000014#0" .
 
 _:4418c14b_inputTxOutRef20 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000014> ;
@@ -418,7 +438,8 @@ _:4418c14b_inputTxOutRef20 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input21 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef21 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef21 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000015#0" .
 
 _:4418c14b_inputTxOutRef21 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000015> ;
@@ -433,7 +454,8 @@ _:4418c14b_inputTxOutRef21 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input22 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef22 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef22 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000016#0" .
 
 _:4418c14b_inputTxOutRef22 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000016> ;
@@ -448,7 +470,8 @@ _:4418c14b_inputTxOutRef22 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input23 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef23 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef23 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000017#0" .
 
 _:4418c14b_inputTxOutRef23 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000017> ;
@@ -463,7 +486,8 @@ _:4418c14b_inputTxOutRef23 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input24 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef24 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef24 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000018#0" .
 
 _:4418c14b_inputTxOutRef24 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000018> ;
@@ -478,7 +502,8 @@ _:4418c14b_inputTxOutRef24 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input25 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef25 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef25 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000019#0" .
 
 _:4418c14b_inputTxOutRef25 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000019> ;
@@ -493,7 +518,8 @@ _:4418c14b_inputTxOutRef25 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input26 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef26 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef26 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000001a#0" .
 
 _:4418c14b_inputTxOutRef26 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000001a> ;
@@ -508,7 +534,8 @@ _:4418c14b_inputTxOutRef26 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input27 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef27 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef27 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000001b#0" .
 
 _:4418c14b_inputTxOutRef27 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000001b> ;
@@ -523,7 +550,8 @@ _:4418c14b_inputTxOutRef27 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input28 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef28 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef28 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000001c#0" .
 
 _:4418c14b_inputTxOutRef28 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000001c> ;
@@ -538,7 +566,8 @@ _:4418c14b_inputTxOutRef28 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input29 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef29 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef29 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000001d#0" .
 
 _:4418c14b_inputTxOutRef29 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000001d> ;
@@ -553,7 +582,8 @@ _:4418c14b_inputTxOutRef29 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input30 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef30 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef30 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000001e#0" .
 
 _:4418c14b_inputTxOutRef30 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000001e> ;
@@ -568,7 +598,8 @@ _:4418c14b_inputTxOutRef30 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input31 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef31 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef31 ;
+  cardano:txOutRef "000000000000000000000000000000000000000000000000000000000000001f#0" .
 
 _:4418c14b_inputTxOutRef31 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:000000000000000000000000000000000000000000000000000000000000001f> ;
@@ -583,7 +614,8 @@ _:4418c14b_inputTxOutRef31 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input32 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef32 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef32 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000020#0" .
 
 _:4418c14b_inputTxOutRef32 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000020> ;
@@ -598,7 +630,8 @@ _:4418c14b_inputTxOutRef32 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input33 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef33 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef33 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000021#0" .
 
 _:4418c14b_inputTxOutRef33 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000021> ;
@@ -613,7 +646,8 @@ _:4418c14b_inputTxOutRef33 a cardano:TxOutRef ;
 #
 
 _:4418c14b_input34 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_inputTxOutRef34 .
+  cardano:fromTxOutRef _:4418c14b_inputTxOutRef34 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000022#0" .
 
 _:4418c14b_inputTxOutRef34 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000022> ;
@@ -669,7 +703,8 @@ _:4418c14b_outputRefScript1 a cardano:NativeScript ;
 #
 
 _:4418c14b_collateral1 a cardano:Input ;
-  cardano:fromTxOutRef _:4418c14b_collateralTxOutRef1 .
+  cardano:fromTxOutRef _:4418c14b_collateralTxOutRef1 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000064#0" .
 
 _:4418c14b_collateralTxOutRef1 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000064> ;

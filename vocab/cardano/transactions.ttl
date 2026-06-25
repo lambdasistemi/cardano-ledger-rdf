@@ -411,6 +411,13 @@ cardano:fromTxOutRef a rdf:Property ;
   dcterms:description "The TxIn reference '<txid>#<ix>' for a spending or reference or collateral input." ;
   rdfs:comment "The TxIn reference '<txid>#<ix>' for a spending or reference or collateral input." .
 
+cardano:txOutRef a rdf:Property ;
+  rdfs:label "txOutRef" ;
+  rdfs:domain cardano:Input ;
+  rdfs:range  xsd:string ;
+  dcterms:description "Canonical flat '<txid>#<ix>' join key for a spending, reference, or collateral input, using 64 lowercase transaction-id hex characters and an unpadded zero-based decimal output index." ;
+  rdfs:comment "Canonical flat '<txid>#<ix>' join key for a spending, reference, or collateral input, using 64 lowercase transaction-id hex characters and an unpadded zero-based decimal output index." .
+
 # ==============================================================================
 # Properties — Value semantics (Phase A.1)
 # ==============================================================================

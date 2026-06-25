@@ -748,6 +748,9 @@ cardano:toRewardAccount a rdf:Property ;
 cardano:totalCollateral a rdf:Property ;
   rdfs:label "totalCollateral" .
 
+cardano:txOutRef a rdf:Property ;
+  rdfs:label "txOutRef" .
+
 cardano:withdrawalAccount a rdf:Property ;
   rdfs:label "withdrawalAccount" .
 
