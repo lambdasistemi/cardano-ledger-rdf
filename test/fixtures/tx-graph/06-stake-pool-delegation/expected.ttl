@@ -56,7 +56,8 @@
 #
 
 _:0e93c238_input1 a cardano:Input ;
-  cardano:fromTxOutRef _:0e93c238_inputTxOutRef1 .
+  cardano:fromTxOutRef _:0e93c238_inputTxOutRef1 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000001#0" .
 
 _:0e93c238_inputTxOutRef1 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000001> ;

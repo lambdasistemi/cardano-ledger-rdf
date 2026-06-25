@@ -257,7 +257,8 @@ _:e1acd00b_auxiliaryData1_md1694_v_e1v a cardano:MetadatumValue ;
 #
 
 _:e1acd00b_input1 a cardano:Input ;
-  cardano:fromTxOutRef _:e1acd00b_inputTxOutRef1 .
+  cardano:fromTxOutRef _:e1acd00b_inputTxOutRef1 ;
+  cardano:txOutRef "0000000000000000000000000000000000000000000000000000000000000023#0" .
 
 _:e1acd00b_inputTxOutRef1 a cardano:TxOutRef ;
   cardano:hasTxId <urn:cardano:id:TxId:0000000000000000000000000000000000000000000000000000000000000023> ;

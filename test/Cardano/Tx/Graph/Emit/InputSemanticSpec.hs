@@ -16,7 +16,10 @@ no Turtle parsing, no byte-diff comparison:
 1. For every fixture, every subject block whose bnode name
    starts with @input@ / @collateral@ / @refInput@ carries a
    @PIri "cardano:fromTxOutRef"@ predicate.
-2. Fixture 11 ('S11.tx', the on-chain-shape mirror), which
+2. For every fixture, every input-position parent block also
+   carries a flat @PIri "cardano:txOutRef"@ string literal in
+   canonical @\<64 lowercase txid hex\>#\<decimal index\>@ form.
+3. Fixture 11 ('S11.tx', the on-chain-shape mirror), which
    carries non-empty @referenceInputs@ post-T103, emits to
    @Right _@ — proving the @ConwayReferenceInputValue@
     unsupported-leaf failure is gone.
@@ -30,8 +33,11 @@ fail-loudly arm.
 -}
 module Cardano.Tx.Graph.Emit.InputSemanticSpec (spec) where
 
+import Data.Char (isDigit)
 import Data.Either (isRight)
 import Data.Map.Strict qualified as Map
+import Data.Maybe qualified as Maybe
+import Data.Text (Text)
 import Data.Text qualified as Text
 
 import Cardano.Tx.Decode (ConwayTx)
@@ -39,6 +45,7 @@ import Cardano.Tx.Graph.Emit (
     BnodeName (..),
     BodySection (..),
     EmittedGraph (..),
+    Object (..),
     Predicate (..),
     Subject (..),
     SubjectBlock (..),
@@ -58,6 +65,7 @@ import Fixtures.TxGraph.S10_GovernanceTreasuryWithdrawal qualified as S10
 import Fixtures.TxGraph.S11_AmaruTreasurySwapReal qualified as S11
 
 import Test.Hspec (
+    Expectation,
     Spec,
     describe,
     expectationFailure,
@@ -66,12 +74,15 @@ import Test.Hspec (
  )
 
 spec :: Spec
-spec = describe "Cardano.Tx.Graph.Emit input semantic content (T103/S2)" $ do
-    describe "every input/collateral/refInput block carries cardano:fromTxOutRef" $
-        mapM_ assertFromTxOutRef allFixtures
-    describe "fixture 11 emits successfully (no PUnsupportedLeafType ConwayReferenceInputValue)" $ do
-        it "11-amaru-treasury-swap-real emits to Right _" $
-            isRight (emit S11.tx Map.empty [] []) `shouldBe` True
+spec = do
+    it "input semantic content" $
+        mapM_ assertFlatTxOutRef allFixtures
+    describe "Cardano.Tx.Graph.Emit input semantic content (T103/S2)" $ do
+        describe "every input/collateral/refInput block carries cardano:fromTxOutRef" $
+            mapM_ assertFromTxOutRef allFixtures
+        describe "fixture 11 emits successfully (no PUnsupportedLeafType ConwayReferenceInputValue)" $ do
+            it "11-amaru-treasury-swap-real emits to Right _" $
+                isRight (emit S11.tx Map.empty [] []) `shouldBe` True
 
 -- | All fixtures the body emitter currently covers.
 allFixtures :: [(String, ConwayTx)]
@@ -96,7 +107,7 @@ carry a @cardano:fromTxOutRef@ predicate.
 -}
 assertFromTxOutRef :: (String, ConwayTx) -> Spec
 assertFromTxOutRef (slug, tx) =
-    it (slug <> " — every input/collateral/refInput block has fromTxOutRef") $
+    it (slug <> " input semantic content — every input/collateral/refInput block has fromTxOutRef") $
         case emit tx Map.empty [] [] of
             Left err ->
                 expectationFailure $
@@ -120,10 +131,46 @@ assertFromTxOutRef (slug, tx) =
                                 "input blocks missing cardano:fromTxOutRef: "
                                     <> show missing
 
-{- | A subject is an "input" position in the
-T103-defined sense when its bnode name starts with
+{- | Per-fixture assertion: every input-position parent block
+carries exactly one flat @cardano:txOutRef@ literal, formatted as
+@\<64 lowercase txid hex\>#\<decimal index\>@ with an unpadded
+zero-based index.
+-}
+assertFlatTxOutRef :: (String, ConwayTx) -> Expectation
+assertFlatTxOutRef (slug, tx) =
+    case emit tx Map.empty [] [] of
+        Left err ->
+            expectationFailure $
+                slug <> ": emit returned Left " <> show err
+        Right g ->
+            let inputBlocks =
+                    [ block
+                    | section <- graphBody g
+                    , block <- sectionBlocks section
+                    , isInputSubject (subjectBlockSubject block)
+                    ]
+                badBlocks =
+                    [ (block, values)
+                    | block <- inputBlocks
+                    , let values = flatTxOutRefValues block
+                    , not (isSingleCanonicalTxOutRef values)
+                    ]
+             in case badBlocks of
+                    []
+                        | null inputBlocks ->
+                            expectationFailure $
+                                slug <> ": no input/collateral/refInput parent blocks found"
+                        | otherwise -> pure ()
+                    _ ->
+                        expectationFailure $
+                            slug
+                                <> ": input blocks missing canonical cardano:txOutRef: "
+                                <> show badBlocks
+
+{- | A subject is an "input" position in the T103-defined sense
+when its optional transaction-scoped bnode stem starts with
 @input@, @collateral@, or @refInput@. The numeric suffix
-(@input1@, @collateral1@, @refInput1@, …) distinguishes
+(@input1@, @collateral1@, @refInput1@, ...) distinguishes
 ordinal positions and is not part of the prefix match.
 
 Excludes resolved-output sub-blocks (@resolvedInput@,
@@ -134,15 +181,28 @@ those carry @hasTxId@ + @hasIndex@, not @fromTxOutRef@.
 isInputSubject :: Subject -> Bool
 isInputSubject = \case
     SBnode (BnodeName name) ->
-        any
-            (`Text.isPrefixOf` name)
-            ["input", "collateral", "refInput"]
-            && not ("resolvedInput" `Text.isPrefixOf` name)
-            && not ("resolvedCollateral" `Text.isPrefixOf` name)
-            && not ("inputTxOutRef" `Text.isPrefixOf` name)
-            && not ("collateralTxOutRef" `Text.isPrefixOf` name)
-            && not ("refInputTxOutRef" `Text.isPrefixOf` name)
+        let stem = unscopedBnodeStem name
+         in isInputPositionStem stem
     _ -> False
+
+-- | Drop the serializer's @\<txprefix\>_@ scope from positional bnodes.
+unscopedBnodeStem :: Text -> Text
+unscopedBnodeStem name =
+    Maybe.fromMaybe name (Text.stripPrefix (Text.pack "_") suffix)
+  where
+    (_, suffix) = Text.breakOn (Text.pack "_") name
+
+-- | Match parent input-position stems while excluding their sub-blocks.
+isInputPositionStem :: Text -> Bool
+isInputPositionStem name =
+    any
+        (`Text.isPrefixOf` name)
+        ["input", "collateral", "refInput"]
+        && not ("resolvedInput" `Text.isPrefixOf` name)
+        && not ("resolvedCollateral" `Text.isPrefixOf` name)
+        && not ("inputTxOutRef" `Text.isPrefixOf` name)
+        && not ("collateralTxOutRef" `Text.isPrefixOf` name)
+        && not ("refInputTxOutRef" `Text.isPrefixOf` name)
 
 {- | Whether a subject block contains @cardano:fromTxOutRef@.
 
@@ -159,3 +219,43 @@ hasFromTxOutRef SubjectBlock{subjectBlockPredicates} =
 -- | The @cardano:fromTxOutRef@ predicate, spelled as a CURIE.
 fromTxOutRefPredicate :: Predicate
 fromTxOutRefPredicate = PIri (Text.pack "cardano:fromTxOutRef")
+
+-- | Flat @cardano:txOutRef@ literal values on the parent input block.
+flatTxOutRefValues :: SubjectBlock -> [Text]
+flatTxOutRefValues SubjectBlock{subjectBlockPredicates} =
+    [ value
+    | (p, OStringLit value) <- subjectBlockPredicates
+    , p == txOutRefPredicate
+    ]
+
+-- | Exactly one canonical @\<txid\>#\<ix\>@ value is expected per parent.
+isSingleCanonicalTxOutRef :: [Text] -> Bool
+isSingleCanonicalTxOutRef = \case
+    [value] -> isCanonicalTxOutRef value
+    _ -> False
+
+-- | Check the flat txoutref format without pulling in a regex dependency.
+isCanonicalTxOutRef :: Text -> Bool
+isCanonicalTxOutRef value =
+    case Text.breakOn (Text.pack "#") value of
+        (txIdHex, hashAndIndex) ->
+            case Text.stripPrefix (Text.pack "#") hashAndIndex of
+                Just indexText ->
+                    Text.length txIdHex == 64
+                        && Text.all isLowerHex txIdHex
+                        && not (Text.null indexText)
+                        && Text.all isDecimalDigit indexText
+                        && not (hasZeroPaddedIndex indexText)
+                Nothing -> False
+  where
+    isLowerHex c =
+        isDecimalDigit c
+            || ('a' <= c && c <= 'f')
+    isDecimalDigit = isDigit
+    hasZeroPaddedIndex indexText =
+        Text.length indexText > 1
+            && Text.pack "0" `Text.isPrefixOf` indexText
+
+-- | The @cardano:txOutRef@ predicate, spelled as a CURIE.
+txOutRefPredicate :: Predicate
+txOutRefPredicate = PIri (Text.pack "cardano:txOutRef")
