@@ -101,6 +101,7 @@ _:797e7ee7_drep1 a cardano:DRep ;
 
 _:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
   cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
 
 <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;

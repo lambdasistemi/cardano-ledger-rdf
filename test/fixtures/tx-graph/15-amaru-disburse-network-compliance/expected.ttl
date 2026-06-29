@@ -409,6 +409,7 @@ _:119cf80e_assetEntry_output2_1 a cardano:Asset ;
   cardano:bytesHex "a64d1b9e1aeffe54056034d84977061b45a92691efc282fbee3fc094" .
 
 _:119cf80e_withdrawal1 a cardano:Withdrawal ;
+  cardano:network 0 ;
   cardano:withdrawalAccount <urn:cardano:id:StakeScript:a64d1b9e1aeffe54056034d84977061b45a92691efc282fbee3fc094> ;
   cardano:lovelace 0 .
 
@@ -434,6 +435,7 @@ _:119cf80e_collateralTxOutRef1 a cardano:TxOutRef ;
 
 _:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dAddr a cardano:Address ;
   cardano:bech32 "addr_test1wqezq8wpaqnssdjvd3p220uf7e6nzjae44w6yu625y965rgqm8tk2" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dCredPayment .
 
 <urn:cardano:id:PaymentScript:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0d> a cardano:Identifier ;
@@ -445,6 +447,7 @@ _:32201dc1e82708364c6c42a53f89f675314bb9ad5da2734aa10baa0dCredPayment a cardano:
 
 _:c036c15399bd8f9a36c042afbf3cad16edb71dbc13c2ede6c38942cbAddr a cardano:Address ;
   cardano:bech32 "addr_test1vrqrds2nnx7clx3kcpp2l0eu45twmdcahsfu9m0xcwy59jc5fswl6" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:c036c15399bd8f9a36c042afbf3cad16edb71dbc13c2ede6c38942cbCredPayment .
 
 <urn:cardano:id:PaymentKey:c036c15399bd8f9a36c042afbf3cad16edb71dbc13c2ede6c38942cb> a cardano:Identifier ;
@@ -456,6 +459,7 @@ _:c036c15399bd8f9a36c042afbf3cad16edb71dbc13c2ede6c38942cbCredPayment a cardano:
 
 _:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1Addr a cardano:Address ;
   cardano:bech32 "addr_test1vz9aqvsf6gne2640jec828s25gzhk5wp2day8u24kf8mrsgn9acgl" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1CredPayment .
 
 <urn:cardano:id:PaymentKey:8bd03209d227956aaf9670751e0aa2057b51c1537a43f155b24fb1c1> a cardano:Identifier ;

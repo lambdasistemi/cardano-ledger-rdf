@@ -77,6 +77,7 @@ _:a4d856de_inputTxOutRef1 a cardano:TxOutRef ;
 
 _:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
   cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
 
 <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;

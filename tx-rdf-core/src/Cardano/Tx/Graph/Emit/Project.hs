@@ -1327,6 +1327,18 @@ emitNetworkId txSubj (SJust net) =
             (OIntLit (fromIntegral (networkToWord8 net)))
         )
 
+{- | Emit the per-entity @cardano:network N@ literal using the same
+ledger network encoding as the body-level @cardano:networkId@.
+-}
+emitNetworkLiteral :: Subject -> Network -> Emit ()
+emitNetworkLiteral subj net =
+    tellTriple
+        ( Triple
+            subj
+            (PIri (vocabCurie TermNetwork))
+            (OIntLit (fromIntegral (networkToWord8 net)))
+        )
+
 {- | Emit @cardano:scriptDataHash _:hash_scriptdata_X@ when the
 body's script-integrity hash is 'SJust', plus the
 @_:hash_scriptdata_X a cardano:Identifier ;
@@ -1384,6 +1396,7 @@ without re-parsing.
 -}
 data AddrEntry = AddrEntry
     { aeAddr :: !Addr
+    , aeNetwork :: !Network
     , aeBnodeBase :: !Text
     -- ^ The base name (e.g. @"alice"@ when an entity covers the
     -- payment credential; @"addr_paymentkey_<bytes16>"@ when no
@@ -1460,6 +1473,7 @@ mkAddrEntry :: [EntityDecl] -> LookupTable -> Addr -> AddrEntry
 mkAddrEntry entities _lookupTbl addr@(Addr network paymentCred stakeRef) =
     AddrEntry
         { aeAddr = addr
+        , aeNetwork = network
         , aeBnodeBase = base
         , aePaymentCred = pl
         , aeStakeCred = sl
@@ -2231,7 +2245,7 @@ exactly once.
 emitAddrEntry :: LookupTable -> AddrEntry -> Emit ()
 emitAddrEntry
     lookupTbl
-    AddrEntry{aeBnodeBase, aePaymentCred, aeStakeCred, aeBech32} = do
+    AddrEntry{aeNetwork, aeBnodeBase, aePaymentCred, aeStakeCred, aeBech32} = do
         let addrBnode = BnodeName (aeBnodeBase <> "Addr")
             payCredBnode = BnodeName (aeBnodeBase <> "CredPayment")
             stakeCredBnode = BnodeName (aeBnodeBase <> "CredStake")
@@ -2247,6 +2261,7 @@ emitAddrEntry
                     (PIri (vocabCurie TermBech32))
                     (OStringLit aeBech32)
                 )
+            emitNetworkLiteral addrSubj aeNetwork
             tellTriple
                 ( Triple
                     addrSubj
@@ -2389,6 +2404,7 @@ emitWithdrawalCluster lookupTbl k account (Coin lovelace) = do
     credIdObj <-
         resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
     tellTriple (Triple wSubj PRdfType (OIri (vocabCurie TermWithdrawal)))
+    emitNetworkLiteral wSubj (accountNetwork account)
     tellTriple
         ( Triple
             wSubj
@@ -2407,6 +2423,9 @@ accountStakeLeaf (AccountAddress _ (AccountId cred)) =
     case cred of
         KeyHashObj (KeyHash h) -> (StakeKey, hashToBytes h)
         ScriptHashObj (ScriptHash h) -> (StakeScript, hashToBytes h)
+
+accountNetwork :: AccountAddress -> Network
+accountNetwork (AccountAddress network _) = network
 
 ----------------------------------------------------------------------
 -- Certificate cluster (T008 — fixtures 06, 07)
@@ -2977,6 +2996,7 @@ emitProposalShell
         returnAddrObj <-
             resolveCredentialAndIntroduceIdent lookupTbl leafTy credBytes
         tellTriple (Triple propSubj PRdfType (OIri (vocabCurie TermProposal)))
+        emitNetworkLiteral propSubj (accountNetwork returnAddr)
         tellTriple
             ( Triple
                 propSubj
@@ -3069,6 +3089,7 @@ emitTreasuryWithdrawal
                 PRdfType
                 (OIri (vocabCurie TermWithdrawal))
             )
+        emitNetworkLiteral withdrawalSubj (accountNetwork account)
         tellTriple
             ( Triple
                 withdrawalSubj

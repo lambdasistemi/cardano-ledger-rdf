@@ -92,6 +92,7 @@ _:22e26c34_outputDatum1_recipient :_0_pubKeyHash _:22e26c34_outputDatum1_recipie
 
 _:fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077Addr a cardano:Address ;
   cardano:bech32 "addr_test1wrax5k9mutg07p2ngscu3chsauktmstq92z9de938j8nqac6tve5t" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077CredPayment .
 
 <urn:cardano:id:PaymentScript:fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077> a cardano:Identifier ;
@@ -103,6 +104,7 @@ _:fa6a58bbe2d0ff05534431c8e2f0ef2cbdc1602a8456e4b13c8f3077CredPayment a cardano:
 
 _:64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540efAddr a cardano:Address ;
   cardano:bech32 "addr_test1vpj0xhfxkgm66k8qnyzphs2vdpl20lw9395a04dkdcj5pmcmpvre6" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540efCredPayment .
 
 <urn:cardano:id:PaymentKey:64f35d26b237ad58e099041bc14c687ea7fdc58969d7d5b66e2540ef> a cardano:Identifier ;

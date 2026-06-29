@@ -139,6 +139,7 @@ data VocabTerm
     | TermResolvedTo
     | TermAtAddress
     | TermBech32
+    | TermNetwork
     | TermHasPaymentCredential
     | TermHasStakeCredential
     | TermHasIdentifier
@@ -444,6 +445,7 @@ vocabIri = \case
     TermResolvedTo -> cardanoPrefix <> "resolvedTo"
     TermAtAddress -> cardanoPrefix <> "atAddress"
     TermBech32 -> cardanoPrefix <> "bech32"
+    TermNetwork -> cardanoPrefix <> "network"
     TermHasPaymentCredential -> cardanoPrefix <> "hasPaymentCredential"
     TermHasStakeCredential -> cardanoPrefix <> "hasStakeCredential"
     TermHasIdentifier -> cardanoPrefix <> "hasIdentifier"
@@ -701,6 +703,7 @@ vocabCurie = \case
     TermResolvedTo -> "cardano:resolvedTo"
     TermAtAddress -> "cardano:atAddress"
     TermBech32 -> "cardano:bech32"
+    TermNetwork -> "cardano:network"
     TermHasPaymentCredential -> "cardano:hasPaymentCredential"
     TermHasStakeCredential -> "cardano:hasStakeCredential"
     TermHasIdentifier -> "cardano:hasIdentifier"

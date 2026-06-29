@@ -36,6 +36,7 @@
   cardano:bytesHex "0000000000000000000000000000000000000000000000000000001b" .
 
 _:8bc26556_proposal1 a cardano:Proposal ;
+  cardano:network 0 ;
   cardano:hasDeposit 100000000000 ;
   cardano:hasReturnAddress <urn:cardano:id:StakeKey:0000000000000000000000000000000000000000000000000000001b> ;
   cardano:hasAnchor _:8bc26556_proposalAnchor1 ;

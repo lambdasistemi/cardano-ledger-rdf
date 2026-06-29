@@ -27,12 +27,30 @@ module Cardano.Tx.Graph.EmitGoldenSpec (spec) where
 
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BS8
 import Data.Map.Strict qualified as Map
+import Data.Maybe (fromJust)
+import Data.Sequence.Strict qualified as StrictSeq
 import Data.Text (Text)
 import System.Environment (lookupEnv)
 import System.FilePath ((</>))
 
-import Cardano.Ledger.Hashes (ScriptHash)
+import Lens.Micro ((&), (.~))
+
+import Cardano.Crypto.Hash (hashFromStringAsHex)
+import Cardano.Ledger.Address (Addr (..))
+import Cardano.Ledger.Api.Tx (bodyTxL, mkBasicTx)
+import Cardano.Ledger.Api.Tx.Body (mkBasicTxBody, outputsTxBodyL)
+import Cardano.Ledger.Api.Tx.Out (mkBasicTxOut)
+import Cardano.Ledger.BaseTypes (Network (Mainnet))
+import Cardano.Ledger.Coin (Coin (..))
+import Cardano.Ledger.Credential (
+    Credential (KeyHashObj),
+    StakeReference (StakeRefNull),
+ )
+import Cardano.Ledger.Hashes (KeyHash (..), ScriptHash)
+import Cardano.Ledger.Keys (KeyRole (Payment))
+import Cardano.Ledger.Mary.Value (MaryValue (..), MultiAsset (..))
 
 import Cardano.Tx.Blueprint (Blueprint)
 import Cardano.Tx.Decode (ConwayTx)
@@ -93,12 +111,17 @@ import Test.Hspec (
     expectationFailure,
     it,
     runIO,
+    shouldSatisfy,
  )
 
 spec :: Spec
 spec = describe "Cardano.Tx.Graph.Emit joint Turtle goldens (T005)" $ do
     regen <- runIO regenEnabled
     mapM_ (fixtureGoldenItem regen) allFixtures
+    it "synthetic mainnet address emits cardano:network 1" $ do
+        let bytes = emitBytes "synthetic-mainnet-address" syntheticMainnetAddressTx
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:bech32 \"addr1"
+        bytes `shouldSatisfy` BS8.isInfixOf "cardano:network 1"
 
 {- | List of every fixture covered by the byte-diff golden suite.
 The slug is the directory name under
@@ -190,6 +213,33 @@ regenEnabled = do
 
 emptyUtxo :: ResolvedUTxO
 emptyUtxo = Map.empty
+
+syntheticMainnetAddressTx :: ConwayTx
+syntheticMainnetAddressTx =
+    mkBasicTx mkBasicTxBody
+        & bodyTxL . outputsTxBodyL
+            .~ StrictSeq.fromList
+                [ mkBasicTxOut
+                    syntheticMainnetAddress
+                    (MaryValue (Coin 1_000_000) (MultiAsset mempty))
+                ]
+
+syntheticMainnetAddress :: Addr
+syntheticMainnetAddress =
+    Addr
+        Mainnet
+        ( KeyHashObj
+            ( KeyHash (fromJust (hashFromStringAsHex (replicate 56 '1'))) ::
+                KeyHash Payment
+            )
+        )
+        StakeRefNull
+
+emitBytes :: String -> ConwayTx -> ByteString
+emitBytes slug tx =
+    case emit tx emptyUtxo [] [] of
+        Right g -> serialize Turtle slug g
+        Left err -> error ("EmitGoldenSpec.emitBytes: " <> show err)
 
 {- | Per-fixture resolved-UTxO. Almost every fixture passes an empty
 map (its inputs are not resolved against any operator-supplied

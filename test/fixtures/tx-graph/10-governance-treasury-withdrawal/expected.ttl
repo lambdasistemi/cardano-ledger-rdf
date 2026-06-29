@@ -91,6 +91,7 @@ _:16ce38ee_inputTxOutRef1 a cardano:TxOutRef ;
   cardano:bytesHex "00000000000000000000000000000000000000000000000000000001" .
 
 _:16ce38ee_proposal1 a cardano:Proposal ;
+  cardano:network 0 ;
   cardano:hasDeposit 100000000000 ;
   cardano:hasReturnAddress <urn:cardano:id:StakeKey:00000000000000000000000000000000000000000000000000000001> ;
   cardano:hasAnchor _:16ce38ee_proposalAnchor1 ;
@@ -109,6 +110,7 @@ _:16ce38ee_govAction1 a cardano:TreasuryWithdrawals ;
   cardano:bytesHex "00000000000000000000000000000000000000000000000000000002" .
 
 _:16ce38ee_withdrawal1_1 a cardano:Withdrawal ;
+  cardano:network 0 ;
   cardano:toRewardAccount <urn:cardano:id:StakeKey:00000000000000000000000000000000000000000000000000000002> ;
   cardano:hasLovelace 50000000000 .
 
@@ -122,6 +124,7 @@ _:16ce38ee_proposalDatum1 a cardano:Datum ;
 
 _:00000000000000000000000000000000000000000000000000000000Addr a cardano:Address ;
   cardano:bech32 "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd9tg5t" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:00000000000000000000000000000000000000000000000000000000CredPayment .
 
 <urn:cardano:id:PaymentKey:00000000000000000000000000000000000000000000000000000000> a cardano:Identifier ;
