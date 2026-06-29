@@ -229,6 +229,12 @@ cardano:bech32 a rdf:Property ;
   dcterms:description "The bech32 string form of an address or hashed identifier." ;
   rdfs:comment "The bech32 string form of an address or hashed identifier." .
 
+cardano:network a rdf:Property ;
+  rdfs:label "network" ;
+  rdfs:range  xsd:integer ;
+  dcterms:description "The network discriminator (0 = testnet, 1 = mainnet) for a network-bearing address or account subject." ;
+  rdfs:comment "The network discriminator (0 = testnet, 1 = mainnet) for a network-bearing address or account subject." .
+
 # ==============================================================================
 # Properties — Asset
 # ==============================================================================

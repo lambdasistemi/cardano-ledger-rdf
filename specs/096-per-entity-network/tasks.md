@@ -10,17 +10,17 @@
 **Goal**: Emit `cardano:network` on every network-bearing address/account
 surface and regenerate deterministic Turtle/vocab goldens.
 
-- [ ] T096 Add `TermNetwork` to `Vocab.hs`, declare `cardano:network` in
+- [X] T096 Add `TermNetwork` to `Vocab.hs`, declare `cardano:network` in
   `vocab/cardano/transactions.ttl`, and refresh canonical vocab fixtures.
-- [ ] T097 Emit `cardano:network` using `networkToWord8` on address
+- [X] T097 Emit `cardano:network` using `networkToWord8` on address
   decomposition subjects.
-- [ ] T098 Emit `cardano:network` using `networkToWord8` on withdrawal,
+- [X] T098 Emit `cardano:network` using `networkToWord8` on withdrawal,
   proposal return, and proposal treasury-withdrawal account-bearing subjects.
-- [ ] T099 Regenerate Turtle goldens and verify the diff is additive with
+- [X] T099 Regenerate Turtle goldens and verify the diff is additive with
   correct `0`/`1` values.
-- [ ] T100 Run focused golden, vocab, format, hlint, gate, and full CI
+- [X] T100 Run focused golden, vocab, format, hlint, gate, and full CI
   verification.
-- [ ] T101 Commit one bisect-safe slice:
+- [X] T101 Commit one bisect-safe slice:
   `feat: emit per-entity network literals`
 
 ## Dependencies & Execution Order

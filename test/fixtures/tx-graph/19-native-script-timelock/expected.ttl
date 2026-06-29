@@ -61,6 +61,7 @@ _:5499a9fc_outputRefScript1_c2 a cardano:NativeScript ;
 
 _:66666666666666666666666666666666666666666666666666666666Addr a cardano:Address ;
   cardano:bech32 "addr_test1vpnxvenxvenxvenxvenxvenxvenxvenxvenxvenxvenxvesh4lx63" ;
+  cardano:network 0 ;
   cardano:hasPaymentCredential _:66666666666666666666666666666666666666666666666666666666CredPayment .
 
 <urn:cardano:id:PaymentKey:66666666666666666666666666666666666666666666666666666666> a cardano:Identifier ;

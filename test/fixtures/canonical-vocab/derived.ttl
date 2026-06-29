@@ -703,6 +703,9 @@ cardano:metadatumValue a rdf:Property ;
 cardano:mintsAsset a rdf:Property ;
   rdfs:label "mintsAsset" .
 
+cardano:network a rdf:Property ;
+  rdfs:label "network" .
+
 cardano:networkId a rdf:Property ;
   rdfs:label "networkId" .
 
