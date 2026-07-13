@@ -1,0 +1,55 @@
+@prefix cardano: <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix :        <https://lambdasistemi.github.io/cardano-rdf/fixtures/37-voting-procedure#> .
+
+<https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/manifest/37-voting-procedure#>
+  a owl:Ontology ;
+  owl:imports <https://lambdasistemi.github.io/cardano-ledger-rdf/vocab/cardano/transactions> .
+
+#
+# Operator-declared entities (from rules.yaml).
+#
+
+#
+# Transaction body.
+#
+
+<urn:cardano:tx:042d835402abceaa58c7a27efa60a436eb5feb4564af0e6338b4275f384a347c> a cardano:Transaction ;
+  cardano:hasTxId <urn:cardano:id:TxId:042d835402abceaa58c7a27efa60a436eb5feb4564af0e6338b4275f384a347c> ;
+  cardano:isValid "true"^^xsd:boolean ;
+  cardano:hasFee 0 ;
+  cardano:hasVote _:042d8354_vote1 .
+
+<urn:cardano:id:TxId:042d835402abceaa58c7a27efa60a436eb5feb4564af0e6338b4275f384a347c> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "042d835402abceaa58c7a27efa60a436eb5feb4564af0e6338b4275f384a347c" .
+
+#
+# Vote 1
+#
+
+<urn:cardano:id:TxId:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> a cardano:Identifier ;
+  cardano:leafType "TxId" ;
+  cardano:bytesHex "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" .
+
+<urn:cardano:id:GovActionId:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:0> a cardano:GovActionId ;
+  a cardano:Identifier ;
+  cardano:leafType "GovActionId" ;
+  cardano:bytesHex "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:0" ;
+  cardano:hasTxId <urn:cardano:id:TxId:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb> ;
+  cardano:hasIndex 0 .
+
+_:042d8354_vote1 a cardano:Vote ;
+  cardano:hasVoter _:042d8354_voter1 ;
+  cardano:hasVotingAction <urn:cardano:id:GovActionId:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:0> ;
+  cardano:hasVerdict "Yes" .
+
+<urn:cardano:id:DRepKey:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> a cardano:Identifier ;
+  cardano:leafType "DRepKey" ;
+  cardano:bytesHex "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" .
+
+_:042d8354_voter1 a cardano:VoterDRep ;
+  cardano:hasIdentifier <urn:cardano:id:DRepKey:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa> .
