@@ -50,8 +50,14 @@ import Cardano.Ledger.Conway.Governance (
     VotingProcedure (..),
     VotingProcedures (..),
  )
-import Cardano.Ledger.Credential (Credential (KeyHashObj))
-import Cardano.Ledger.Hashes (KeyHash (..), unsafeMakeSafeHash)
+import Cardano.Ledger.Credential (
+    Credential (KeyHashObj, ScriptHashObj),
+ )
+import Cardano.Ledger.Hashes (
+    KeyHash (..),
+    ScriptHash (..),
+    unsafeMakeSafeHash,
+ )
 import Cardano.Ledger.Keys (KeyRole (..))
 import Cardano.Ledger.TxIn (TxId (..))
 
@@ -77,6 +83,7 @@ spec =
         drepSpec
         stakePoolSpec
         committeeSpec
+        voterIdentifierSpec
         verdictsSpec
         anchorSpec
         operatorNamedGovActionSpec
@@ -126,7 +133,10 @@ drepSpec = describe "DRep voter" $
         bytes `shouldSatisfy` BS8.isInfixOf "_voter1 a cardano:VoterDRep"
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasIdentifier \"" <> BS8.replicate 56 'a' <> "\"")
+                ( "cardano:hasIdentifier <urn:cardano:id:DRepKey:"
+                    <> BS8.replicate 56 'a'
+                    <> ">"
+                )
 
 stakePoolSpec :: Spec
 stakePoolSpec = describe "stake-pool voter" $
@@ -136,7 +146,10 @@ stakePoolSpec = describe "stake-pool voter" $
         bytes `shouldSatisfy` BS8.isInfixOf "_voter1 a cardano:VoterStakePool"
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasIdentifier \"" <> BS8.replicate 56 'b' <> "\"")
+                ( "cardano:hasIdentifier <urn:cardano:id:PoolId:"
+                    <> BS8.replicate 56 'b'
+                    <> ">"
+                )
 
 committeeSpec :: Spec
 committeeSpec = describe "constitutional-committee voter" $
@@ -147,7 +160,75 @@ committeeSpec = describe "constitutional-committee voter" $
             `shouldSatisfy` BS8.isInfixOf "_voter1 a cardano:VoterCommitteeCold"
         bytes
             `shouldSatisfy` BS8.isInfixOf
-                ("cardano:hasIdentifier \"" <> BS8.replicate 56 'c' <> "\"")
+                ( "cardano:hasIdentifier <urn:cardano:id:CommitteeHotKey:"
+                    <> BS8.replicate 56 'c'
+                    <> ">"
+                )
+
+voterIdentifierSpec :: Spec
+voterIdentifierSpec =
+    describe "voter identifier resolution" $
+        it "resolves every voter credential form to a typed Identifier" $
+            mapM_ assertIdentifier voterCases
+  where
+    voterCases =
+        [
+            ( CommitteeVoter (KeyHashObj (committeeKeyHash 0xa1))
+            , "cardano:VoterCommitteeCold"
+            , "CommitteeHotKey"
+            , 0xa1
+            )
+        ,
+            ( CommitteeVoter (ScriptHashObj (scriptHash 0xa2))
+            , "cardano:VoterCommitteeCold"
+            , "CommitteeHotScript"
+            , 0xa2
+            )
+        ,
+            ( DRepVoter (KeyHashObj (drepKeyHash 0xc1))
+            , "cardano:VoterDRep"
+            , "DRepKey"
+            , 0xc1
+            )
+        ,
+            ( DRepVoter (ScriptHashObj (scriptHash 0xc2))
+            , "cardano:VoterDRep"
+            , "DRepScript"
+            , 0xc2
+            )
+        ,
+            ( StakePoolVoter (poolKeyHash 0xe1)
+            , "cardano:VoterStakePool"
+            , "PoolId"
+            , 0xe1
+            )
+        ]
+
+    assertIdentifier (voter, voterClass, leafType, byte) = do
+        let rawHex = repeatHexByte byte
+            identIri = "<urn:cardano:id:" <> leafType <> ":" <> rawHex <> ">"
+            bytes = emitBytes (txWithSingleVote voter VoteYes SNothing)
+        bytes `shouldSatisfy` BS8.isInfixOf ("_voter1 a " <> voterClass)
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ("cardano:hasIdentifier " <> identIri)
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                (identIri <> " a cardano:Identifier")
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ("cardano:leafType \"" <> leafType <> "\"")
+        bytes
+            `shouldSatisfy` BS8.isInfixOf
+                ("cardano:bytesHex \"" <> rawHex <> "\"")
+
+repeatHexByte :: Int -> ByteString
+repeatHexByte n = BS8.concat (replicate 28 (byteAsHex n))
+
+byteAsHex :: Int -> ByteString
+byteAsHex n = BS8.pack [hexDigit (n `div` 16), hexDigit (n `mod` 16)]
+  where
+    hexDigit k = "0123456789abcdef" !! k
 
 verdictsSpec :: Spec
 verdictsSpec = describe "verdict text" $ do
@@ -245,6 +326,14 @@ poolKeyHash = mkKeyHash
 
 committeeKeyHash :: Int -> KeyHash HotCommitteeRole
 committeeKeyHash = mkKeyHash
+
+scriptHash :: Int -> ScriptHash
+scriptHash n =
+    ScriptHash
+        (fromJust (hashFromStringAsHex (concat (replicate 28 (hexByte n)))))
+  where
+    hexByte b = [d (b `div` 16), d (b `mod` 16)]
+    d k = "0123456789abcdef" !! k
 
 mkKeyHash :: Int -> KeyHash r
 mkKeyHash n =

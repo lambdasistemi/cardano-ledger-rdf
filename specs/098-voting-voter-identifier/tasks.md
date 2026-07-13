@@ -10,15 +10,15 @@
 
 ## Slice S1 — Identifier emission and voting-procedure golden
 
-- [ ] T098-S1 Add a failing focused proof for each key/script/pool voter
+- [X] T098-S1 Add a failing focused proof for each key/script/pool voter
   mapping and a registered golden fixture for a voting-procedure transaction.
-- [ ] T098-S1 Route the three voter forms through
+- [X] T098-S1 Route the three voter forms through
   `resolveCredentialAndIntroduceIdent` with `CommitteeHotKey`,
   `CommitteeHotScript`, `DRepKey`, `DRepScript`, or `PoolId` as applicable,
   while preserving the voter class and predicate shape.
-- [ ] T098-S1 Regenerate the new golden only; verify existing golden fixtures
+- [X] T098-S1 Regenerate the new golden only; verify existing golden fixtures
   have no unrelated diff.
-- [ ] T098-S1 Run focused tests, `just unit`, `./gate.sh origin/main..HEAD`,
+- [X] T098-S1 Run focused tests, `just unit`, `./gate.sh origin/main..HEAD`,
   `nix develop --quiet -c just ci`, and the issue-named Nix checks
   (`build`, `unit`, `lint`, `vocab-validate`, `vocab-owl-smoke`); commit
   `feat: type voting-procedure voter identifiers` with `Tasks: T098-S1`.

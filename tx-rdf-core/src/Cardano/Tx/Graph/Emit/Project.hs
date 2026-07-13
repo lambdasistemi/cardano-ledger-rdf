@@ -3210,7 +3210,7 @@ buildVoteCluster lookupTbl k voter actionId procedure = do
     case mAnchor of
         SNothing -> pure ()
         SJust anchor -> emitVoteAnchor k voteSubj anchor
-    emitVoterBlock k voterSubj voter
+    emitVoterBlock lookupTbl k voterSubj voter
 
 -- | The verdict text literal: @"Yes"@, @"No"@, or @"Abstain"@.
 verdictText :: Vote -> Text
@@ -3272,40 +3272,43 @@ emitGovActionIdBlock lookupTbl (GovActionId (TxId safeHash) (GovActionIx ix)) = 
     pure (OIri govActionIri)
 
 {- | Emit the @_:voterK a cardano:VoterX ; cardano:hasIdentifier
-"\<hex\>"@ sub-block. The discriminating class
+<urn:cardano:id:...\>@ sub-block. The discriminating class
 ('VoterDRep' / 'VoterStakePool' / 'VoterCommitteeCold') is
 keyed by the 'Voter' constructor; the identifier is the
-28-byte key-hash (or script-hash) the voter is bound to.
+28-byte key-hash (or script-hash) the voter is bound to, resolved
+through 'resolveCredentialAndIntroduceIdent'.
 -}
-emitVoterBlock :: Int -> Subject -> Voter -> Emit ()
-emitVoterBlock _ voterSubj voter = do
-    let (classTerm, idBytes) = voterDiscrimination voter
+emitVoterBlock :: LookupTable -> Int -> Subject -> Voter -> Emit ()
+emitVoterBlock lookupTbl _ voterSubj voter = do
+    let (classTerm, leafType, idBytes) = voterDiscrimination voter
+    identObj <-
+        resolveCredentialAndIntroduceIdent lookupTbl leafType idBytes
     tellTriple (Triple voterSubj PRdfType (OIri (vocabCurie classTerm)))
     tellTriple
         ( Triple
             voterSubj
             (PIri (vocabCurie TermHasIdentifier))
-            (OStringLit (hexText idBytes))
+            identObj
         )
 
 {- | Classify a 'Voter' into its discriminating class term and
-identifier bytes. @CommitteeVoter@ wraps a hot-committee
+identifier leaf type + bytes. @CommitteeVoter@ wraps a hot-committee
 credential (key or script hash); @DRepVoter@ wraps a DRep
 credential (key or script hash); @StakePoolVoter@ wraps a pool
 key-hash directly.
 -}
-voterDiscrimination :: Voter -> (VocabTerm, ByteString)
+voterDiscrimination :: Voter -> (VocabTerm, LeafType, ByteString)
 voterDiscrimination = \case
     CommitteeVoter (KeyHashObj (KeyHash h)) ->
-        (TermVoterCommitteeCold, hashToBytes h)
+        (TermVoterCommitteeCold, CommitteeHotKey, hashToBytes h)
     CommitteeVoter (ScriptHashObj (ScriptHash h)) ->
-        (TermVoterCommitteeCold, hashToBytes h)
+        (TermVoterCommitteeCold, CommitteeHotScript, hashToBytes h)
     DRepVoter (KeyHashObj (KeyHash h)) ->
-        (TermVoterDRep, hashToBytes h)
+        (TermVoterDRep, DRepKey, hashToBytes h)
     DRepVoter (ScriptHashObj (ScriptHash h)) ->
-        (TermVoterDRep, hashToBytes h)
+        (TermVoterDRep, DRepScript, hashToBytes h)
     StakePoolVoter (KeyHash h) ->
-        (TermVoterStakePool, hashToBytes h)
+        (TermVoterStakePool, PoolId, hashToBytes h)
 
 {- | Emit the @cardano:hasAnchor _:voteAnchorK@ edge + sub-block
 on a vote subject at position @k@. The sub-block carries

@@ -92,6 +92,7 @@ import Fixtures.TxGraph.S33_MetadataScalarMap qualified as S33
 import Fixtures.TxGraph.S34_MetadataFaithful qualified as S34
 import Fixtures.TxGraph.S35_MetadataContingency1694 qualified as S35
 import Fixtures.TxGraph.S36_MetadataEmptyContainers qualified as S36
+import Fixtures.TxGraph.S37_VotingProcedure qualified as S37
 
 import Test.Hspec (
     Spec,
@@ -135,6 +136,7 @@ enabledFixtures =
     , ("34-metadata-faithful", S34.tx)
     , ("35-metadata-contingency-1694", S35.tx)
     , ("36-metadata-empty-containers", S36.tx)
+    , ("37-voting-procedure", S37.tx)
     ]
 
 spec :: Spec
