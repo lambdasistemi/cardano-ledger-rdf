@@ -17,7 +17,7 @@ commit_gate() {
         chore*|docs*|build*|ci*|style*|revert*) ;;
         *)
           if ! printf '%s\n' "$body" \
-            | grep -qE '^Tasks:[[:space:]]*T[0-9]+([[:space:]]*,[[:space:]]*T[0-9]+)*[[:space:]]*$'; then
+            | grep -qE '^Tasks:[[:space:]]*T[0-9]+(-[SP][0-9]+)?([[:space:]]*,[[:space:]]*T[0-9]+(-[SP][0-9]+)?)*[[:space:]]*$'; then
             echo "x $sha missing or malformed Tasks: trailer" >&2
             fail=1
           fi
