@@ -1,7 +1,7 @@
 # Feature Specification: Type voting-procedure voters as resolvable Identifier nodes
 
-**Feature Branch**: `feat/98-voting-voter-identifier`  
-**Issue**: [lambdasistemi/cardano-ledger-rdf#98](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/98)  
+**Feature Branch**: `feat/98-voting-voter-identifier`
+**Issue**: [lambdasistemi/cardano-ledger-rdf#98](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/98)
 **Status**: In progress
 
 ## Problem
