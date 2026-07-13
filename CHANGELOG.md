@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## [0.4.1.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.4.0.0...v0.4.1.0) (2026-07-13)
+
+### Features
+
+* split tx-rdf-core package ([c283f1f](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/c283f1f3dee583330558cfbdc34d458f5956eaa9))
+* emit flat txoutref join keys ([1ef103a](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/1ef103a923dc64fae7ef94cafd6e18665fefbb91))
+* emit per-entity network literals ([1c2e893](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/1c2e893d114fe335548b9cd9ec3e8538254c3573))
+* type voting-procedure voter identifiers ([6a8d60d](https://github.com/lambdasistemi/cardano-ledger-rdf/commit/6a8d60d41ce3af69f3ce2f4aa8a69ce7032fda73))
+
 ## [0.4.0.0](https://github.com/lambdasistemi/cardano-ledger-rdf/compare/v0.3.0.0...v0.4.0.0) (2026-06-10)
 
 This release completes the builder-ownership inversion ([#86](https://github.com/lambdasistemi/cardano-ledger-rdf/issues/86)): the transaction-builder DSL now has a single home in `cardano-tx-tools:tx-build`, and this library's public API is purely RDF.
